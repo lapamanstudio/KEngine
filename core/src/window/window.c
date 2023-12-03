@@ -1,10 +1,33 @@
 #include <string.h>
 #include <stdio.h>
+#include <dwmapi.h>
 
 #include "window/window.h"
 #include "config.h"
 
 const char g_szClassName[] = "KEngineClass";
+
+void ThemeRefresh(HWND hWnd) {
+    DWORD lightMode;
+    DWORD pcbData = sizeof(lightMode);
+
+    if (RegGetValueW(
+            HKEY_CURRENT_USER,
+            L"Software\\Microsoft\\Windows\\CurrentVersion\\Themes\\Personalize",
+            L"AppsUseLightTheme",
+            RRF_RT_REG_DWORD,
+            NULL,
+            &lightMode,
+            &pcbData) == ERROR_SUCCESS)
+    {
+        BOOL DarkMode = !lightMode;
+
+        /* `20 == DWMWA_USE_IMMERSIVE_DARK_MODE` in Windows 11 SDK.
+         * This value was undocumented for Windows 10 versions 2004 and later,
+         * supported for Windows 11 Build 22000 and later. */
+        DwmSetWindowAttribute(hWnd, 20, &DarkMode, sizeof(DarkMode));
+    }
+}
 
 LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 {
@@ -81,6 +104,8 @@ HWND InitWindow(HINSTANCE hInstance, int nCmdShow)
         MessageBox(NULL, "Window Creation Failed!", "Error!", MB_ICONEXCLAMATION | MB_OK);
         return NULL;
     }
+
+    ThemeRefresh(hwnd);
 
     ShowWindow(hwnd, SW_MAXIMIZE);
     UpdateWindow(hwnd);

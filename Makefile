@@ -20,12 +20,12 @@ define make-dir
 endef
 
 # Main rule
-all: build
+all: build	
 
 # Rule to build the project
 build: $(OBJS)
 	$(call make-dir, $(OUT_DIR))
-	$(CC) $(CFLAGS) -o $(OUT_DIR)/Kengine $^
+	$(CC) $(CFLAGS) -o $(OUT_DIR)/Kengine $^ -ldwmapi
 
 # Rule to generate .o files from .c files
 $(OUT_DIR)/%.o: $(SRC_DIR)/%.c
