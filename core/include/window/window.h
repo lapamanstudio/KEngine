@@ -6,7 +6,4 @@
 // Window initialization and creation
 HWND InitWindow(HINSTANCE hInstance, int nCmdShow);
 
-// Window procedure
-LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam);
-
 #endif // WINDOW_H

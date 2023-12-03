@@ -48,7 +48,7 @@ HWND InitWindow(HINSTANCE hInstance, int nCmdShow)
     }
 
     // Window name
-    int size = strlen(GAME_ENGINE_NAME) + strlen(GAME_ENGINE_VERSION) + 4;
+    int size = strlen(GAME_ENGINE_NAME) + strlen(GAME_ENGINE_VERSION) + 1 + 3;
     char* windowName = malloc(size);
     if (windowName == NULL) {
         perror("Error allocating memory for window name");
