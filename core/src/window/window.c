@@ -5,6 +5,8 @@
 #include "window/window.h"
 #include "config.h"
 
+#include "panel/panel.h"
+
 #include <time.h>
 
 void ThemeRefresh(HWND hWnd) {
@@ -29,28 +31,26 @@ void ThemeRefresh(HWND hWnd) {
     }
 }
 
-LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
-{
-    switch (msg)
-    {
-        case WM_DESTROY: {
-            PostQuitMessage(0);
-            break;
+LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam) {
+    switch (msg) {
+        case WM_CTLCOLORSTATIC: {
+            HDC hdcStatic = (HDC) wParam;
+            SetTextColor(hdcStatic, RGB(255, 255, 255)); 
+            SetBkColor(hdcStatic, RGB(0, 0, 255));       // Blue panel background
+            return (INT_PTR)CreateSolidBrush(RGB(0, 0, 255));
         }
-        default:
-        {
-            return DefWindowProc(hwnd, msg, wParam, lParam);
-        }
+        // ... otros casos ...
     }
-    return 0;
+    return DefWindowProc(hwnd, msg, wParam, lParam);
 }
 
-HWND InitWindow(HINSTANCE hInstance, int nCmdShow)
-{
+
+
+HWND InitWindow(HINSTANCE hInstance, int nCmdShow) {
     WNDCLASSW wc;
     HWND hwnd;
 
-    // Step 1: Register the Window Class
+    // Window class registration
     wc.style         = 0;
     wc.lpfnWndProc   = WndProc;
     wc.cbClsExtra    = 0;
@@ -62,46 +62,51 @@ HWND InitWindow(HINSTANCE hInstance, int nCmdShow)
     wc.lpszMenuName  = NULL;
     wc.lpszClassName = L"KEngineClass";
 
-    if(!RegisterClassW(&wc))
-    {
+    if(!RegisterClassW(&wc)) {
         MessageBox(NULL, "Window Registration Failed!", "Error!", MB_ICONEXCLAMATION | MB_OK);
         return NULL;
     }
 
-    // Window name
+    // Window name creation
     int size = strlen(GAME_ENGINE_NAME) + strlen(GAME_ENGINE_VERSION) + 1 + 3;
     char* windowName = malloc(size);
     if (windowName == NULL) {
         perror("Error allocating memory for window name");
         return NULL;
     }
-
     snprintf(windowName, size, "%s - %s", GAME_ENGINE_NAME, GAME_ENGINE_VERSION);
 
-    // Step 2: Create the window
+    // Main window creation
     hwnd = CreateWindowExW(
         0,
         wc.lpszClassName,
-        windowName, // Title
+        windowName,
         WS_OVERLAPPEDWINDOW,
-        CW_USEDEFAULT, CW_USEDEFAULT, GetSystemMetrics(SM_CXSCREEN), GetSystemMetrics(SM_CYSCREEN), // Size and position
+        CW_USEDEFAULT, CW_USEDEFAULT, GetSystemMetrics(SM_CXSCREEN), GetSystemMetrics(SM_CYSCREEN),
         NULL, NULL, hInstance, NULL);
-        
-    if(hwnd == NULL)
-    {
+
+    if(hwnd == NULL) {
         MessageBox(NULL, "Window Creation Failed!", "Error!", MB_ICONEXCLAMATION | MB_OK);
+        free(windowName);
         return NULL;
     }
 
-    // Window properties
+    // Setting window properties
     HBRUSH brush = CreateSolidBrush(RGB(45, 45, 48));
     SetClassLongPtr(hwnd, GCLP_HBRBACKGROUND, (LONG_PTR)brush);
     ThemeRefresh(hwnd);
 
-    // Show
+    // Panel creation and initialization
+    Panel mainPanel;
+    InitPanel(&mainPanel, hwnd, 50, 50, 300, 200); // Initializes the panel
+    SetPanelBackground(&mainPanel, RGB(0, 0, 255)); // Sets the panel background to blue
+    AddButtonToPanel(&mainPanel, L"turip", 100, 75, 100, 50); // Adds a button to the panel
+
+    // Displaying the window
     ShowWindow(hwnd, SW_MAXIMIZE);
     UpdateWindow(hwnd);
 
+    // Freeing the window name
     free(windowName);
 
     return hwnd;
