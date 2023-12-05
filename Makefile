@@ -25,7 +25,7 @@ all: build
 # Rule to build the project
 build: $(OBJS)
 	$(call make-dir, $(OUT_DIR))
-	$(CC) $(CFLAGS) -o $(OUT_DIR)/Kengine $^ -ldwmapi
+	$(CC) $(CFLAGS) -o $(OUT_DIR)/Kengine $^ -ldwmapi -lgdi32
 
 # Rule to generate .o files from .c files
 $(OUT_DIR)/%.o: $(SRC_DIR)/%.c

@@ -5,7 +5,7 @@
 #include "window/window.h"
 #include "config.h"
 
-const char g_szClassName[] = "KEngineClass";
+#include <time.h>
 
 void ThemeRefresh(HWND hWnd) {
     DWORD lightMode;
@@ -31,27 +31,26 @@ void ThemeRefresh(HWND hWnd) {
 
 LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 {
-    switch(msg)
+    switch (msg)
     {
-        case WM_CLOSE:
-            DestroyWindow(hwnd);
-        break;
-        case WM_DESTROY:
+        case WM_DESTROY: {
             PostQuitMessage(0);
-        break;
+            break;
+        }
         default:
+        {
             return DefWindowProc(hwnd, msg, wParam, lParam);
+        }
     }
     return 0;
 }
 
 HWND InitWindow(HINSTANCE hInstance, int nCmdShow)
 {
-    WNDCLASSEX wc;
+    WNDCLASSW wc;
     HWND hwnd;
 
     // Step 1: Register the Window Class
-    wc.cbSize        = sizeof(WNDCLASSEX);
     wc.style         = 0;
     wc.lpfnWndProc   = WndProc;
     wc.cbClsExtra    = 0;
@@ -61,10 +60,9 @@ HWND InitWindow(HINSTANCE hInstance, int nCmdShow)
     wc.hCursor       = LoadCursor(NULL, IDC_ARROW);
     wc.hbrBackground = (HBRUSH)(COLOR_WINDOW+1);
     wc.lpszMenuName  = NULL;
-    wc.lpszClassName = g_szClassName;
-    wc.hIconSm       = LoadIcon(NULL, IDI_APPLICATION);
+    wc.lpszClassName = L"KEngineClass";
 
-    if(!RegisterClassEx(&wc))
+    if(!RegisterClassW(&wc))
     {
         MessageBox(NULL, "Window Registration Failed!", "Error!", MB_ICONEXCLAMATION | MB_OK);
         return NULL;
@@ -79,34 +77,28 @@ HWND InitWindow(HINSTANCE hInstance, int nCmdShow)
     }
 
     snprintf(windowName, size, "%s - %s", GAME_ENGINE_NAME, GAME_ENGINE_VERSION);
-    
-    // Get dimensions of the screen
-    int screenWidth = GetSystemMetrics(SM_CXSCREEN);
-    int screenHeight = GetSystemMetrics(SM_CYSCREEN);
-
-    // Calculate x and y position of the window
-    int windowWidth = screenWidth / 2;
-    int windowHeight = screenHeight / 2;
-    int posX = (screenWidth - windowWidth) / 2;
-    int posY = (screenHeight - windowHeight) / 2;
 
     // Step 2: Create the window
-    hwnd = CreateWindowEx(
-        WS_EX_CLIENTEDGE,
-        g_szClassName,
+    hwnd = CreateWindowExW(
+        0,
+        wc.lpszClassName,
         windowName, // Title
         WS_OVERLAPPEDWINDOW,
-        posX, posY, windowWidth, windowHeight, // Size and position
+        CW_USEDEFAULT, CW_USEDEFAULT, GetSystemMetrics(SM_CXSCREEN), GetSystemMetrics(SM_CYSCREEN), // Size and position
         NULL, NULL, hInstance, NULL);
-
+        
     if(hwnd == NULL)
     {
         MessageBox(NULL, "Window Creation Failed!", "Error!", MB_ICONEXCLAMATION | MB_OK);
         return NULL;
     }
 
+    // Window properties
+    HBRUSH brush = CreateSolidBrush(RGB(45, 45, 48));
+    SetClassLongPtr(hwnd, GCLP_HBRBACKGROUND, (LONG_PTR)brush);
     ThemeRefresh(hwnd);
 
+    // Show
     ShowWindow(hwnd, SW_MAXIMIZE);
     UpdateWindow(hwnd);
 
