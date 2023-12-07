@@ -9,6 +9,9 @@
 
 #include <time.h>
 
+Panel* mainPanel;
+HBRUSH brush_background;
+
 void ThemeRefresh(HWND hWnd) {
     DWORD lightMode;
     DWORD pcbData = sizeof(lightMode);
@@ -33,18 +36,42 @@ void ThemeRefresh(HWND hWnd) {
 
 LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam) {
     switch (msg) {
-        case WM_CTLCOLORSTATIC: {
-            HDC hdcStatic = (HDC) wParam;
-            SetTextColor(hdcStatic, RGB(255, 255, 255)); 
-            SetBkColor(hdcStatic, RGB(0, 0, 255));       // Blue panel background
-            return (INT_PTR)CreateSolidBrush(RGB(0, 0, 255));
+        case WM_CREATE: {
+            brush_background = CreateSolidBrush(BACKGROUND_COLOR);
+            return 0;
         }
-        // ... otros casos ...
+        case WM_DESTROY: {
+            if (brush_background) {
+                DeleteObject(brush_background);
+            }
+            if (mainPanel != NULL) {
+                RemovePanel(mainPanel);
+            }
+            return 0;
+        }
+        case WM_PAINT: {
+            PAINTSTRUCT ps;
+            HDC hdc = BeginPaint(hwnd, &ps);
+
+            RECT rect;
+            GetClientRect(hwnd, &rect);  // Obtén las dimensiones de la ventana completa
+
+            // Si tienes los datos del panel, excluye el área del panel
+            if (mainPanel) {
+                ExcludeClipRect(hdc, mainPanel->x, mainPanel->y, mainPanel->x + mainPanel->width, mainPanel->y + mainPanel->height);
+            }
+
+            // Ahora pinta solo el área que no está cubierta por el panel
+            FillRect(hdc, &rect, brush_background);
+
+            EndPaint(hwnd, &ps);
+            return 0;
+        }
+        case WM_ERASEBKGND:
+            return (LRESULT)1; // Indica que el fondo se ha manejado, pero no dibujes nada
     }
-    return DefWindowProc(hwnd, msg, wParam, lParam);
+    return DefWindowProcW(hwnd, msg, wParam, lParam);
 }
-
-
 
 HWND InitWindow(HINSTANCE hInstance, int nCmdShow) {
     WNDCLASSW wc;
@@ -68,13 +95,15 @@ HWND InitWindow(HINSTANCE hInstance, int nCmdShow) {
     }
 
     // Window name creation
-    int size = strlen(GAME_ENGINE_NAME) + strlen(GAME_ENGINE_VERSION) + 1 + 3;
-    char* windowName = malloc(size);
+    int size = wcslen(GAME_ENGINE_NAME) + wcslen(GAME_ENGINE_VERSION) + 1 + 3; // +1 null operator, +3 " - "
+    wchar_t* windowName = (wchar_t*)malloc(size * sizeof(wchar_t));
     if (windowName == NULL) {
         perror("Error allocating memory for window name");
         return NULL;
     }
-    snprintf(windowName, size, "%s - %s", GAME_ENGINE_NAME, GAME_ENGINE_VERSION);
+
+    // Format the string
+    swprintf_s(windowName, size, L"%s - %s", GAME_ENGINE_NAME, GAME_ENGINE_VERSION);
 
     // Main window creation
     hwnd = CreateWindowExW(
@@ -92,15 +121,17 @@ HWND InitWindow(HINSTANCE hInstance, int nCmdShow) {
     }
 
     // Setting window properties
-    HBRUSH brush = CreateSolidBrush(RGB(45, 45, 48));
-    SetClassLongPtr(hwnd, GCLP_HBRBACKGROUND, (LONG_PTR)brush);
     ThemeRefresh(hwnd);
 
+    // Register panel class
+    RegisterPanelClass(hInstance);
+
     // Panel creation and initialization
-    Panel mainPanel;
-    InitPanel(&mainPanel, hwnd, 50, 50, 300, 200); // Initializes the panel
-    SetPanelBackground(&mainPanel, RGB(0, 0, 255)); // Sets the panel background to blue
-    AddButtonToPanel(&mainPanel, L"turip", 100, 75, 100, 50); // Adds a button to the panel
+    mainPanel = CreateNewPanel(hwnd, true);
+    if (mainPanel == NULL) {
+        perror("Error creating main panel");
+        return NULL;
+    }
 
     // Displaying the window
     ShowWindow(hwnd, SW_MAXIMIZE);
