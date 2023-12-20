@@ -14,5 +14,6 @@ typedef struct PanelNode {
 void AddPanelToList(HWND hwnd, Panel *panel);
 Panel *FindPanelInList(HWND hwnd);
 void RemovePanelFromList(HWND hwnd);
+void RemoveAllPanelsFromList();
 
 #endif // HWNDMAP_H

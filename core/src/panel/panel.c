@@ -6,10 +6,21 @@
 #define MINIMIZE_BUTTON 1001
 #define MIN_PANEL_SIZE 30  // Min size of the panel (width or height depending on the side)
 #define PANEL_BORDER 10  // Width of the border used for resizing
+#define PANEL_HEADER_HEIGHT 25  // Height of the header of the panel
+
+#define PANEL_TITLE_TEXT_OFFSET_X 10 // Offset of the title text from the left
+#define PANEL_TITLE_TEXT_OFFSET_Y 4 // Offset of the title text from the top
+
+#define PANEL_BACKGROUND_COLOR RGB(34, 34, 34)
+#define PANEL_TITLE_TEXT_COLOR RGB(230, 230, 230)
+#define PANEL_HEADER_HOVERING_COLOR RGB(37, 37, 37) // TODO THIS COULD BE TEMP, I DON'T KNOW THE FINAL DESIGN
+
+HBRUSH brushBackground;
+HBRUSH brushHeaderHovering;
 
 wchar_t* panelClassName = L"KCustomPanelClass";
 
-void InitPanel(Panel *panel, HWND hwndParent, bool isLeftAligned);
+void InitPanel(Panel *panel, HWND hwndParent, int sideAsigned);
 LRESULT CALLBACK PanelProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
 
 void RegisterPanelClass(HINSTANCE hInstance) {
@@ -30,28 +41,38 @@ void RegisterPanelClass(HINSTANCE hInstance) {
     if (!RegisterClassExW(&wc)) {
         MessageBox(NULL, "Panel Class Registration Failed!", "Error!", MB_ICONEXCLAMATION | MB_OK);
     }
+
+    brushBackground = CreateSolidBrush(PANEL_BACKGROUND_COLOR);
+    brushHeaderHovering = CreateSolidBrush(PANEL_HEADER_HOVERING_COLOR);
 }
 
-Panel* CreateNewPanel(HWND hwndParent, bool isLeftAligned) {
+Panel* CreateNewPanel(char* name, HWND hwndParent, int sideAsigned) {
     Panel* newPanel = (Panel*)malloc(sizeof(Panel));
     if (newPanel == NULL) {
         return NULL;
     }
 
-    InitPanel(newPanel, hwndParent, isLeftAligned);
+    // Allocate memory for the name
+    newPanel->name = strdup(name); // strdup reserves memory for the string and copies it
+    if (newPanel->name == NULL) {
+        free(newPanel);
+        return NULL;
+    }
 
+    InitPanel(newPanel, hwndParent, sideAsigned);
     AddPanelToList(newPanel->hwnd, newPanel);
 
     return newPanel;
 }
 
 // Initialize the panel with specified dimensions and position
-void InitPanel(Panel *panel, HWND hwndParent, bool isLeftAligned) {
+void InitPanel(Panel *panel, HWND hwndParent, int sideAsigned) {
     int defaultWidth = 200;
 
-    panel->isLeftAligned = true;
+    panel->sideAsigned = true;
     panel->resizing = false;
-    if (isLeftAligned) {
+    panel->hovering = false;
+    if (sideAsigned == LEFT_PANEL) {
         panel->x = 0;
         panel->y = 0;
         panel->height = GetSystemMetrics(SM_CYSCREEN);
@@ -63,7 +84,6 @@ void InitPanel(Panel *panel, HWND hwndParent, bool isLeftAligned) {
         panel->width = defaultWidth;
     }
 
-    panel->background = CreateSolidBrush(RGB(30, 30, 40));
     panel->hwnd = CreateWindowExW(
         0,
         panelClassName,
@@ -75,6 +95,16 @@ void InitPanel(Panel *panel, HWND hwndParent, bool isLeftAligned) {
         (HINSTANCE)GetWindowLongPtr(hwndParent, GWLP_HINSTANCE),
         NULL
     );
+}
+
+void FreeAllPanels() {
+    if (brushBackground)
+        DeleteObject(brushBackground);
+    
+    if (brushHeaderHovering)
+        DeleteObject(brushHeaderHovering);
+
+    RemoveAllPanelsFromList();
 }
 
 void RemovePanel(Panel *panel) {
@@ -124,7 +154,26 @@ LRESULT CALLBACK PanelProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam) {
                 // Set the new width of the panel
                 panel->width = max(MIN_PANEL_SIZE, pt.x);
                 SetWindowPos(hwnd, NULL, 0, 0, panel->width, panel->height, SWP_NOMOVE | SWP_NOZORDER);
+            } else {
+                if (!panel->hovering) {
+                    // El cursor acaba de entrar en el panel
+                    panel->hovering = TRUE;
+
+                    TRACKMOUSEEVENT tme; // Removed when MOUSELEAVE
+                    tme.cbSize = sizeof(TRACKMOUSEEVENT);
+                    tme.dwFlags = TME_LEAVE;
+                    tme.hwndTrack = hwnd;
+                    TrackMouseEvent(&tme);
+
+                    InvalidateRect(hwnd, NULL, FALSE); // Redibujar para reflejar el estado de hover
+                }
             }
+            break;
+        }
+        case WM_MOUSELEAVE: {
+            // El cursor ha salido del panel
+            panel->hovering = FALSE;
+            InvalidateRect(hwnd, NULL, FALSE); // Redibujar para reflejar el estado no-hover
             break;
         }
         case WM_LBUTTONUP: {
@@ -139,7 +188,28 @@ LRESULT CALLBACK PanelProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam) {
         case WM_PAINT: {
             PAINTSTRUCT ps;
             HDC hdc = BeginPaint(hwnd, &ps);
-            FillRect(hdc, &ps.rcPaint, panel->background);
+
+            if (panel->hovering) {
+                RECT rect = { 0, 0, panel->width, PANEL_HEADER_HEIGHT };
+                GetClientRect(hwnd, &rect);
+                FillRect(hdc, &rect, brushHeaderHovering);
+            } else {
+                FillRect(hdc, &ps.rcPaint, brushBackground);
+            }
+
+            // Draw the title
+            SetTextColor(hdc, PANEL_TITLE_TEXT_COLOR);
+            SetBkMode(hdc, TRANSPARENT);
+
+            int textX = PANEL_TITLE_TEXT_OFFSET_X;
+            int textY = PANEL_TITLE_TEXT_OFFSET_Y;
+
+            // Draw the text
+            TextOut(hdc, textX, textY, panel->name, strlen(panel->name));
+
+            // Draw body of the panel
+            OffsetRect(&ps.rcPaint, 0, PANEL_HEADER_HEIGHT);
+            FillRect(hdc, &ps.rcPaint, brushBackground);
             EndPaint(hwnd, &ps);
             return 0;
         }

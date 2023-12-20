@@ -28,9 +28,21 @@ void RemovePanelFromList(HWND hwnd) {
         PanelNode *entry = *current;
         if (entry->hwnd == hwnd) {
             *current = entry->next;
+            free(entry->panel->name);
             free(entry);
             return;
         }
         current = &entry->next;
     }
+}
+
+void RemoveAllPanelsFromList() {
+    PanelNode *current = panelList;
+    while (current) {
+        PanelNode *entry = current;
+        current = entry->next;
+        free(entry->panel->name);
+        free(entry);
+    }
+    panelList = NULL;
 }

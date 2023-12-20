@@ -9,6 +9,8 @@
 
 #include <time.h>
 
+#define BACKGROUND_COLOR RGB(47, 47, 47)
+
 Panel* mainPanel;
 HBRUSH brush_background;
 
@@ -44,9 +46,7 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam) {
             if (brush_background) {
                 DeleteObject(brush_background);
             }
-            if (mainPanel != NULL) {
-                RemovePanel(mainPanel);
-            }
+            FreeAllPanels();
             return 0;
         }
         case WM_PAINT: {
@@ -54,21 +54,19 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam) {
             HDC hdc = BeginPaint(hwnd, &ps);
 
             RECT rect;
-            GetClientRect(hwnd, &rect);  // Obtén las dimensiones de la ventana completa
+            GetClientRect(hwnd, &rect);
 
-            // Si tienes los datos del panel, excluye el área del panel
             if (mainPanel) {
                 ExcludeClipRect(hdc, mainPanel->x, mainPanel->y, mainPanel->x + mainPanel->width, mainPanel->y + mainPanel->height);
             }
 
-            // Ahora pinta solo el área que no está cubierta por el panel
             FillRect(hdc, &rect, brush_background);
 
             EndPaint(hwnd, &ps);
             return 0;
         }
         case WM_ERASEBKGND:
-            return (LRESULT)1; // Indica que el fondo se ha manejado, pero no dibujes nada
+            return (LRESULT)1;
     }
     return DefWindowProcW(hwnd, msg, wParam, lParam);
 }
@@ -127,7 +125,7 @@ HWND InitWindow(HINSTANCE hInstance, int nCmdShow) {
     RegisterPanelClass(hInstance);
 
     // Panel creation and initialization
-    mainPanel = CreateNewPanel(hwnd, true);
+    mainPanel = CreateNewPanel("Inspector", hwnd, LEFT_PANEL);
     if (mainPanel == NULL) {
         perror("Error creating main panel");
         return NULL;
