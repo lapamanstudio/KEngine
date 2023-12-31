@@ -125,7 +125,7 @@ HWND InitWindow(HINSTANCE hInstance, int nCmdShow) {
     RegisterPanelClass(hInstance);
 
     // Panel creation and initialization
-    mainPanel = CreateNewPanel("Inspector", hwnd, LEFT_PANEL);
+    mainPanel = CreateNewPanel("Tree View Inspector", hwnd, LEFT_PANEL);
     if (mainPanel == NULL) {
         perror("Error creating main panel");
         return NULL;

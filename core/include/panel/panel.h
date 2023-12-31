@@ -16,8 +16,12 @@ typedef struct {
     HWND hwnd;          // Handle of the panel
     int x, y;           // Position 
     int width, height;  // Dimensions
-    int sideAsigned;    // 0 = left, 1 = right, 2 = top, 3 = bottom
+    int sideAssigned;    // 0 = left, 1 = right, 2 = top, 3 = bottom
     bool resizable;
+
+    // Button
+    HWND minimizeButton;
+    bool hoveringMinimizeButton;
 
     // Panel state
     bool resizing;
