@@ -3,38 +3,20 @@
 #include <dwmapi.h>
 
 #include "window/window.h"
+#include "panel/panel.h"
+#include "hwndmap/hwndmap.h"
 #include "config.h"
 
-#include "panel/panel.h"
 
 #include <time.h>
 
 #define BACKGROUND_COLOR RGB(47, 47, 47)
 
-Panel* mainPanel;
+Panel* treeInspector;
+Panel* projectFiles;
 HBRUSH brush_background;
 
-void ThemeRefresh(HWND hWnd) {
-    DWORD lightMode;
-    DWORD pcbData = sizeof(lightMode);
-
-    if (RegGetValueW(
-            HKEY_CURRENT_USER,
-            L"Software\\Microsoft\\Windows\\CurrentVersion\\Themes\\Personalize",
-            L"AppsUseLightTheme",
-            RRF_RT_REG_DWORD,
-            NULL,
-            &lightMode,
-            &pcbData) == ERROR_SUCCESS)
-    {
-        BOOL DarkMode = !lightMode;
-
-        /* `20 == DWMWA_USE_IMMERSIVE_DARK_MODE` in Windows 11 SDK.
-         * This value was undocumented for Windows 10 versions 2004 and later,
-         * supported for Windows 11 Build 22000 and later. */
-        DwmSetWindowAttribute(hWnd, 20, &DarkMode, sizeof(DarkMode));
-    }
-}
+void ThemeRefresh(HWND hWnd);
 
 LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam) {
     switch (msg) {
@@ -56,8 +38,12 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam) {
             RECT rect;
             GetClientRect(hwnd, &rect);
 
-            if (mainPanel) {
-                ExcludeClipRect(hdc, mainPanel->x, mainPanel->y, mainPanel->x + mainPanel->width, mainPanel->y + mainPanel->height);
+            PanelNode* current = GetPanelList();
+            while (current != NULL) {
+                if (current->panel) {
+                    ExcludeClipRect(hdc, current->panel->x, current->panel->y, current->panel->x + current->panel->width, current->panel->y + current->panel->height);
+                }
+                current = current->next;
             }
 
             FillRect(hdc, &rect, brush_background);
@@ -67,12 +53,16 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam) {
         }
         case WM_ERASEBKGND:
             return (LRESULT)1;
+        case WM_SIZE: {
+            UpdatePanelsPosition(hwnd);
+            break;
+        }
     }
     return DefWindowProcW(hwnd, msg, wParam, lParam);
 }
 
 HWND InitWindow(HINSTANCE hInstance, int nCmdShow) {
-    WNDCLASSW wc;
+    WNDCLASSW wc = {0};
     HWND hwnd;
 
     // Window class registration
@@ -125,9 +115,16 @@ HWND InitWindow(HINSTANCE hInstance, int nCmdShow) {
     RegisterPanelClass(hInstance);
 
     // Panel creation and initialization
-    mainPanel = CreateNewPanel("Tree View Inspector", hwnd, LEFT_PANEL);
-    if (mainPanel == NULL) {
-        perror("Error creating main panel");
+    treeInspector = CreateNewPanel("Tree View Inspector", hwnd, LEFT_PANEL, false);
+    if (treeInspector == NULL) {
+        perror("Error creating tree inspector panel");
+        return NULL;
+    }
+
+    // TODO: Change the project files to the left, this is only for testing
+    projectFiles = CreateNewPanel("Project Files", hwnd, RIGHT_PANEL, false);
+    if (projectFiles == NULL) {
+        perror("Error creating project files panel");
         return NULL;
     }
 
@@ -139,4 +136,26 @@ HWND InitWindow(HINSTANCE hInstance, int nCmdShow) {
     free(windowName);
 
     return hwnd;
+}
+
+void ThemeRefresh(HWND hWnd) {
+    DWORD lightMode;
+    DWORD pcbData = sizeof(lightMode);
+
+    if (RegGetValueW(
+            HKEY_CURRENT_USER,
+            L"Software\\Microsoft\\Windows\\CurrentVersion\\Themes\\Personalize",
+            L"AppsUseLightTheme",
+            RRF_RT_REG_DWORD,
+            NULL,
+            &lightMode,
+            &pcbData) == ERROR_SUCCESS)
+    {
+        BOOL DarkMode = !lightMode;
+
+        /* `20 == DWMWA_USE_IMMERSIVE_DARK_MODE` in Windows 11 SDK.
+         * This value was undocumented for Windows 10 versions 2004 and later,
+         * supported for Windows 11 Build 22000 and later. */
+        DwmSetWindowAttribute(hWnd, 20, &DarkMode, sizeof(DarkMode));
+    }
 }

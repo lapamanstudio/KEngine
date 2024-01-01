@@ -24,13 +24,15 @@ typedef struct {
     bool hoveringMinimizeButton;
 
     // Panel state
+    bool fixed;
     bool resizing;
     bool hovering;
 } Panel;
 
 void RegisterPanelClass(HINSTANCE hInstance);
-Panel* CreateNewPanel(char* name, HWND hwndParent, int sideAsigned);
+Panel* CreateNewPanel(char* name, HWND hwndParent, int sideAsigned, int fixed);
 void RemovePanel(Panel *panel);
 void FreeAllPanels();
+void UpdatePanelsPosition(HWND windowHwnd);
 
 #endif

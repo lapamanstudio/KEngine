@@ -15,5 +15,6 @@ void AddPanelToList(HWND hwnd, Panel *panel);
 Panel *FindPanelInList(HWND hwnd);
 void RemovePanelFromList(HWND hwnd);
 void RemoveAllPanelsFromList();
+PanelNode* GetPanelList();
 
 #endif // HWNDMAP_H

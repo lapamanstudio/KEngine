@@ -46,3 +46,7 @@ void RemoveAllPanelsFromList() {
     }
     panelList = NULL;
 }
+
+PanelNode* GetPanelList() {
+    return panelList;
+}
