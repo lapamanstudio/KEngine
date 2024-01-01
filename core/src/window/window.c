@@ -13,7 +13,9 @@
 #define BACKGROUND_COLOR RGB(47, 47, 47)
 
 Panel* treeInspector;
+Panel* objectInspector;
 Panel* projectFiles;
+
 HBRUSH brush_background;
 
 void ThemeRefresh(HWND hWnd);
@@ -121,8 +123,13 @@ HWND InitWindow(HINSTANCE hInstance, int nCmdShow) {
         return NULL;
     }
 
-    // TODO: Change the project files to the left, this is only for testing
-    projectFiles = CreateNewPanel("Project Files", hwnd, RIGHT_PANEL, false);
+    objectInspector = CreateNewPanel("Object Inspector", hwnd, RIGHT_PANEL, false);
+    if (objectInspector == NULL) {
+        perror("Error creating object inspector panel");
+        return NULL;
+    }
+
+    projectFiles = CreateNewPanel("Project Files", hwnd, LEFT_PANEL, false);
     if (projectFiles == NULL) {
         perror("Error creating project files panel");
         return NULL;

@@ -85,6 +85,7 @@ Panel* CreateNewPanel(char* name, HWND hwndParent, int sideAssigned, int fixed) 
 
 // Initialize the panel with specified dimensions and position
 void InitPanel(Panel *panel, HWND hwndParent, int sideAssigned, int fixed) {
+    // TODO: If side assigned matches with another panel, adapt the position and size of both panels
     int defaultWidth = 200;
     panel->sideAssigned = sideAssigned;
     panel->resizing = false;
@@ -488,7 +489,7 @@ LRESULT CALLBACK ButtonProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam) 
             HBITMAP memBitmap = CreateCompatibleBitmap(hdc, rect.right, rect.bottom);
             HBITMAP oldBitmap = SelectObject(memDC, memBitmap);
 
-            SetBkColor(memDC, panel->hovering ? PANEL_HEADER_HOVERING_COLOR : PANEL_BACKGROUND_COLOR); // Or the background color of your window
+            SetBkColor(memDC, panel->hovering ? PANEL_HEADER_HOVERING_COLOR : PANEL_BACKGROUND_COLOR);
             HBRUSH hBrush = CreateSolidBrush(GetBkColor(memDC));
             FillRect(memDC, &rect, hBrush);
             DeleteObject(hBrush);
