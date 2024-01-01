@@ -16,5 +16,7 @@ Panel *FindPanelInList(HWND hwnd);
 void RemovePanelFromList(HWND hwnd);
 void RemoveAllPanelsFromList();
 PanelNode* GetPanelList();
+int GetNumberPanelsInSide(int side);
+void SetWidthToPanelsInSide(int side, int width);
 
 #endif // HWNDMAP_H

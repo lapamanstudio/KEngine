@@ -50,3 +50,25 @@ void RemoveAllPanelsFromList() {
 PanelNode* GetPanelList() {
     return panelList;
 }
+
+int GetNumberPanelsInSide(int side) {
+    PanelNode *current = panelList;
+    int count = 0;
+    while (current) {
+        if (current->panel->sideAssigned == side) {
+            count++;
+        }
+        current = current->next;
+    }
+    return count;
+}
+
+void SetWidthToPanelsInSide(int side, int width) {
+    PanelNode *current = panelList;
+    while (current) {
+        if (current->panel->sideAssigned == side) {
+            current->panel->width = width;
+        }
+        current = current->next;
+    }
+}
