@@ -472,6 +472,7 @@ LRESULT CALLBACK ButtonProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam) 
             break;
         }
         case WM_LBUTTONDOWN: {
+            // TODO: Minimize the panel
             printf("minimized\n");
             break;
         }
