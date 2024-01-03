@@ -2,6 +2,7 @@
 #include <windows.h>
 #include <stdio.h>
 
+#include "panel/panel_util.h"
 #include "panel/panel.h"
 #include "hwndmap/hwndmap.h"
 
@@ -14,7 +15,11 @@
 #define BUTTON_WIDTH 20
 #define BUTTON_HEIGHT 15
 
-#define MIN_PANEL_SIZE 30
+#define WM_MINIMIZE_PANEL WM_USER + 1
+
+#define PANEL_MIN_SIZE 30
+#define PANEL_MIN_SIZE_OFFSET 30
+#define PANEL_DEFAULT_SIZE 200
 #define PANEL_BORDER 10
 #define PANEL_HEADER_HEIGHT 25
 
@@ -35,7 +40,7 @@ HBRUSH brushHeaderHovering;
 wchar_t* panelClassName = L"KCustomPanelClass";
 
 // Function prototypes
-void InitPanel(Panel *panel, HWND hwndParent, int sideAssigned, int fixed);
+void InitPanel(Panel *panel, HWND hwndParent, int sideAssigned, int resizable);
 LRESULT CALLBACK PanelProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
 LRESULT CALLBACK ButtonProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
 
@@ -67,7 +72,7 @@ void RegisterPanelClass(HINSTANCE hInstance) {
 }
 
 // Create and initialize a new panel
-Panel* CreateNewPanel(char* name, HWND hwndParent, int sideAssigned, int fixed) {
+Panel* CreateNewPanel(char* name, HWND hwndParent, int sideAssigned, int resizable) {
     Panel* newPanel = (Panel*)malloc(sizeof(Panel));
     if (!newPanel) return NULL;
 
@@ -77,29 +82,61 @@ Panel* CreateNewPanel(char* name, HWND hwndParent, int sideAssigned, int fixed) 
         return NULL;
     }
 
-    InitPanel(newPanel, hwndParent, sideAssigned, fixed);
+    InitPanel(newPanel, hwndParent, sideAssigned, resizable);
     AddPanelToList(newPanel->hwnd, newPanel);
 
     return newPanel;
 }
 
 // Initialize the panel with specified dimensions and position
-void InitPanel(Panel *panel, HWND hwndParent, int sideAssigned, int fixed) {
-    // TODO: If side assigned matches with another panel, adapt the position and size of both panels
-    int defaultWidth = 200;
+void InitPanel(Panel *panel, HWND hwndParent, int sideAssigned, int resizable) {
+    int defaultSize = PANEL_DEFAULT_SIZE;
     panel->sideAssigned = sideAssigned;
-    panel->resizing = false;
+    panel->resizingHorizontal = false;
+    panel->resizingVertical = false;
     panel->hovering = false;
-    panel->fixed = fixed;
+    panel->resizable = resizable;
     panel->hoveringMinimizeButton = false;
 
-    // Positioning based on the assigned side
-    panel->x = (sideAssigned == LEFT_PANEL) ? 0 : GetSystemMetrics(SM_CXSCREEN) - defaultWidth;
-    panel->y = 0;
-    panel->height = GetSystemMetrics(SM_CYSCREEN);
-    panel->width = defaultWidth;
+    RECT parentRect;
+    GetClientRect(hwndParent, &parentRect);
 
-    // Create panel window
+    int assignedPanels = GetNumberPanelsInSide(sideAssigned) + 1;
+
+    int totalHeight = parentRect.bottom - parentRect.top;
+    int basePanelHeight = totalHeight / assignedPanels;
+    int extraHeight = totalHeight % assignedPanels; // Rest
+
+    PanelNode* current = GetPanelList();
+    int yPos = 0;
+    int panelCount = 0;
+
+    while(current) {
+        if (current->panel && current->panel->sideAssigned == sideAssigned) {
+            panelCount++;
+            int currentPanelHeight = basePanelHeight;
+
+            // Add 1 extra pixel
+            if (panelCount > assignedPanels - extraHeight) {
+                currentPanelHeight++;
+            }
+
+            current->panel->height = currentPanelHeight;
+            current->panel->y = yPos;
+            yPos += currentPanelHeight;
+
+            MoveWindow(current->panel->hwnd, current->panel->x, current->panel->y, current->panel->width, current->panel->height, TRUE);
+        }
+        current = current->next;
+    }
+
+    // Configure the new panel
+    panel->x = (sideAssigned == LEFT_PANEL) ? 0 : GetSystemMetrics(SM_CXSCREEN) - defaultSize;
+    panel->y = yPos;
+    panel->height = basePanelHeight + (panelCount <= extraHeight ? 1 : 0);
+    panel->width = defaultSize;
+
+    // Create the panel
     panel->hwnd = CreateWindowExW(
         0,
         panelClassName,
@@ -112,14 +149,17 @@ void InitPanel(Panel *panel, HWND hwndParent, int sideAssigned, int fixed) {
         NULL
     );
 
-    // Create minimize button
-    panel->minimizeButton = CreateCustomButton(
-        panel->hwnd,
-        (HINSTANCE)GetWindowLongPtr(hwndParent, GWLP_HINSTANCE),
-        panel->width - BUTTON_OFFSET_RIGHT, BUTTON_OFFSET_TOP, BUTTON_WIDTH, BUTTON_HEIGHT,
-        BUTTON_MINIMIZE
-    );
+    // Create the minimize button
+    if (resizable) {
+        panel->minimizeButton = CreateCustomButton(
+            panel->hwnd,
+            (HINSTANCE)GetWindowLongPtr(hwndParent, GWLP_HINSTANCE),
+            panel->width - BUTTON_OFFSET_RIGHT, BUTTON_OFFSET_TOP, BUTTON_WIDTH, BUTTON_HEIGHT,
+            BUTTON_MINIMIZE
+        );
+    }
 }
+
 
 // Custom button creation
 HWND CreateCustomButton(HWND hwndParent, HINSTANCE hInstance, int x, int y, int width, int height, int id) {
@@ -152,38 +192,76 @@ void UpdatePanelsPosition(HWND windowHwnd) {
 
     int screenWidth = rect.right - rect.left;
     int screenHeight = rect.bottom - rect.top;
+    int maxWidth = screenWidth / 3;
 
     while (current) {
         Panel* panel = current->panel;
-        if (panel) { // Asegúrate de que el panel no es NULL
+        if (panel) {
             switch(panel->sideAssigned) {
                 case LEFT_PANEL:
-                    // Los paneles del lado izquierdo pueden permanecer donde están en x=0.
-                    panel->x = 0;
-                    panel->y = 0;
+                case RIGHT_PANEL: {
+                    int totalAvailableHeight = screenHeight;
+                    int fixedHeightTotal = 0;
+                    int numDynamicPanels = 0;
+
+                    // Calculate the total height of the fixed panels and the number of dynamic panels
+                    PanelNode* panelNode = GetPanelList();
+                    while (panelNode) {
+                        Panel* iterPanel = panelNode->panel;
+                        if (iterPanel && iterPanel->sideAssigned == panel->sideAssigned) {
+                            iterPanel->width = min(iterPanel->width, maxWidth);
+                            if (!iterPanel->resizable) {
+                                fixedHeightTotal += iterPanel->height;
+                            } else {
+                                numDynamicPanels++;
+                            }
+                        }
+                        panelNode = panelNode->next;
+                    }
+
+                    // Height available for the dynamic panels
+                    totalAvailableHeight -= fixedHeightTotal;
+                    int baseDynamicPanelHeight = totalAvailableHeight / numDynamicPanels;
+                    int remainingHeight = totalAvailableHeight % numDynamicPanels;
+
+                    // Asign the new position and height to the panels
+                    int yPos = 0;
+                    panelNode = GetPanelList();
+                    while (panelNode) {
+                        Panel* iterPanel = panelNode->panel;
+                        if (iterPanel && iterPanel->sideAssigned == panel->sideAssigned) {
+                            iterPanel->x = (panel->sideAssigned == RIGHT_PANEL) ? screenWidth - iterPanel->width : 0;
+                            iterPanel->y = yPos;
+
+                            if (iterPanel->resizable) {
+                                iterPanel->height = baseDynamicPanelHeight + (remainingHeight > 0 ? 1 : 0);
+                                if (remainingHeight > 0) {
+                                    remainingHeight--;
+                                }
+                            }
+
+                            MoveWindow(iterPanel->hwnd, iterPanel->x, iterPanel->y, iterPanel->width, iterPanel->height, TRUE);
+                            yPos += iterPanel->height;
+                        }
+                        panelNode = panelNode->next;
+                    }
                     break;
-                case RIGHT_PANEL:
-                    // Los paneles del lado derecho deben moverse para mantener su borde alineado con el borde derecho de la pantalla.
-                    panel->x = screenWidth - panel->width;
-                    panel->y = 0;
-                    break;
+                }
                 case TOP_PANEL:
-                    // Los paneles superiores pueden permanecer donde están en y=0.
                     panel->x = 0;
                     panel->y = 0;
                     break;
                 case BOTTOM_PANEL:
-                    // Los paneles inferiores deben moverse para mantener su borde alineado con el borde inferior de la pantalla.
                     panel->x = 0;
                     panel->y = screenHeight - panel->height;
                     break;
             }
-            // Mueve y cambia el tamaño del panel.
             MoveWindow(panel->hwnd, panel->x, panel->y, panel->width, panel->height, TRUE);
         }
-        current = current->next; // Avanza al siguiente nodo
+        current = current->next;
     }
 }
+
 
 // Window procedure for handling panel messages
 LRESULT CALLBACK PanelProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam) {
@@ -200,12 +278,22 @@ LRESULT CALLBACK PanelProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam) {
             GetCursorPos(&pt);
             ScreenToClient(hwnd, &pt);
 
-            if (panel->fixed) break;
+            if (!panel->resizable) break;
+
+            RECT windowRect;
+            GetClientRect(GetParent(panel->hwnd), &windowRect);
+            int screenHeight = windowRect.bottom - windowRect.top;
+
             switch(panel->sideAssigned) {
                 case LEFT_PANEL: {
                     if (pt.x >= panel->width - PANEL_BORDER && pt.x <= panel->width) {
                         SetCursor(LoadCursor(NULL, IDC_SIZEWE));
                         return TRUE;
+                    } else {
+                        if (panel->y + panel->height != screenHeight && pt.y <= panel->height && pt.y >= panel->height - PANEL_BORDER) {
+                            SetCursor(LoadCursor(NULL, IDC_SIZENS));
+                            return TRUE;
+                        }
                     }
                     break;
                 }
@@ -213,6 +301,11 @@ LRESULT CALLBACK PanelProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam) {
                     if (pt.x >= 0 && pt.x <= PANEL_BORDER) {
                         SetCursor(LoadCursor(NULL, IDC_SIZEWE));
                         return TRUE;
+                    } else {
+                        if (panel->y + panel->height != screenHeight && pt.y <= panel->height && pt.y >= panel->height - PANEL_BORDER) {
+                            SetCursor(LoadCursor(NULL, IDC_SIZENS));
+                            return TRUE;
+                        }
                     }
                     break;
                 }
@@ -239,34 +332,48 @@ LRESULT CALLBACK PanelProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam) {
             ScreenToClient(hwnd, &pt);
 
             // Verify that the cursor is in the border
-            if (panel->fixed) break;
+            if (!panel->resizable) break;
+
+            RECT windowRect;
+            GetClientRect(GetParent(panel->hwnd), &windowRect);
+            int screenHeight = windowRect.bottom - windowRect.top;
 
             switch (panel->sideAssigned) {
                 case LEFT_PANEL: {
                     if (pt.x >= panel->width - PANEL_BORDER && pt.x <= panel->width) {
                         SetCapture(hwnd);  // Capture the mouse
-                        panel->resizing = TRUE;  // Mark that the panel is being resized
+                        panel->resizingHorizontal = TRUE;  // Mark that the panel is being resized
+                    } else {
+                        if (panel->y + panel->height != screenHeight - 1 && pt.y <= panel->height && pt.y >= panel->height - PANEL_BORDER) {
+                            SetCapture(hwnd);
+                            panel->resizingVertical = TRUE;
+                        }
                     }
                     break;
                 }
                 case RIGHT_PANEL: {
                     if (pt.x >= 0 && pt.x <= PANEL_BORDER) {
                         SetCapture(hwnd);  // Capture the mouse
-                        panel->resizing = TRUE;  // Mark that the panel is being resized
+                        panel->resizingHorizontal = TRUE;  // Mark that the panel is being resized
+                    } else {
+                        if (panel->y + panel->height != screenHeight - 1 && pt.y <= panel->height && pt.y >= panel->height - PANEL_BORDER) {
+                            SetCapture(hwnd);
+                            panel->resizingVertical = TRUE;
+                        }
                     }
                     break;
                 }
                 case TOP_PANEL: {
                     if (pt.y >= panel->height - PANEL_BORDER && pt.y <= panel->height) {
                         SetCapture(hwnd);  // Capture the mouse
-                        panel->resizing = TRUE;  // Mark that the panel is being resized
+                        panel->resizingHorizontal = TRUE;  // Mark that the panel is being resized
                     }
                     break;
                 }
                 case BOTTOM_PANEL: {
                     if (pt.y >= 0&& pt.y <= PANEL_BORDER) {
                         SetCapture(hwnd);  // Capture the mouse
-                        panel->resizing = TRUE;  // Mark that the panel is being resized
+                        panel->resizingHorizontal = TRUE;  // Mark that the panel is being resized
                     }
                     break;
                 }
@@ -275,43 +382,81 @@ LRESULT CALLBACK PanelProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam) {
             break;
         }
         case WM_MOUSEMOVE: {
-            if (panel->resizing && (wParam & MK_LBUTTON)) {
+            if (panel->resizingVertical && (wParam & MK_LBUTTON)) {
+                POINT pt;
+                GetCursorPos(&pt);
+                ScreenToClient(hwnd, &pt);
+                
+                // La altura nueva no debe ser más grande que la altura actual del panel más la altura del panel de abajo menos la altura mínima del panel de abajo.
+                Panel* belowPanel = GetPanelBelow(panel);
+                if (belowPanel) {
+                    int maxNewHeight = panel->height + belowPanel->height - PANEL_HEADER_HEIGHT;
+                    int newHeight = min(pt.y, maxNewHeight);
+                    
+                    // Asegurarse de que la nueva altura no sea menor que el tamaño mínimo del panel.
+                    newHeight = max(newHeight, PANEL_HEADER_HEIGHT);
+                    
+                    // Ajustar la altura y la posición y del panel de abajo.
+                    int heightDifference = newHeight - panel->height;
+                    belowPanel->height -= heightDifference;
+                    belowPanel->y += heightDifference;
+                    
+                    // Establecer la nueva altura para este panel.
+                    panel->height = newHeight;
+                    
+                    // Actualizar los cambios con DeferWindowPos para minimizar los redibujados y el parpadeo.
+                    HDWP hdwp = BeginDeferWindowPos(GetNumberPanelsInSide(panel->sideAssigned));
+                    hdwp = DeferWindowPos(hdwp, panel->hwnd, NULL, panel->x, panel->y, panel->width, panel->height, SWP_NOZORDER | SWP_NOACTIVATE);
+                    hdwp = DeferWindowPos(hdwp, belowPanel->hwnd, NULL, belowPanel->x, belowPanel->y, belowPanel->width, belowPanel->height, SWP_NOZORDER | SWP_NOACTIVATE);
+                    EndDeferWindowPos(hdwp);
+                }
+                break;
+            } else if (panel->resizingHorizontal && (wParam & MK_LBUTTON)) {
                 POINT pt;
                 GetCursorPos(&pt);
                 ScreenToClient(hwnd, &pt);
 
+                RECT parentRect;
+                GetClientRect(GetParent(hwnd), &parentRect);
+                int maxWidth = (parentRect.right - parentRect.left) / 3;
+
                 switch(panel->sideAssigned) {
                     case LEFT_PANEL: {
-                        // Set the new width of the panel
-                        panel->width = max(MIN_PANEL_SIZE, pt.x);
-                        MoveWindow(hwnd, panel->x, panel->y, panel->width, panel->height, TRUE);
+                        int newWidth = max(PANEL_MIN_SIZE, min(maxWidth, pt.x));
+                        SetWidthToPanelsInSide(LEFT_PANEL, newWidth);
                         break;
                     }
                     case RIGHT_PANEL: {
-                        // Set the new width of the panel
-                        panel->width = max(MIN_PANEL_SIZE, panel->width - pt.x);
-                        RECT rect;
-                        GetClientRect(GetParent(hwnd), &rect);
-                        panel->x = rect.right - rect.left - panel->width;
-                        MoveWindow(hwnd, panel->x, panel->y, panel->width, panel->height, TRUE);
+                        panel->width =  max(PANEL_MIN_SIZE + 3, min(maxWidth, panel->width - pt.x));
+                        panel->x = parentRect.right - parentRect.left - panel->width;
+                        SetWidthToPanelsInSide(RIGHT_PANEL, panel->width);
+                        SetXToPanelsInSide(RIGHT_PANEL, panel->x);
                         break;
                     }
                     case TOP_PANEL: {
-                        // Set the new height of the panel
-                        panel->height = max(MIN_PANEL_SIZE, pt.y);
-                        MoveWindow(hwnd, panel->x, panel->y, panel->width, panel->height, TRUE);
+                        panel->height = max(PANEL_MIN_SIZE, pt.y);
                         break;
                     }
                     case BOTTOM_PANEL: {
-                        // Set the new height of the panel
-                        panel->height = max(MIN_PANEL_SIZE, panel->height - pt.y);
+                        panel->height = max(PANEL_MIN_SIZE, panel->height - pt.y);
                         RECT rect;
                         GetClientRect(GetParent(hwnd), &rect);
                         panel->y = rect.bottom - rect.top - panel->height;
-                        MoveWindow(hwnd, panel->x, panel->y, panel->width, panel->height, TRUE);
                         break;
                     }
                 }
+
+                HDWP hdwp = BeginDeferWindowPos(GetNumberPanelsInSide(panel->sideAssigned));
+
+                PanelNode* current = GetPanelList();
+                while (current) {
+                    if (current->panel && current->panel->sideAssigned == panel->sideAssigned) {
+                        hdwp = DeferWindowPos(hdwp, current->panel->hwnd, NULL, current->panel->x, current->panel->y, current->panel->width, current->panel->height, SWP_NOZORDER | SWP_NOACTIVATE);
+                    }
+                    current = current->next;
+                }
+
+                EndDeferWindowPos(hdwp);
             } else {
                 if (!panel->hovering) {
                     // Cursor is hovering the panel
@@ -344,9 +489,10 @@ LRESULT CALLBACK PanelProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam) {
             break;
         }
         case WM_LBUTTONUP: {
-            if (panel->resizing) {
+            if (panel->resizingHorizontal || panel->resizingVertical) {
                 ReleaseCapture();  // Release the mouse
-                panel->resizing = FALSE;  // Mark that the panel is not being resized
+                panel->resizingVertical = FALSE;  // Mark that the panel is not being resized
+                panel->resizingHorizontal = FALSE;  // Mark that the panel is not being resized
 
                 RECT rect = {0, 0, panel->width, PANEL_HEADER_HEIGHT};
                 InvalidateRect(hwnd, &rect, FALSE);
@@ -379,7 +525,7 @@ LRESULT CALLBACK PanelProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam) {
             SetTextColor(memDC, PANEL_TITLE_TEXT_COLOR);
             SetBkMode(memDC, TRANSPARENT);
             RECT textRect = {PANEL_TITLE_TEXT_OFFSET_X, PANEL_TITLE_TEXT_OFFSET_Y, rect.right - BUTTON_WIDTH - PANEL_TITLE_TEXT_OFFSET_BUTTON, PANEL_HEADER_HEIGHT};
-            DrawText(memDC, panel->name, -1, &textRect, DT_LEFT | DT_END_ELLIPSIS);
+            DrawText(memDC, panel->name, -1, &textRect, DT_LEFT);
 
             // Borders
             HPEN hPen = CreatePen(PS_SOLID, 2, PANELS_BORDER_LINE_COLOR);
@@ -398,8 +544,8 @@ LRESULT CALLBACK PanelProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam) {
                 case RIGHT_PANEL:
                     MoveToEx(memDC, 0, 0, NULL);
                     LineTo(memDC, 0, panel->height);
-                    MoveToEx(memDC, 0, panel->height - 1, NULL);
-                    LineTo(memDC, panel->width, panel->height - 1);
+                    MoveToEx(memDC, 0, panel->height, NULL);
+                    LineTo(memDC, panel->width, panel->height);
                     break;
                 case BOTTOM_PANEL:
                     MoveToEx(memDC, 0, 0, NULL);
@@ -422,12 +568,12 @@ LRESULT CALLBACK PanelProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam) {
         }
         case WM_SIZE: {
             if (panel) {
-                panel->height = GetSystemMetrics(SM_CYSCREEN);
                 int newWidth = LOWORD(lParam); // New width of the panel
 
                 RECT oldButtonRect;
                 GetClientRect(panel->minimizeButton, &oldButtonRect);
                 MapWindowPoints(panel->minimizeButton, hwnd, (LPPOINT)&oldButtonRect, 2);
+                InvalidateRect(panel->hwnd, NULL, TRUE); // TRUE = Erase background
 
                 int buttonPosX = newWidth - BUTTON_OFFSET_RIGHT;
                 MoveWindow(panel->minimizeButton, buttonPosX, BUTTON_OFFSET_TOP, BUTTON_WIDTH, BUTTON_HEIGHT, TRUE);
@@ -435,9 +581,114 @@ LRESULT CALLBACK PanelProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam) {
             }
             return 0;
         }
-        case WM_COMMAND: {
-            if (LOWORD(wParam) == BUTTON_MINIMIZE) {
-                printf("Minimize button pressed\n");
+        case WM_MINIMIZE_PANEL: {
+            switch (panel->sideAssigned) {
+                case LEFT_PANEL:
+                case RIGHT_PANEL: {
+                    // Check if there are more panels in the same side and if they are minimized reduce the width of the panel
+                    // otherwises, reduce the height of the panel (depending if is at the top, mid or bottom)
+                    int numPanels = GetNumberPanelsInSide(panel->sideAssigned);
+
+                    // RECT window
+                    RECT windowRect;
+                    GetClientRect(GetParent(hwnd), &windowRect);
+
+                    int screenWidth = windowRect.right - windowRect.left;
+
+                    if (panel->width < PANEL_MIN_SIZE + PANEL_MIN_SIZE_OFFSET) {
+                        if (panel->sideAssigned == RIGHT_PANEL) {
+                            SetXToPanelsInSide(panel->sideAssigned, screenWidth - PANEL_DEFAULT_SIZE);
+                        }
+                        SetWidthToPanelsInSide(panel->sideAssigned, PANEL_DEFAULT_SIZE);
+                        // Force repaint
+                        PanelNode* current = GetPanelList();
+                        while (current) {
+                            if (current->panel && current->panel->sideAssigned == panel->sideAssigned) {
+                                MoveWindow(current->panel->hwnd, current->panel->x, current->panel->y, current->panel->width, current->panel->height, TRUE);
+                            }
+                            current = current->next;
+                        }
+                        break;
+                    }
+
+                    if (numPanels == 1) {
+                        if (panel->width < PANEL_MIN_SIZE + PANEL_MIN_SIZE_OFFSET) {
+                            if (panel->sideAssigned == RIGHT_PANEL) {
+                                panel->x = screenWidth - PANEL_DEFAULT_SIZE - 3;
+                            }
+                            panel->width = PANEL_DEFAULT_SIZE;
+                        } else {
+                            if (panel->sideAssigned == RIGHT_PANEL) {
+                                panel->x = screenWidth - PANEL_MIN_SIZE - 3; // 3 to look better in the right side
+                            }
+                            panel->width = PANEL_MIN_SIZE + (panel->sideAssigned == RIGHT_PANEL ? 3 : 0);
+                        }
+                        MoveWindow(panel->hwnd, panel->x, panel->y, panel->width, panel->height, TRUE);
+                    } else {
+                        int minimizedPanels = 0;
+                        PanelNode* current = GetPanelList();
+                        while (current) {
+                            if (current->panel && current->panel->sideAssigned == panel->sideAssigned && current->panel->height == PANEL_HEADER_HEIGHT) {
+                                minimizedPanels++;
+                            }
+                            current = current->next;
+                        }
+
+                        if (minimizedPanels == numPanels - 1 && panel->height != PANEL_HEADER_HEIGHT) {
+                            // Last to minimize
+                            if (panel->sideAssigned == RIGHT_PANEL) {
+                                // RECT window
+                                RECT windowRect;
+                                GetClientRect(GetParent(hwnd), &windowRect);
+
+                                int screenWidth = windowRect.right - windowRect.left;
+
+                                SetXToPanelsInSide(panel->sideAssigned, screenWidth - PANEL_MIN_SIZE - 3); // 3 to look better in the right side
+                            }
+                            SetWidthToPanelsInSide(panel->sideAssigned, PANEL_MIN_SIZE + 3);
+                            
+                            // Force repaint
+                            PanelNode* current = GetPanelList();
+                            while (current) {
+                                if (current->panel && current->panel->sideAssigned == panel->sideAssigned) {
+                                    MoveWindow(current->panel->hwnd, current->panel->x, current->panel->y, current->panel->width, current->panel->height, TRUE);
+                                }
+                                current = current->next;
+                            }
+                        } else if (panel->height != PANEL_HEADER_HEIGHT) {
+                            // If no panel below, adjust the current panel to minimize it completely
+                            RECT screenRect;
+                            GetClientRect(GetParent(hwnd), &screenRect);
+
+                            Panel* belowPanel = GetPanelBelow(panel);
+                            if (belowPanel) {
+                                belowPanel->y = panel->y + PANEL_HEADER_HEIGHT;
+                                belowPanel->height += panel->height - PANEL_HEADER_HEIGHT;
+                                MoveWindow(belowPanel->hwnd, belowPanel->x, belowPanel->y, belowPanel->width, belowPanel->height, TRUE);
+                            } else {
+                                Panel* abovePanel = GetPanelAbove(panel);
+                                if (abovePanel) {
+                                    abovePanel->height += panel->height - PANEL_HEADER_HEIGHT;
+                                    panel->y = panel->height + panel->y - PANEL_HEADER_HEIGHT;
+                                    MoveWindow(abovePanel->hwnd, abovePanel->x, abovePanel->y, abovePanel->width, abovePanel->height, TRUE);
+                                }
+                            }
+
+                            panel->height = PANEL_HEADER_HEIGHT;
+
+                            MoveWindow(panel->hwnd, panel->x, panel->y, panel->width, panel->height, TRUE);
+                        }
+                        break;
+                    }
+                }
+                case TOP_PANEL: {
+                    panel->resizable = !panel->resizable;
+                    break;
+                }
+                case BOTTOM_PANEL: {
+                    panel->resizable = !panel->resizable;
+                    break;
+                }
             }
             break;
         }
@@ -449,6 +700,10 @@ LRESULT CALLBACK ButtonProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam) 
     Panel* panel = FindPanelInList(GetParent(hwnd));
 
     switch (uMsg) {
+        case WM_SETCURSOR: {
+            SetCursor(LoadCursor(NULL, IDC_HAND));
+            return TRUE;
+        }
         case WM_MOUSEMOVE: {
             if (!panel->hoveringMinimizeButton) {
                 panel->hoveringMinimizeButton = TRUE;
@@ -472,8 +727,7 @@ LRESULT CALLBACK ButtonProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam) 
             break;
         }
         case WM_LBUTTONDOWN: {
-            // TODO: Minimize the panel
-            printf("minimized\n");
+            SendMessage(GetParent(hwnd), WM_MINIMIZE_PANEL, 0, 0);
             break;
         }
         case WM_ERASEBKGND:

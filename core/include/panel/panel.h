@@ -17,20 +17,20 @@ typedef struct {
     int x, y;           // Position 
     int width, height;  // Dimensions
     int sideAssigned;    // 0 = left, 1 = right, 2 = top, 3 = bottom
-    bool resizable;
 
     // Button
     HWND minimizeButton;
     bool hoveringMinimizeButton;
 
     // Panel state
-    bool fixed;
-    bool resizing;
+    bool resizable;
+    bool resizingHorizontal;
+    bool resizingVertical;
     bool hovering;
 } Panel;
 
 void RegisterPanelClass(HINSTANCE hInstance);
-Panel* CreateNewPanel(char* name, HWND hwndParent, int sideAsigned, int fixed);
+Panel* CreateNewPanel(char* name, HWND hwndParent, int sideAsigned, int resizable);
 void RemovePanel(Panel *panel);
 void FreeAllPanels();
 void UpdatePanelsPosition(HWND windowHwnd);

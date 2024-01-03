@@ -72,3 +72,13 @@ void SetWidthToPanelsInSide(int side, int width) {
         current = current->next;
     }
 }
+
+void SetXToPanelsInSide(int side, int x) {
+    PanelNode *current = panelList;
+    while (current) {
+        if (current->panel->sideAssigned == side) {
+            current->panel->x = x;
+        }
+        current = current->next;
+    }
+}

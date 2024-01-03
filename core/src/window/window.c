@@ -33,6 +33,15 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam) {
             FreeAllPanels();
             return 0;
         }
+        case WM_GETMINMAXINFO: {
+            MINMAXINFO* mmi = (MINMAXINFO*)lParam;
+
+            // Minimum size
+            mmi->ptMinTrackSize.x = 640;
+            mmi->ptMinTrackSize.y = 480;
+
+            return 0;
+        }
         case WM_PAINT: {
             PAINTSTRUCT ps;
             HDC hdc = BeginPaint(hwnd, &ps);
@@ -56,7 +65,9 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam) {
         case WM_ERASEBKGND:
             return (LRESULT)1;
         case WM_SIZE: {
-            UpdatePanelsPosition(hwnd);
+            if (wParam != SIZE_MINIMIZED) {
+                UpdatePanelsPosition(hwnd);
+            }
             break;
         }
     }
@@ -117,19 +128,19 @@ HWND InitWindow(HINSTANCE hInstance, int nCmdShow) {
     RegisterPanelClass(hInstance);
 
     // Panel creation and initialization
-    treeInspector = CreateNewPanel("Tree View Inspector", hwnd, LEFT_PANEL, false);
+    treeInspector = CreateNewPanel("Tree View Inspector", hwnd, LEFT_PANEL, true);
     if (treeInspector == NULL) {
         perror("Error creating tree inspector panel");
         return NULL;
     }
 
-    objectInspector = CreateNewPanel("Object Inspector", hwnd, RIGHT_PANEL, false);
+    objectInspector = CreateNewPanel("Object Inspector", hwnd, RIGHT_PANEL, true);
     if (objectInspector == NULL) {
         perror("Error creating object inspector panel");
         return NULL;
     }
 
-    projectFiles = CreateNewPanel("Project Files", hwnd, LEFT_PANEL, false);
+    projectFiles = CreateNewPanel("Project Files", hwnd, LEFT_PANEL, true);
     if (projectFiles == NULL) {
         perror("Error creating project files panel");
         return NULL;

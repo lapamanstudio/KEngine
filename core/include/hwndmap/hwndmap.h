@@ -18,5 +18,6 @@ void RemoveAllPanelsFromList();
 PanelNode* GetPanelList();
 int GetNumberPanelsInSide(int side);
 void SetWidthToPanelsInSide(int side, int width);
+void SetXToPanelsInSide(int side, int x);
 
 #endif // HWNDMAP_H
