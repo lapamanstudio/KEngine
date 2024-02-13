@@ -21,7 +21,6 @@ void initialize_window(GLFWwindow* window) {
     // Setup Platform/Renderer backends
     ImGui_ImplGlfw_InitForOpenGL(static_cast<GLFWwindow*>(window), true);
     ImGui_ImplOpenGL3_Init("#version 330");
-    ImGui::StyleColorsDark();
 
     ImGuiStyle& style = ImGui::GetStyle();
     style.Colors[ImGuiCol_WindowBg] = ImVec4(0.1f, 0.1f, 0.1f, 1.0f);  // Dark background

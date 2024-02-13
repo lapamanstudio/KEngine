@@ -25,7 +25,6 @@ int main(void) {
     glfwMakeContextCurrent(window);
     glfwSwapInterval(1); // Enable vsync
     glfwMaximizeWindow(window);
-    glfwSetFramebufferSizeCallback(window, framebuffer_size_callback);
 
     GLenum err = glewInit();
     if (err != GLEW_OK)
@@ -50,8 +49,4 @@ int main(void) {
     cleanup_window();
     glfwTerminate();
     return 0;
-}
-
-void framebuffer_size_callback(GLFWwindow* window, int width, int height) {
-    glViewport(0, 0, width, height);
 }

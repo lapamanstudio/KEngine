@@ -1,5 +1,5 @@
 CC = g++
-CXXFLAGS = -Wall -g $(shell pkg-config --cflags glfw3) -DIMGUI_ENABLE_DOCKING
+CXXFLAGS = -Wall -g $(shell pkg-config --cflags glfw3)
 LIBS = $(shell pkg-config --libs glfw3) -lopengl32 -lglfw3 -lglew32
 INC_DIRS = $(shell find core/include -type d | sed 's/^/-I/') -Icore/include -I.deps/imgui
 
