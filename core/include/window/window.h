@@ -1,9 +1,17 @@
+// window.h
 #ifndef WINDOW_H
 #define WINDOW_H
 
-#include <windows.h>
+#ifdef __cplusplus
+extern "C" {
+#endif
 
-// Window initialization and creation
-HWND InitWindow(HINSTANCE hInstance, int nCmdShow);
+void initialize_window(GLFWwindow* window);
+void render_window(void);
+void cleanup_window(void);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif // WINDOW_H
