@@ -137,6 +137,14 @@ void WorkSceneRenderer::createShaders() {
 
 void WorkSceneRenderer::render(Camera* camera) {
     glUseProgram(shaderProgram);
+    
+    // Create a model matrix
+    glm::mat4 model = glm::mat4(1.0f);
+    model = glm::translate(model, glm::vec3(0.0f, 0.0f, 0.0f));
+
+    // Pass the model matrix to the shader
+    GLint modelLoc = glGetUniformLocation(shaderProgram, "model");
+    glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(model));
 
     // Projection matrix uniform
     GLint projectionLoc = glGetUniformLocation(shaderProgram, "projection");
