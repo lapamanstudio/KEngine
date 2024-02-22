@@ -24,7 +24,7 @@ void WorkSceneController::update(GLFWwindow* window) {
             double deltaY = mouseY - lastMouseY;
 
             // Adjust the camera based on mouse movement
-            this->MoveCamera(-static_cast<float>(deltaX) * 0.001f, -static_cast<float>(deltaY) * 0.001f);
+            this->MoveCamera(static_cast<float>(deltaX), static_cast<float>(deltaY));
 
             lastMouseX = mouseX;
             lastMouseY = mouseY;
