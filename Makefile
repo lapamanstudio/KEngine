@@ -74,7 +74,7 @@ pre-build:
 		git clone https://github.com/g-truc/glm.git .deps/glm && \
 		echo "Cloned GLM repository to .deps folder."; \
 	fi
-	@if [ ! -d ".deps/glut" ]; then |
+	@if [ ! -d ".deps/glut" ]; then \
 		git clone https://github.com/markkilgard/glut.git .deps/glut && \
 		echo "Cloned GLUT repository to .deps folder."; \
 	fi
