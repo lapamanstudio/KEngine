@@ -10,6 +10,7 @@
 #define P_PROJECT_FILES "Project Files"
 #define P_CONSOLE "Console"
 #define P_OBJECT_INSPECTOR "Object Inspector"
+#define P_WORLD_PROPERTIES "World Properties"
 #define P_WORK_SCENE "Work Scene"
 
 class DockManager {

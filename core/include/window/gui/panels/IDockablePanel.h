@@ -4,7 +4,7 @@
 class IDockablePanel {
 public:
     virtual ~IDockablePanel() {}
-    virtual void Render(int posX, int posY, int width, int height) = 0;
+    virtual void render(int posX, int posY, int width, int height) = 0;
 };
 
 #endif // DOCKABLE_PANEL_H

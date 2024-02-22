@@ -6,9 +6,13 @@ const GLchar* vertexShaderSource = R"(
 #version 330 core
 layout (location = 0) in vec3 aPos;
 out vec4 vertexColor;
+uniform mat4 model;
+uniform mat4 view;
+uniform mat4 projection;
+
 void main() {
-    gl_Position = vec4(aPos.x, aPos.y, aPos.z, 1.0f);
-    vertexColor = vec4(0.5f + 0.5f * aPos.x, 0.5f + 0.5f * aPos.y, 0.5f + 0.5f * aPos.z, 1.0f);
+    gl_Position = model * projection * view * vec4(aPos, 1.0f);
+    vertexColor = vec4(0.5 + 0.5 * aPos.x, 0.5 + 0.5 * aPos.y, 0.5 + 0.5 * aPos.z, 1.0f);
 }
 )";
 
@@ -23,13 +27,46 @@ void main() {
 
 WorkSceneRenderer::WorkSceneRenderer(int posX, int posY, int width, int height) : posX(posX), posY(posY), width(width), height(height), texture_id(0), shaderProgram(0), VAO(0), VBO(0), EBO(0), FBO(0) {
     createShaders();
+    createTriangle();
     setupFramebuffer();
+    this->projection = glm::ortho(0.0f, static_cast<float>(width), 0.0f, static_cast<float>(height), -1.0f, 1.0f);
 }
 
 WorkSceneRenderer::~WorkSceneRenderer() {
     glDeleteVertexArrays(1, &VAO);
     glDeleteBuffers(1, &VBO);
     glDeleteProgram(shaderProgram);
+}
+
+void WorkSceneRenderer::createTriangle() {
+    // Triangle vertices centered around (0, 0) in NDC
+    float vertices[] = {
+        // Positions
+         100.0f,  0.0f, 0.0f, // Top vertex (centered)
+         300.0f, 500.0f, 0.0f, // Bottom Left vertex
+         100.0f, 500.0f, 0.0f  // Bottom Right vertex
+    };
+    unsigned int indices[] = {  // Triangle
+        0, 1, 2  // vertices indices
+    };
+
+    glGenVertexArrays(1, &VAO);
+    glGenBuffers(1, &VBO);
+    glGenBuffers(1, &EBO);
+
+    glBindVertexArray(VAO);
+
+    glBindBuffer(GL_ARRAY_BUFFER, VBO);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
+
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
+    glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);
+
+    // Position attribute
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
+    glEnableVertexAttribArray(0);
+
+    glBindVertexArray(0); // Unbind VAO
 }
 
 void WorkSceneRenderer::setupFramebuffer() {
@@ -57,33 +94,6 @@ void WorkSceneRenderer::setupFramebuffer() {
     glDrawBuffers(texture_id, buffers);
 
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
-
-    float vertices[] = {
-        0.0f, 0.5f, 0.0f,  // top right
-        -0.5f, -0.5f, 0.0f,  // bottom right
-        1.0f, -0.5f, 0.0f,  // bottom left
-    };
-    unsigned int indices[] = {  // note that we start from 0!
-        0, 1, 2,  // first Triangle
-    };
-
-    glGenVertexArrays(1, &VAO);
-
-    glGenBuffers(1, &EBO);
-    glGenBuffers(1, &VBO);
-
-    glBindVertexArray(VAO);
-
-    glBindBuffer(GL_ARRAY_BUFFER, VBO);
-    glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
-
-    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
-    glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);
-
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
-    glEnableVertexAttribArray(0);
-
-    glBindVertexArray(0);
 }
 
 void WorkSceneRenderer::createShaders() {
@@ -125,13 +135,16 @@ void WorkSceneRenderer::createShaders() {
     glDeleteShader(fragmentShader);
 }
 
-
-void WorkSceneRenderer::render() {
+void WorkSceneRenderer::render(Camera* camera) {
     glUseProgram(shaderProgram);
 
-    // For some reason the vertices are inverted when drawn, so to correct it I re-invert the vertices again
-    glLoadIdentity();
-    glScalef(1.0f, -1.0f, 1.0f);
+    // Projection matrix uniform
+    GLint projectionLoc = glGetUniformLocation(shaderProgram, "projection");
+    glUniformMatrix4fv(projectionLoc, 1, GL_FALSE, glm::value_ptr(projection));
+
+    // View matrix uniform
+    GLint viewLoc = glGetUniformLocation(shaderProgram, "view");
+    glUniformMatrix4fv(viewLoc, 1, GL_FALSE, glm::value_ptr(camera->GetViewMatrix()));
 
     glBindFramebuffer(GL_FRAMEBUFFER, FBO);
     glViewport(posX, posY, width, height);
@@ -152,6 +165,8 @@ void WorkSceneRenderer::updateSize(int newX, int newY, int newWidth, int newHeig
     this->posY = newY;
     this->width = newWidth;
     this->height = newHeight;
+
+    this->projection = glm::ortho(0.0f, static_cast<float>(newWidth), 0.0f, static_cast<float>(newHeight), -1.0f, 1.0f);
 
     setupFramebuffer();
 }

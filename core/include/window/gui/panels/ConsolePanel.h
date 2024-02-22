@@ -5,7 +5,7 @@
 
 class ConsolePanel : public IDockablePanel {
 public:
-    void Render(int posX, int posY, int width, int height) override;
+    void render(int posX, int posY, int width, int height) override;
 };
 
 #endif // CONSOLE_PANEL_H

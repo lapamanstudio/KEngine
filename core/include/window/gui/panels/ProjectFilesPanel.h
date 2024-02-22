@@ -5,7 +5,7 @@
 
 class ProjectFilesPanel : public IDockablePanel {
 public:
-    void Render(int posX, int posY, int width, int height) override;
+    void render(int posX, int posY, int width, int height) override;
 };
 
 #endif // PROJECT_FILES_PANEL_H

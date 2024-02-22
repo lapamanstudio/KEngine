@@ -4,7 +4,7 @@
 #include <backends/imgui_impl_opengl3.h>
 #include <GLFW/glfw3.h>
 
-#include "window/window.h"
+#include "window/Window.h"
 #include "window/gui/DockManager.h"
 
 DockManager dockManager;
@@ -61,7 +61,7 @@ void initDockLayout() {
 
     // Split the dockspace to create left, right, and bottom docks, leaving the center as the main area
     auto dock_id_left = ImGui::DockBuilderSplitNode(dockspace_id, ImGuiDir_Left, 0.15f, nullptr, &dockspace_id);
-    auto dock_id_right = ImGui::DockBuilderSplitNode(dockspace_id, ImGuiDir_Right, 0.15f, nullptr, &dockspace_id);
+    auto dock_id_right = ImGui::DockBuilderSplitNode(dockspace_id, ImGuiDir_Right, 0.17f, nullptr, &dockspace_id);
     auto dock_id_down = ImGui::DockBuilderSplitNode(dockspace_id, ImGuiDir_Down, 0.25f, nullptr, &dockspace_id);
 
     // Dock windows into their respective places
@@ -69,9 +69,9 @@ void initDockLayout() {
     ImGui::DockBuilderDockWindow(P_PROJECT_FILES, dock_id_left);
     ImGui::DockBuilderDockWindow(P_CONSOLE, dock_id_down);
     ImGui::DockBuilderDockWindow(P_OBJECT_INSPECTOR, dock_id_right);
+    ImGui::DockBuilderDockWindow(P_WORLD_PROPERTIES, dock_id_right);
 
     // The central area is automatically determined by the docking system
-    // You can dock windows into the central area by not specifying a dock ID
     ImGui::DockBuilderDockWindow(P_WORK_SCENE, dockspace_id);
 
     ImGui::DockBuilderFinish(dockspace_id);
@@ -80,8 +80,8 @@ void initDockLayout() {
 void render_window() {
     ImGuiViewport* viewport = ImGui::GetMainViewport();
     glViewport(0, 0, static_cast<int>(viewport->Size.x), static_cast<int>(viewport->Size.y));
-    glClearColor(0.0f, 0.0f, 0.0f, 1.0f); // RGBA
-    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT); // Also clear depth buffer if needed
+    glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
     ImGui_ImplOpenGL3_NewFrame();
     ImGui_ImplGlfw_NewFrame();

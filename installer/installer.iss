@@ -1,9 +1,10 @@
 [Setup]
 AppName=KEngine
-AppVersion=0.0.1
+AppVersion=0.0.2
 DefaultDirName={pf}\KEngine
 OutputDir=.\out
 OutputBaseFilename=KEngineInstaller
+SetupIconFile=..\icon.ico
 
 [Files]
 Source: "..\out\KEngine.exe"; DestDir: "{app}"

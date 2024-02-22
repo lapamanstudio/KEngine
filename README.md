@@ -13,6 +13,9 @@ KEngine is an open-source 2D game creation engine with a primary focus on provid
 - [ ] **Sprite Editor:**
    - Implement a robust sprite editor that allows users to easily create, modify, and manage sprites for their games. Ensure compatibility with various image formats.
 
+- [ ] **Plugin integration:**
+   - Capacity to create your own plugin and share it with the community.
+
 - [ ] **3D Game Development (Future Goal):**
    - Plan and integrate features for 3D game development. This includes enhancing the engine's capabilities to support three-dimensional graphics, physics, and interactions.
 

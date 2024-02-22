@@ -1,7 +1,8 @@
 // main.c
 #include <GL/glew.h>
-#include <GLFW/glfw3.h> // Assuming GLFW for window creation
-#include "window/window.h"
+#include <GLFW/glfw3.h>
+#include "window/Window.h"
+#include "window/WindowManager.h"
 
 void framebuffer_size_callback(GLFWwindow* window, int width, int height);
 
@@ -16,6 +17,7 @@ int main(void) {
 
     // Create a windowed mode window and its OpenGL context
     GLFWwindow* window = glfwCreateWindow(640, 480, "KEngine", NULL, NULL);
+    WindowManager::getInstance().setWindow(window);
     if (!window) {
         glfwTerminate();
         return -1;

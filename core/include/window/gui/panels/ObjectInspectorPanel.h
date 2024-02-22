@@ -5,7 +5,7 @@
 
 class ObjectInspectorPanel : public IDockablePanel {
 public:
-    void Render(int posX, int posY, int width, int height) override;
+    void render(int posX, int posY, int width, int height) override;
 };
 
 #endif // OBJECT_INSPECTOR_PANEL_H
