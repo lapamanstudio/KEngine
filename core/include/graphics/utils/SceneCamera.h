@@ -1,14 +1,14 @@
-#ifndef CAMERA_H
-#define CAMERA_H
+#ifndef SCENE_CAMERA_H
+#define SCENE_CAMERA_H
 
 #include <glm/glm.hpp>
 #include <glm/ext/matrix_transform.hpp>
 
 // 2D Camera
-class Camera {
+class SceneCamera {
 public:
-    Camera();
-    ~Camera();
+    SceneCamera();
+    ~SceneCamera();
     
     void SetPosition(const glm::vec2& position);
     void SetRotation(float rotation);
@@ -29,4 +29,4 @@ private:
     float zoom;
 };
 
-#endif // CAMERA_H
+#endif // SCENE_CAMERA_H

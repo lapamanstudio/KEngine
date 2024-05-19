@@ -2,7 +2,8 @@
 #define WORK_SCENE_CONTROLLER_H
 
 #include "window/gui/renderer/WorkSceneRenderer.h"
-#include "graphics/utils/Camera.h"
+#include "graphics/utils/SceneCamera.h"
+#include "graphics/scene/SceneManager.h"
 
 class WorkSceneController {
 public:
@@ -12,10 +13,12 @@ public:
     void update(GLFWwindow* window);
     void render(int x, int y, int w, int h);
     void MoveCamera(float x, float y);
+
     GLuint getTexture();
 private:
-    WorkSceneRenderer* workSceneRenderer;
-    Camera* camera;
+    std::shared_ptr<WorkSceneRenderer> workSceneRenderer;
+    std::shared_ptr<SceneCamera> camera;
+    std::shared_ptr<SceneManager> sceneManager;
 
     // Dragging
     bool isMouseDragging = false;

@@ -1,12 +1,24 @@
 // main.c
 #include <GL/glew.h>
 #include <GLFW/glfw3.h>
+#include <cstdio>
+
+#include "config.h"
 #include "window/Window.h"
 #include "window/WindowManager.h"
+
+void error_callback(int error, const char* description) {
+    fprintf(stderr, "GLFW Error (%d): %s\n", error, description);
+}
 
 void framebuffer_size_callback(GLFWwindow* window, int width, int height);
 
 int main(void) {
+    printf("Running KEngine %ls\n", GAME_ENGINE_VERSION);
+    
+    // Set the GLFW error callback before initialization
+    glfwSetErrorCallback(error_callback);
+    
     // Initialize the library
     if (!glfwInit())
         return -1;
@@ -27,6 +39,10 @@ int main(void) {
     glfwMakeContextCurrent(window);
     glfwSwapInterval(1); // Enable vsync
     glfwMaximizeWindow(window);
+
+#ifdef __APPLE__
+    glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
+#endif
 
     GLenum err = glewInit();
     if (err != GLEW_OK)

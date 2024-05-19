@@ -1,14 +1,15 @@
 #include "window/gui/panels/controller/WorkSceneController.h"
+#include "graphics/scene/objects/Camera.h"
 
 WorkSceneController::WorkSceneController(int x, int y, int w, int h) {
-    workSceneRenderer = new WorkSceneRenderer(0, 0, w, h);
-    camera = new Camera();
+    workSceneRenderer = std::make_shared<WorkSceneRenderer>(0, 0, w, h);
+    camera = std::make_shared<SceneCamera>();
+    sceneManager = std::make_shared<SceneManager>();
+
+    sceneManager->AddObject(std::make_shared<Camera>(0, 0, 200, 100));
 }
 
-WorkSceneController::~WorkSceneController() {
-    delete workSceneRenderer;
-    delete camera;
-}
+WorkSceneController::~WorkSceneController() {}
 
 void WorkSceneController::update(GLFWwindow* window) {
     if (glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_MIDDLE) == GLFW_PRESS) {
@@ -50,7 +51,7 @@ void WorkSceneController::update(GLFWwindow* window) {
 
 void WorkSceneController::render(int x, int y, int w, int h) {
     workSceneRenderer->updateSize(x, y, w, h);
-    workSceneRenderer->render(camera);
+    workSceneRenderer->render(camera.get(), sceneManager.get());
 }
 
 void WorkSceneController::MoveCamera(float x, float y) {

@@ -1,32 +1,37 @@
 #ifndef WORK_SCENE_RENDERER_H
 #define WORK_SCENE_RENDERER_H
 
+#include "graphics/drivers/GLHelper.h"
+#include "graphics/utils/SceneCamera.h"
+#include "graphics/scene/SceneManager.h"
+
 #include <GL/glew.h>
 #include <GLFW/glfw3.h>
 #include <glm/glm.hpp>
-#include <glm/gtc/type_ptr.hpp>
-#include <glm/ext/matrix_clip_space.hpp>
 #include <glm/gtc/matrix_transform.hpp>
-#include "graphics/utils/Camera.h"
+#include <glm/gtc/type_ptr.hpp>
 
 class WorkSceneRenderer {
 public:
     WorkSceneRenderer(int posX, int posY, int width, int height);
     ~WorkSceneRenderer();
 
-    void render(Camera* camera);
-    void updateSize(int posX, int posY, int width, int height);
+    void render(SceneCamera* camera, SceneManager* sceneManager);
+    void updateSize(int newX, int newY, int newWidth, int newHeight);
     GLuint getTexture() const;
 
 private:
-    glm::mat4 projection;
-    int posX, posY, width, height;
-    GLuint texture_id, shaderProgram;
-    GLuint VAO, VBO, EBO, FBO, RBO;  // Include FBO and RBO for framebuffer
-
     void setupFramebuffer();
-    void createTriangle();
-    void createShaders();
+    void batchRender(SceneManager* sceneManager);
+    void clearVertexData();
+
+    std::shared_ptr<GLHelper> shader;
+
+    std::vector<float> vertexData; // Buffer to store vertex data
+
+    int posX, posY, width, height;
+    GLuint texture_id, shaderProgram, VAO, VBO, EBO, FBO;
+    glm::mat4 projection;
 };
 
 #endif // WORK_SCENE_RENDERER_H
