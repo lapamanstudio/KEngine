@@ -4,13 +4,13 @@ OS := $(shell uname)
 # Compiler and flags
 CC = g++
 CXXFLAGS = -Wall -g $(shell pkg-config --cflags glfw3)
-INC_DIRS = $(shell find core/include -type d | sed 's/^/-I/') -Icore/include -I.deps/imgui -I.deps/glm -I.deps/glfw/include -I.deps/glut/include
+INC_DIRS = $(shell find core/include -type d | sed 's/^/-I/') -Icore/include -I.deps/imgui -I.deps/glm -I.deps/glfw/include -I.deps/glut/include -I.deps/freetype/include
 
 # Libraries
 ifeq ($(OS), Linux)
-    LIBS = $(shell pkg-config --libs glfw3 glew) -lGL -lglfw
+    LIBS = $(shell pkg-config --libs glfw3 glew freetype2) -lGL -lglfw
 else
-    LIBS = $(shell pkg-config --libs glfw3) -lopengl32 -lglfw3 -lglew32
+    LIBS = $(shell pkg-config --libs glfw3) -lopengl32 -lglfw3 -lglew32 -lfreetype
 ICON_RES = icon.res
 ICON_RES = icon.res
 
@@ -61,6 +61,11 @@ pre-build:
 		exit 1; \
 	fi
 	@echo "GLFW3 found."
+	@if ! PKG_CONFIG_PATH=$$PKG_CONFIG_PATH pkg-config --exists freetype2; then \
+		echo "Error: freetype2 package not found. Please make sure freetype2 and its development files are installed."; \
+		echo "You can install it with: `pacman -S mingw-w64-x86_64-freetype`"; \
+		exit 1; \
+	fi
 	@if ! command -v g++ >/dev/null; then \
 		if [ -x "/mingw64/bin/g++" ]; then \
 			echo 'You must do: `export PATH=/mingw64/bin:$${PATH}`'; \
@@ -91,6 +96,10 @@ pre-build:
 	@if [ ! -d ".deps/glut" ]; then \
 		git clone https://github.com/markkilgard/glut.git .deps/glut && \
 		echo "Cloned GLUT repository to .deps folder."; \
+	fi
+	@if [ ! -d ".deps/freetype" ]; then \
+		git clone https://gitlab.freedesktop.org/freetype/freetype.git .deps/freetype && \
+		echo "Cloned FreeType repository to .deps folder."; \
 	fi
 	@echo "Dependencies ready."
 
