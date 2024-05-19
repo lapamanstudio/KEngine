@@ -119,7 +119,7 @@ void render_window() {
         window_flags |= ImGuiWindowFlags_NoBackground;
     ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0.0f, 0.0f));
     ImGui::Begin("DockSpace", nullptr, window_flags);
-    ImGui::PopStyleVar(3); // Popping all style vars together
+    ImGui::PopStyleVar(3); // Popping all style vars
 
     // DockSpace
     if (ImGui::GetIO().ConfigFlags & ImGuiConfigFlags_DockingEnable)

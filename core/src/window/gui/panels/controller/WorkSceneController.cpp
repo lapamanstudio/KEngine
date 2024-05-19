@@ -6,7 +6,7 @@ WorkSceneController::WorkSceneController(int x, int y, int w, int h) {
     camera = std::make_shared<SceneCamera>();
     sceneManager = std::make_shared<SceneManager>();
 
-    sceneManager->AddObject(std::make_shared<Camera>(0, 0, 200, 100));
+    sceneManager->AddObject(std::make_shared<Camera>(0, 0, 800, 600));
 }
 
 WorkSceneController::~WorkSceneController() {}

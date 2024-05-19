@@ -19,7 +19,7 @@ public:
 
     virtual void Update(float deltaTime) = 0;
     virtual void Render(GLuint shaderProgram) = 0;
-    virtual void ObjectName() = "GameObject";
+    virtual const char* ObjectName() const = 0;
 
     glm::vec2 GetPosition() const { return position; }
     void SetPosition(const glm::vec2& pos) { position = pos; }

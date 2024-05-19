@@ -22,7 +22,7 @@ public:
         zoom = newZoom;
     }
 
-    void ObjectName() override {
+    const char* ObjectName() const override {
         return "Camera";
     }
 

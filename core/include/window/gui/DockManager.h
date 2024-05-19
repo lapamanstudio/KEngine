@@ -1,7 +1,7 @@
 #ifndef DOCK_MANAGER_H
 #define DOCK_MANAGER_H
 
-#include "IDockablePanel.h" // Make sure to include or declare IDockablePanel
+#include "window/gui/panels/IDockablePanel.h"
 #include <map>
 #include <memory>
 #include <string>
