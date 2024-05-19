@@ -6,9 +6,7 @@ SceneCamera::SceneCamera() {
     zoom = 1.0f;
 }
 
-SceneCamera::~SceneCamera() {
-    
-}
+SceneCamera::~SceneCamera() {}
 
 const glm::vec2& SceneCamera::GetPosition() const {
     return position;
@@ -43,7 +41,7 @@ void SceneCamera::Rotate(float offset) {
 }
 
 void SceneCamera::Zoom(float factor) {
-    zoom *= factor;
+    zoom += factor;
 }
 
 glm::mat4 SceneCamera::GetViewMatrix() const {

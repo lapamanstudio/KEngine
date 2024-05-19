@@ -100,7 +100,7 @@ void WorkSceneRenderer::batchRender(SceneManager* sceneManager) {
     glBindVertexArray(VAO);
     
     for (const auto& object : sceneManager->GetObjects()) {
-        object->Render(shader->getProgram()); // Renderizar cada objeto con su propio método
+        object->Render(shader->getProgram());
     }
 
     glBindVertexArray(0);

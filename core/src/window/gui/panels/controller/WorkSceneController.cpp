@@ -11,7 +11,7 @@ WorkSceneController::WorkSceneController(int x, int y, int w, int h) {
 
 WorkSceneController::~WorkSceneController() {}
 
-void WorkSceneController::update(GLFWwindow* window) {
+void WorkSceneController::update(GLFWwindow* window, float mouseWheel) {
     if (glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_MIDDLE) == GLFW_PRESS) {
         if (!isMouseDragging) {
             isMouseDragging = true;
@@ -35,6 +35,15 @@ void WorkSceneController::update(GLFWwindow* window) {
         isMouseDragging = false;
     }
 
+    // Zoom In/Out
+    if (mouseWheel == -1 && camera->GetZoom() > 0.1f) {
+        this->ModifyZoom(mouseWheel / 10);
+    }
+    if (mouseWheel == 1 && camera->GetZoom() < 2) {
+        this->ModifyZoom(mouseWheel / 10);
+    }
+
+    // Keyboard movement
     if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS) {
         this->MoveCamera(-1, 0);
     }
@@ -56,6 +65,11 @@ void WorkSceneController::render(int x, int y, int w, int h) {
 
 void WorkSceneController::MoveCamera(float x, float y) {
     camera->Move(glm::vec2(x, y));
+}
+
+void WorkSceneController::ModifyZoom(float factor) {
+    camera->Zoom(factor);
+    printf("Zoom: %f\n", camera->GetZoom());
 }
 
 GLuint WorkSceneController::getTexture() {

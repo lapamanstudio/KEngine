@@ -10,9 +10,10 @@ public:
     WorkSceneController(int x, int y, int w, int h);
     ~WorkSceneController();
 
-    void update(GLFWwindow* window);
+    void update(GLFWwindow* window, float mouseWheel);
     void render(int x, int y, int w, int h);
     void MoveCamera(float x, float y);
+    void ModifyZoom(float zoom);
 
     GLuint getTexture();
 private:
