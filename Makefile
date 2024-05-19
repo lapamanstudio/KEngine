@@ -1,12 +1,26 @@
+# Detect the OS
+OS := $(shell uname)
+
+# Compiler and flags
 CC = g++
 CXXFLAGS = -Wall -g $(shell pkg-config --cflags glfw3)
-LIBS = $(shell pkg-config --libs glfw3) -lopengl32 -lglfw3 -lglew32
 INC_DIRS = $(shell find core/include -type d | sed 's/^/-I/') -Icore/include -I.deps/imgui -I.deps/glm -I.deps/glfw/include -I.deps/glut/include
+
+# Libraries
+ifeq ($(OS), Linux)
+    LIBS = $(shell pkg-config --libs glfw3 glew) -lGL -lglfw
+else
+    LIBS = $(shell pkg-config --libs glfw3) -lopengl32 -lglfw3 -lglew32
+ICON_RES = icon.res
 ICON_RES = icon.res
 
 # Innosetup compiler
-INNO_SETUP_COMPILER = installer/ISCC.exe
-INNO_SETUP_SCRIPT = installer/installer.iss
+    ICON_RES = icon.res
+
+# Innosetup compiler
+    INNO_SETUP_COMPILER = installer/ISCC.exe
+    INNO_SETUP_SCRIPT = installer/installer.iss
+endif
 
 OUT_DIR = out
 
@@ -27,10 +41,10 @@ OBJS := $(SRCS:%.cpp=$(OUT_DIR)/%.o)
 OBJS := $(OBJS:%.c=$(OUT_DIR)/%.o)
 
 # Create necessary directories from object file paths
-DIRS := $(dir $(OBJS))
+DIRS := $(sort $(dir $(OBJS)))
 
 # Rule to make directories
-$(foreach dir,$(DIRS),$(shell mkdir -p $(dir)))
+$(shell mkdir -p $(DIRS))
 
 # Default target
 all: $(OUT_DIR)/KEngine
@@ -81,11 +95,19 @@ pre-build:
 	@echo "Dependencies ready."
 
 installer: all
+ifeq ($(OS), Linux)
+	@echo "Installer not supported on Linux."
+else
 	$(INNO_SETUP_COMPILER) $(INNO_SETUP_SCRIPT)
+endif
 
 # Link the application
 $(OUT_DIR)/KEngine: $(OBJS)
+ifeq ($(OS), Linux)
+	$(CC) $^ $(LIBS) -o $@
+else
 	$(CC) $^ $(LIBS) -o $@ $(ICON_RES)
+endif
 
 # Compilation rules for source files
 $(OUT_DIR)/%.o: %.cpp
@@ -112,4 +134,16 @@ tests: test/opengl/grid/main
 test/opengl/grid/main: test/opengl/grid/main.cpp
 	$(CC) $(CXXFLAGS) $(INC_DIRS) $< -o $@ $(LIBS)
 
-.PHONY: all clean tests
+# Run target
+run: $(OUT_DIR)/KEngine
+	./$(OUT_DIR)/KEngine
+
+# Debug target
+debug: $(OUT_DIR)/KEngine
+	@if ! command -v gdb >/dev/null; then \
+		echo "Error: gdb not found. Please make sure gdb is installed and in your PATH."; \
+		exit 1; \
+	fi
+	gdb ./$(OUT_DIR)/KEngine
+
+.PHONY: all clean tests run debug
