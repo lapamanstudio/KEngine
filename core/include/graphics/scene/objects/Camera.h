@@ -11,7 +11,7 @@ public:
     Camera(float x, float y, float width, float height, float zoom = 1.0f)
         : GameObject(x, y, width, height), zoom(zoom) {}
 
-    void Update(float deltaTime) override;
+    void Update(float deltaTime) override {};
     void Render(GLuint shaderProgram) override;
 
     void Move(const glm::vec2& delta) {
@@ -22,7 +22,7 @@ public:
         zoom = newZoom;
     }
 
-    const char* ObjectName() const override {
+    const char* GetObjectName() const override {
         return "Camera";
     }
 

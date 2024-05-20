@@ -22,7 +22,7 @@ public:
 
 private:
     void setupFramebuffer();
-    void batchRender(SceneManager* sceneManager);
+    void batchRender(SceneCamera* camera, SceneManager* sceneManager);
     void clearVertexData();
 
     std::shared_ptr<GLHelper> shader;

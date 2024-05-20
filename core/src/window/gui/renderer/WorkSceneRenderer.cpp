@@ -1,36 +1,13 @@
 #include "window/gui/renderer/WorkSceneRenderer.h"
 #include "graphics/drivers/GLHelper.h"
+#include "graphics/drivers/ShaderHelper.h"
 
 #include <cstdio>
-
-// Vertex Shader source code
-const GLchar* vertexShaderSource = R"(
-#version 330 core
-layout (location = 0) in vec3 aPos;
-uniform mat4 model;
-uniform mat4 view;
-uniform mat4 projection;
-
-void main() {
-    gl_Position = projection * view * model * vec4(aPos, 1.0f);
-}
-)";
-
-// Fragment Shader source code
-const GLchar* fragmentShaderSource = R"(
-#version 330 core
-out vec4 FragColor;
-uniform vec4 vertexColor;
-
-void main() {
-    FragColor = vertexColor;
-}
-)";
 
 WorkSceneRenderer::WorkSceneRenderer(int posX, int posY, int width, int height) 
     : posX(posX), posY(posY), width(width), height(height), texture_id(0), shaderProgram(0), VAO(0), VBO(0), EBO(0), FBO(0) {
 
-    shader = std::make_shared<GLHelper>(vertexShaderSource, fragmentShaderSource);
+    shader = std::make_shared<GLHelper>(vertexShaderSource, fragmentShaderSource, textShaderSource, textFragmentShader);
 
     glGenVertexArrays(1, &VAO);
     glGenBuffers(1, &VBO);
@@ -83,14 +60,14 @@ void WorkSceneRenderer::render(SceneCamera* camera, SceneManager* sceneManager) 
     glViewport(posX, posY, width, height);
     glClear(GL_COLOR_BUFFER_BIT);
 
-    batchRender(sceneManager);
+    batchRender(camera, sceneManager);
 
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
     GLHelper::unuseShader();
 }
 
-void WorkSceneRenderer::batchRender(SceneManager* sceneManager) {
+void WorkSceneRenderer::batchRender(SceneCamera* camera, SceneManager* sceneManager) {
     clearVertexData();
 
     // Get vertex data from all objects in the scene
@@ -100,6 +77,13 @@ void WorkSceneRenderer::batchRender(SceneManager* sceneManager) {
     glBindVertexArray(VAO);
     
     for (const auto& object : sceneManager->GetObjects()) {
+        GLHelper::useShader(shader->getTextProgram());
+        GLHelper::setModelMatrix(glm::mat4(1.0f));
+        GLHelper::setProjectionMatrix(projection);
+        GLHelper::setViewMatrix(camera->GetViewMatrix());
+        shader->renderText("Camera", -100.0f, 100.0f, 1.0f, glm::vec3(1.0f, 1.0f, 1.0f));
+        GLHelper::unuseShader();
+
         object->Render(shader->getProgram());
     }
 
@@ -120,9 +104,17 @@ void WorkSceneRenderer::updateSize(int newX, int newY, int newWidth, int newHeig
     width = newWidth;
     height = newHeight;
 
-    projection = glm::ortho(-static_cast<float>(newWidth) / 2.0f, static_cast<float>(newWidth) / 2.0f, 
-                            -static_cast<float>(newHeight) / 2.0f, static_cast<float>(newHeight) / 2.0f, 
-                            -1.0f, 1.0f);
+    float offsetX = 100.0f;
+    float offsetY = 100.0f;
+
+    projection = glm::ortho(
+        -static_cast<float>(newWidth) / 2.0f + offsetX, 
+        static_cast<float>(newWidth) / 2.0f + offsetX, 
+        -static_cast<float>(newHeight) / 2.0f + offsetY, 
+        static_cast<float>(newHeight) / 2.0f + offsetY, 
+        -1.0f, 
+        1.0f
+    );
 
     setupFramebuffer();
 }

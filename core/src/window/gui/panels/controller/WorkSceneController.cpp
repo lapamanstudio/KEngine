@@ -69,7 +69,6 @@ void WorkSceneController::MoveCamera(float x, float y) {
 
 void WorkSceneController::ModifyZoom(float factor) {
     camera->Zoom(factor);
-    printf("Zoom: %f\n", camera->GetZoom());
 }
 
 GLuint WorkSceneController::getTexture() {
