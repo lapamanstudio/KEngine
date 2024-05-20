@@ -40,10 +40,10 @@ private:
     GLuint createShaderProgram(const char* vertexShaderSource, const char* fragmentShaderSource);
 
     struct Character {
-        GLuint TextureID;  // ID manejado de la textura del glifo
-        glm::ivec2 Size;   // Tamaño del glifo
-        glm::ivec2 Bearing; // Offset desde la línea base hasta la parte superior/izquierda del glifo
-        GLuint Advance;    // Offset hacia el siguiente glifo
+        GLuint TextureID;  // ID
+        glm::ivec2 Size;   // Size
+        glm::ivec2 Bearing; // Offset from baseline to left/top of glyph
+        GLuint Advance;    // Offset to advance to next character
     };
 
     std::map<GLchar, Character> Characters;
