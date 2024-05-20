@@ -14,8 +14,6 @@ public:
     GLHelper(const char* vertexPath, const char* fragmentPath, const char* textVertexPath, const char* textFragmentPath);
     ~GLHelper();
 
-    void use();
-    void unuse();
     GLuint getProgram() const;
     GLuint getTextProgram() const;
 
