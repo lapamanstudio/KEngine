@@ -58,7 +58,7 @@ void WorkSceneController::update(GLFWwindow* window, float mouseWheel) {
             // Adjust the camera position to maintain the zoom focal point
             glm::vec2 newCameraPos = glm::vec2(
                 cameraPos.x + (mousePosNormalize.x * zoomFactor * cameraPos.x),
-                cameraPos.y + (mousePosNormalize.y * zoomFactor * cameraPos.y)
+                cameraPos.y - (mousePosNormalize.y * zoomFactor * cameraPos.y)
             );
 
             // Update camera zoom
