@@ -4,8 +4,8 @@
 
 #include <cstdio>
 
-WorkSceneRenderer::WorkSceneRenderer(int posX, int posY, int width, int height) 
-    : posX(posX), posY(posY), width(width), height(height), texture_id(0), shaderProgram(0), VAO(0), VBO(0), EBO(0), FBO(0) {
+WorkSceneRenderer::WorkSceneRenderer(bool* debug, int posX, int posY, int width, int height) 
+    : debug(debug), posX(posX), posY(posY), width(width), height(height), texture_id(0), shaderProgram(0), VAO(0), VBO(0), EBO(0), FBO(0) {
 
     shader = std::make_shared<GLHelper>(vertexShaderSource, fragmentShaderSource, textShaderSource, textFragmentShader);
 
@@ -37,8 +37,8 @@ void WorkSceneRenderer::setupFramebuffer() {
     glGenTextures(1, &texture_id);
     glBindTexture(GL_TEXTURE_2D, texture_id);
     glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, nullptr);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
     glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, texture_id, 0);
@@ -50,6 +50,11 @@ void WorkSceneRenderer::setupFramebuffer() {
 }
 
 void WorkSceneRenderer::render(SceneCamera* camera, SceneManager* sceneManager) {
+    GLHelper::useShader(shader->getTextProgram());
+    GLHelper::setProjectionMatrix(projection);
+    GLHelper::setViewMatrix(camera->GetViewMatrix());
+    GLHelper::unuseShader();
+
     GLHelper::useShader(shader->getProgram());
 
     GLHelper::setModelMatrix(glm::mat4(1.0f));
@@ -77,14 +82,28 @@ void WorkSceneRenderer::batchRender(SceneCamera* camera, SceneManager* sceneMana
     glBindVertexArray(VAO);
     
     for (const auto& object : sceneManager->GetObjects()) {
-        GLHelper::useShader(shader->getTextProgram());
-        GLHelper::setModelMatrix(glm::mat4(1.0f));
-        GLHelper::setProjectionMatrix(projection);
-        GLHelper::setViewMatrix(camera->GetViewMatrix());
-        shader->renderText("Camera", -100.0f, 100.0f, 1.0f, glm::vec3(1.0f, 1.0f, 1.0f));
-        GLHelper::unuseShader();
+        // Render object name
+        shader->renderText("Camera", 0, object->GetSize().g + 5, 0.5f, glm::vec3(1.0f, 1.0f, 1.0f));
 
+        // Render object
         object->Render(shader->getProgram());
+    }
+
+    if (debug && *debug) {
+        float offsetX = width / 2.0f - 100.0f;
+        float offsetY = height / 2.0f - 100.0f;
+        float topLeftX = -offsetX;
+        float topLeftY = height - offsetY;
+
+        GLHelper::useShader(shader->getTextProgram());
+        GLHelper::setProjectionMatrix(projection);
+        GLHelper::setViewMatrix(glm::mat4(1.0f));
+
+        shader->renderText("Position X: " + std::to_string(camera->GetPosition().x), topLeftX, topLeftY - 20, 0.3f, glm::vec3(1.0f, 1.0f, 1.0f));
+        shader->renderText("Position Y: " + std::to_string(camera->GetPosition().y), topLeftX, topLeftY - 40, 0.3f, glm::vec3(1.0f, 1.0f, 1.0f));
+        shader->renderText("Zoom: " + std::to_string(camera->GetZoom()), topLeftX, topLeftY - 60, 0.3f, glm::vec3(1.0f, 1.0f, 1.0f));
+
+        GLHelper::unuseShader();
     }
 
     glBindVertexArray(0);
@@ -104,15 +123,15 @@ void WorkSceneRenderer::updateSize(int newX, int newY, int newWidth, int newHeig
     width = newWidth;
     height = newHeight;
 
-    float offsetX = 100.0f;
-    float offsetY = 100.0f;
+    float offsetX = newWidth / 2.0f - 100.0f;
+    float offsetY = newHeight / 2.0f - 100.0f;
 
     projection = glm::ortho(
-        -static_cast<float>(newWidth) / 2.0f + offsetX, 
-        static_cast<float>(newWidth) / 2.0f + offsetX, 
-        -static_cast<float>(newHeight) / 2.0f + offsetY, 
-        static_cast<float>(newHeight) / 2.0f + offsetY, 
-        -1.0f, 
+        -offsetX,
+        static_cast<float>(newWidth) - offsetX,
+        static_cast<float>(newHeight) - offsetY,
+        -offsetY,
+        -1.0f,
         1.0f
     );
 

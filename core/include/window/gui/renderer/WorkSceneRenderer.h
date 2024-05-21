@@ -13,7 +13,7 @@
 
 class WorkSceneRenderer {
 public:
-    WorkSceneRenderer(int posX, int posY, int width, int height);
+    WorkSceneRenderer(bool* debug, int posX, int posY, int width, int height);
     ~WorkSceneRenderer();
 
     void render(SceneCamera* camera, SceneManager* sceneManager);
@@ -29,6 +29,7 @@ private:
 
     std::vector<float> vertexData; // Buffer to store vertex data
 
+    bool* debug;
     int posX, posY, width, height;
     GLuint texture_id, shaderProgram, VAO, VBO, EBO, FBO;
     glm::mat4 projection;

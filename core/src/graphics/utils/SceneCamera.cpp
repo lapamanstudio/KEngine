@@ -3,7 +3,7 @@
 SceneCamera::SceneCamera() {
     position = { 0.0f, 0.0f };
     rotation = 0.0f;
-    zoom = 1.0f;
+    zoom = 0.7f;
 }
 
 SceneCamera::~SceneCamera() {}
@@ -46,8 +46,7 @@ void SceneCamera::Zoom(float factor) {
 
 glm::mat4 SceneCamera::GetViewMatrix() const {
     glm::mat4 view = glm::mat4(1.0f);
-    view = glm::translate(view, glm::vec3(position, 0.0f));
-    view = glm::rotate(view, rotation, glm::vec3(0.0f, 0.0f, 1.0f));
-    view = glm::scale(view, glm::vec3(zoom, zoom, 1.0f));
+    view = glm::scale(view, glm::vec3(1.0f * zoom, 1.0f * zoom, 1.0f));
+    view = glm::translate(view, -glm::vec3(position, 0.0f));
     return view;
 }

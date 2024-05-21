@@ -1,8 +1,9 @@
 #include "window/gui/panels/controller/WorkSceneController.h"
 #include "graphics/scene/objects/Camera.h"
 
-WorkSceneController::WorkSceneController(int x, int y, int w, int h) {
-    workSceneRenderer = std::make_shared<WorkSceneRenderer>(0, 0, w, h);
+WorkSceneController::WorkSceneController(int x, int y, int w, int h) 
+    : isDebugging(false), isF3Pressed(false), posX(x), posY(y), width(w), height(h) {
+    workSceneRenderer = std::make_shared<WorkSceneRenderer>(&isDebugging, x, y, w, h);
     camera = std::make_shared<SceneCamera>();
     sceneManager = std::make_shared<SceneManager>();
 
@@ -25,7 +26,7 @@ void WorkSceneController::update(GLFWwindow* window, float mouseWheel) {
             double deltaY = mouseY - lastMouseY;
 
             // Adjust the camera based on mouse movement
-            this->MoveCamera(static_cast<float>(deltaX), static_cast<float>(deltaY));
+            this->MoveCamera(static_cast<float>(-deltaX), static_cast<float>(deltaY));
 
             lastMouseX = mouseX;
             lastMouseY = mouseY;
@@ -36,11 +37,36 @@ void WorkSceneController::update(GLFWwindow* window, float mouseWheel) {
     }
 
     // Zoom In/Out
-    if (mouseWheel == -1 && camera->GetZoom() > 0.1f) {
-        this->ModifyZoom(mouseWheel / 10);
-    }
-    if (mouseWheel == 1 && camera->GetZoom() < 2) {
-        this->ModifyZoom(mouseWheel / 10);
+    double mouseX, mouseY;
+    glfwGetCursorPos(window, &mouseX, &mouseY);
+    glm::vec2 mousePos(mouseX - posX, mouseY - posY);
+    
+    if (mouseWheel != 0) {
+        float zoomFactor = mouseWheel / 10.0f;
+        float newZoom = camera->GetZoom() + zoomFactor;
+
+        // Normalize between -1 and 1
+        glm::vec2 mousePosNormalize = glm::vec2(
+            (mousePos.x - width / 2) / (width / 2),
+            (mousePos.y - height / 2) / (height / 2)
+        );
+
+        // Constrain zoom level
+        if (newZoom >= 0.1f && newZoom <= 2.0f) {
+            glm::vec2 cameraPos = camera->GetPosition();
+
+            // Adjust the camera position to maintain the zoom focal point
+            glm::vec2 newCameraPos = glm::vec2(
+                cameraPos.x + (mousePosNormalize.x * zoomFactor * cameraPos.x),
+                cameraPos.y + (mousePosNormalize.y * zoomFactor * cameraPos.y)
+            );
+
+            // Update camera zoom
+            this->ModifyZoom(zoomFactor);
+
+            // Set the new camera position
+            this->camera->SetPosition(newCameraPos);
+        }
     }
 
     // Keyboard movement
@@ -56,10 +82,24 @@ void WorkSceneController::update(GLFWwindow* window, float mouseWheel) {
     if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS) {
         this->MoveCamera(0, -1);
     }
+
+    // Debug key - F3
+    if (glfwGetKey(window, GLFW_KEY_F3) == GLFW_PRESS) {
+        if (!isF3Pressed) {
+            this->isDebugging = !this->isDebugging;
+            isF3Pressed = true;
+        }
+    } else {
+        isF3Pressed = false;
+    }
 }
 
 void WorkSceneController::render(int x, int y, int w, int h) {
-    workSceneRenderer->updateSize(x, y, w, h);
+    workSceneRenderer->updateSize(4, 0, w, h); // PADDING_LEFT_RIGHT / 2, 0
+    posX = x;
+    posY = y;
+    width = w;
+    height = h;
     workSceneRenderer->render(camera.get(), sceneManager.get());
 }
 
@@ -73,4 +113,8 @@ void WorkSceneController::ModifyZoom(float factor) {
 
 GLuint WorkSceneController::getTexture() {
     return workSceneRenderer->getTexture();
+}
+
+bool WorkSceneController::isDebug() const {
+    return isDebugging;
 }

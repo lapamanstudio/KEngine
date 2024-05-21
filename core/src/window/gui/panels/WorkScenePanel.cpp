@@ -18,7 +18,7 @@ void WorkScenePanel::render(int posX, int posY, int width, int height) {
     ImGuiDockNode* node = ImGui::GetCurrentWindow()->DockNode;
 
     if (!workSceneController) {
-        workSceneController = new WorkSceneController(0, 0, width, height);
+        workSceneController = new WorkSceneController(posX, posY, width, height);
     }
 
     int w = width - 12;
@@ -27,10 +27,10 @@ void WorkScenePanel::render(int posX, int posY, int width, int height) {
     ImGuiIO& io = ImGui::GetIO();
     
     // Get if the mouse is inside the panel
-    bool mouseInPanel = io.MousePos.x >= posX && io.MousePos.x <= posX + width && io.MousePos.y >= posY && io.MousePos.y <= posY + height;
+    bool mouseInPanel = io.MousePos.x >= posX - 20 && io.MousePos.x <= posX - 20 + width && io.MousePos.y >= posY && io.MousePos.y <= posY + height;
 
     workSceneController->update(WindowManager::getInstance().getWindow(), mouseInPanel ? ImGui::GetIO().MouseWheel : 0);
-    workSceneController->render(PADDING_LEFT_RIGHT / 2, 0, w, h);
+    workSceneController->render(posX - 20, posY, w, h);
 
     GLuint texID = workSceneController->getTexture();
     ImVec2 imageSize(w, h);

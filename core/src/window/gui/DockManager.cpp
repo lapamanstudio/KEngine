@@ -23,7 +23,8 @@ void DockManager::RenderPanels() {
     for (auto& panel : panels) {
         if (ImGui::Begin(panel.first.c_str())) {
             ImVec2 rect = ImGui::GetWindowSize();
-            ImVec2 pos = ImGui::GetWindowPos();
+            ImVec2 pos = ImGui::GetItemRectMin();
+            
             panel.second->render(pos.x, pos.y, rect.x, rect.y);
         }
         ImGui::End();

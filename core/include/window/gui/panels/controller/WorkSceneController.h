@@ -16,14 +16,25 @@ public:
     void ModifyZoom(float zoom);
 
     GLuint getTexture();
+    bool isDebug() const;
 private:
     std::shared_ptr<WorkSceneRenderer> workSceneRenderer;
     std::shared_ptr<SceneCamera> camera;
     std::shared_ptr<SceneManager> sceneManager;
 
     // Dragging
+    bool isDebugging = false;
     bool isMouseDragging = false;
     double lastMouseX, lastMouseY;
+
+    // Container information
+    int posX;
+    int posY;
+    int width;
+    int height;
+
+    // Keys
+    bool isF3Pressed = false;
 };
 
 #endif // WORK_SCENE_CONTROLLER_H
