@@ -90,8 +90,8 @@ void WorkSceneRenderer::batchRender(SceneCamera* camera, SceneManager* sceneMana
     }
 
     if (debug && *debug) {
-        float offsetX = width / 2.0f - 100.0f;
-        float offsetY = height / 2.0f - 100.0f;
+        float offsetX = width / 2.0f;
+        float offsetY = height / 2.0f;
         float topLeftX = -offsetX;
         float topLeftY = height - offsetY;
 
@@ -123,8 +123,9 @@ void WorkSceneRenderer::updateSize(int newX, int newY, int newWidth, int newHeig
     width = newWidth;
     height = newHeight;
 
-    float offsetX = newWidth / 2.0f - 100.0f;
-    float offsetY = newHeight / 2.0f - 100.0f;
+    // TODO: Remove offset and move the camera when initializing (to look better)
+    float offsetX = newWidth / 2.0f;
+    float offsetY = newHeight / 2.0f;
 
     projection = glm::ortho(
         -offsetX,

@@ -2,14 +2,21 @@
 #include "graphics/scene/objects/Camera.h"
 
 WorkSceneController::WorkSceneController(int x, int y, int w, int h) 
-    : isDebugging(false), isF3Pressed(false), posX(x), posY(y), width(w), height(h) {
-    workSceneRenderer = std::make_shared<WorkSceneRenderer>(&isDebugging, x, y, w, h);
-    camera = std::make_shared<SceneCamera>();
-    sceneManager = std::make_shared<SceneManager>();
-
+    : workSceneRenderer(std::make_shared<WorkSceneRenderer>(&isDebugging, x, y, w, h)),
+      camera(std::make_shared<SceneCamera>()),
+      sceneManager(std::make_shared<SceneManager>()),
+      isDebugging(false),
+      isMouseDragging(false),
+      lastMouseX(0.0),
+      lastMouseY(0.0),
+      posX(x),
+      posY(y),
+      width(w),
+      height(h),
+      isF3Pressed(false) {
     sceneManager->AddObject(std::make_shared<Camera>(0, 0, 800, 600));
+    camera->Move(glm::vec2(100, 100));
 }
-
 WorkSceneController::~WorkSceneController() {}
 
 void WorkSceneController::update(GLFWwindow* window, float mouseWheel) {
@@ -57,8 +64,8 @@ void WorkSceneController::update(GLFWwindow* window, float mouseWheel) {
 
             // Adjust the camera position to maintain the zoom focal point
             glm::vec2 newCameraPos = glm::vec2(
-                cameraPos.x + (mousePosNormalize.x * zoomFactor * cameraPos.x),
-                cameraPos.y - (mousePosNormalize.y * zoomFactor * cameraPos.y)
+                cameraPos.x + (mousePosNormalize.x * zoomFactor * width / 2) * (5 - newZoom),
+                cameraPos.y - (mousePosNormalize.y * zoomFactor * height / 2) * (5 - newZoom)
             );
 
             // Update camera zoom

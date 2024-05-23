@@ -23,8 +23,8 @@ private:
     std::shared_ptr<SceneManager> sceneManager;
 
     // Dragging
-    bool isDebugging = false;
-    bool isMouseDragging = false;
+    bool isDebugging;
+    bool isMouseDragging;
     double lastMouseX, lastMouseY;
 
     // Container information
@@ -34,7 +34,7 @@ private:
     int height;
 
     // Keys
-    bool isF3Pressed = false;
+    bool isF3Pressed;
 };
 
 #endif // WORK_SCENE_CONTROLLER_H
