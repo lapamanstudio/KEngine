@@ -123,7 +123,6 @@ void WorkSceneRenderer::updateSize(int newX, int newY, int newWidth, int newHeig
     width = newWidth;
     height = newHeight;
 
-    // TODO: Remove offset and move the camera when initializing (to look better)
     float offsetX = newWidth / 2.0f;
     float offsetY = newHeight / 2.0f;
 
