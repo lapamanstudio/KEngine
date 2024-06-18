@@ -28,8 +28,17 @@ public:
         return objects;
     }
 
+    void SetActiveObject(std::shared_ptr<GameObject> object) {
+        activeObject = object;
+    }
+
+    std::shared_ptr<GameObject> GetActiveObject() const {
+        return activeObject;
+    }
+
 private:
     std::vector<std::shared_ptr<GameObject>> objects;
+    std::shared_ptr<GameObject> activeObject;
 };
 
 #endif // SCENE_MANAGER_H

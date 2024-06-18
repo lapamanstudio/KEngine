@@ -1,5 +1,6 @@
 #include "graphics/scene/objects/Camera.h"
 #include "graphics/drivers/GLHelper.h"
+#include "graphics/utils/Colors.h"
 
 #include <glm/gtc/type_ptr.hpp>
 
@@ -11,7 +12,7 @@ void Camera::Render(GLuint shaderProgram) {
     model = glm::scale(model, glm::vec3(size, 1.0f));
 
     GLHelper::setModelMatrix(model);
-    GLHelper::setColor4f(1.0f, 1.0f, 1.0f, 1.0f);
+    GLHelper::setColor3f(Colors::White);
 
     glBindVertexArray(VAO);
     glDrawArrays(GL_LINE_LOOP, 0, 4);

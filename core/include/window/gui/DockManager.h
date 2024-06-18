@@ -2,6 +2,8 @@
 #define DOCK_MANAGER_H
 
 #include "window/gui/panels/IDockablePanel.h"
+#include "window/gui/panels/controller/WorkSceneController.h"
+#include "imgui.h"
 #include <map>
 #include <memory>
 #include <string>
@@ -17,9 +19,14 @@ class DockManager {
 private:
     std::map<std::string, std::unique_ptr<IDockablePanel>> panels;
 
+    WorkSceneController* workSceneController = nullptr;
+
 public:
     DockManager();
     void RenderPanels();
+
+    WorkSceneController* getWorkSceneController() const { return workSceneController; }
+    void setWorkSceneController(WorkSceneController* controller) { workSceneController = controller; }
 };
 
 #endif // DOCK_MANAGER_H

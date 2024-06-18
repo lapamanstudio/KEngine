@@ -77,9 +77,21 @@ void GLHelper::setMat4(const std::string& name, const glm::mat4& mat) {
     glUniformMatrix4fv(glGetUniformLocation(currentShaderProgram, name.c_str()), 1, GL_FALSE, glm::value_ptr(mat));
 }
 
+void GLHelper::setColor3f(const glm::vec3& color) {
+    setColor3f(color.r, color.g, color.b);
+}
+
 void GLHelper::setColor3f(GLfloat r, GLfloat g, GLfloat b) {
     GLint colorLoc = glGetUniformLocation(currentShaderProgram, "vertexColor");
     glUniform4f(colorLoc, r, g, b, 1.0f);
+}
+
+void GLHelper::setColor4f(const glm::vec4& color) {
+    setColor4f(color.r, color.g, color.b, color.a);
+}
+
+void GLHelper::setColor4f(const glm::vec3& color, GLfloat a) {
+    setColor4f(color.r, color.g, color.b, a);
 }
 
 void GLHelper::setColor4f(GLfloat r, GLfloat g, GLfloat b, GLfloat a) {
@@ -167,12 +179,31 @@ bool GLHelper::initFreeType() {
     return true;
 }
 
+float GLHelper::getTextHeight(const std::string& text, float scale) {
+    float height = 0.0f;
+    std::string::const_iterator c;
+    for (c = text.begin(); c != text.end(); c++) {
+        Character ch = Characters[*c];
+        height = std::max(height, ch.Size.y * scale);
+    }
+    return height;
+}
+
+float GLHelper::getTextWidth(const std::string& text, float scale) {
+    float width = 0.0f;
+    std::string::const_iterator c;
+    for (c = text.begin(); c != text.end(); c++) {
+        Character ch = Characters[*c];
+        width += (ch.Advance >> 6) * scale;
+    }
+    return width;
+}
+
 void GLHelper::renderText(const std::string& text, float x, float y, float scale, glm::vec3 color) {
     useShader(textShaderProgram);
     // glEnable(GL_CULL_FACE); For some reason this line breaks the text rendering when the orthographic projection is inverted
     glEnable(GL_BLEND);
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-
     glUniform3f(glGetUniformLocation(getCurrentShaderProgram(), "textColor"), color.x, color.y, color.z);
     glActiveTexture(GL_TEXTURE0);
     glBindVertexArray(VAO);
@@ -197,6 +228,8 @@ void GLHelper::renderText(const std::string& text, float x, float y, float scale
         };
 
         glBindTexture(GL_TEXTURE_2D, ch.TextureID);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
         glBindBuffer(GL_ARRAY_BUFFER, VBO);
         glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(vertices), vertices);
         glBindBuffer(GL_ARRAY_BUFFER, 0);

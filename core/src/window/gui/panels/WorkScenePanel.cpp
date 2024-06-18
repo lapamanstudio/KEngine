@@ -11,6 +11,10 @@
 
 ImVec2 padding = ImVec2(PADDING_LEFT_RIGHT, PADDING_TOP_BOTTOM);
 
+static double lastFrameTime = 0.0;
+
+WorkScenePanel::WorkScenePanel(DockManager* dockManager) : dockManager(dockManager) {}
+
 void WorkScenePanel::render(int posX, int posY, int width, int height) {
     if (width - PADDING_LEFT_RIGHT <= 0 || height - PADDING_TOP_BOTTOM <= 0) return;
     ImGui::SetScrollX(0);
@@ -19,6 +23,8 @@ void WorkScenePanel::render(int posX, int posY, int width, int height) {
 
     if (!workSceneController) {
         workSceneController = new WorkSceneController(posX, posY, width, height);
+        dockManager->setWorkSceneController(workSceneController);
+        lastFrameTime = glfwGetTime();
     }
 
     int w = width - 12;
@@ -29,7 +35,12 @@ void WorkScenePanel::render(int posX, int posY, int width, int height) {
     // Get if the mouse is inside the panel
     bool mouseInPanel = io.MousePos.x >= posX - 20 && io.MousePos.x <= posX - 20 + width && io.MousePos.y >= posY && io.MousePos.y <= posY + height;
 
-    workSceneController->update(WindowManager::getInstance().getWindow(), mouseInPanel ? ImGui::GetIO().MouseWheel : 0);
+    // DeltaTime
+    double currentFrameTime = glfwGetTime();
+    float deltaTime = static_cast<float>(currentFrameTime - lastFrameTime);
+    lastFrameTime = currentFrameTime;
+
+    workSceneController->update(WindowManager::getInstance().getWindow(), mouseInPanel ? ImGui::GetIO().MouseWheel : 0, deltaTime);
     workSceneController->render(posX - 20, posY, w, h);
 
     GLuint texID = workSceneController->getTexture();

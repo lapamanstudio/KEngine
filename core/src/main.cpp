@@ -1,17 +1,26 @@
-// main.c
 #include <GL/glew.h>
 #include <GLFW/glfw3.h>
+#include <backends/imgui_impl_glfw.h>
+#include <atomic>
 #include <cstdio>
+#include <chrono>
+#include <thread>
+#include <fstream>
+#include <iostream>
 
 #include "config.h"
 #include "window/Window.h"
 #include "window/WindowManager.h"
+
+std::atomic<bool> needs_render{true};
 
 void error_callback(int error, const char* description) {
     fprintf(stderr, "GLFW Error (%d): %s\n", error, description);
 }
 
 void framebuffer_size_callback(GLFWwindow* window, int width, int height);
+void key_callback(GLFWwindow* window, int key, int scancode, int action, int mods);
+void mouse_button_callback(GLFWwindow* window, int button, int action, int mods);
 
 int main(void) {
     printf("Running KEngine %ls\n", GAME_ENGINE_VERSION);
@@ -51,20 +60,51 @@ int main(void) {
     // Initialize ImGui window
     initialize_window(window);
 
-    // Main loop
+    glfwSetKeyCallback(window, key_callback);
+    glfwSetMouseButtonCallback(window, mouse_button_callback);
+
+    const double frame_time_limit = 1.0 / 144; // 60 FPS
+    auto last_time = std::chrono::high_resolution_clock::now();
+
     while (!glfwWindowShouldClose(window)) {
-        // Render ImGui window
-        render_window();
+        bool render_this_frame = false;
+        auto current_time = std::chrono::high_resolution_clock::now();
+        double elapsed_time = std::chrono::duration<double>(current_time - last_time).count();
 
-        // Swap front and back buffers
-        glfwSwapBuffers(window);
+        if (needs_render.load() || elapsed_time >= frame_time_limit) {
+            render_this_frame = true;
+            last_time = current_time;
+        }
 
-        // Poll for and process events
-        glfwPollEvents();
+        if (render_this_frame) {
+            // Render ImGui window
+            render_window();
+
+            // Swap front and back buffers
+            glfwSwapBuffers(window);
+            
+            needs_render.store(false);
+        }
+
+        if (render_this_frame) {
+            glfwPollEvents();
+        } else {
+            glfwWaitEventsTimeout(frame_time_limit);
+        }
     }
 
     // Cleanup
     cleanup_window();
     glfwTerminate();
     return 0;
+}
+
+void key_callback(GLFWwindow* window, int key, int scancode, int action, int mods) {
+    ImGui_ImplGlfw_KeyCallback(window, key, scancode, action, mods);
+    needs_render.store(true);
+}
+
+void mouse_button_callback(GLFWwindow* window, int button, int action, int mods) {
+    ImGui_ImplGlfw_MouseButtonCallback(window, button, action, mods);
+    needs_render.store(true);
 }

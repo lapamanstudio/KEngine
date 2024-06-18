@@ -18,7 +18,10 @@ public:
     GLuint getTextProgram() const;
 
     static void setMat4(const std::string& name, const glm::mat4& mat);
+    static void setColor3f(const glm::vec3& color);
     static void setColor3f(GLfloat r, GLfloat g, GLfloat b);
+    static void setColor4f(const glm::vec4& color);
+    static void setColor4f(const glm::vec3& color, GLfloat a);
     static void setColor4f(GLfloat r, GLfloat g, GLfloat b, GLfloat a);
     static void setModelMatrix(const glm::mat4& model);
     static void setViewMatrix(const glm::mat4& view);
@@ -28,6 +31,8 @@ public:
     static GLuint getCurrentShaderProgram();
 
     bool initFreeType();
+    float getTextWidth(const std::string& text, float scale);
+    float getTextHeight(const std::string& text, float scale);
     void renderText(const std::string& text, float x, float y, float scale, glm::vec3 color);
 
 private:

@@ -11,19 +11,25 @@ public:
     ~SceneCamera();
     
     void SetPosition(const glm::vec2& position);
-    void SetRotation(float rotation);
     void SetZoom(float zoom);
     
     const glm::vec2& GetPosition() const;
-    float GetRotation() const;
     float GetZoom() const;
     
     void Move(const glm::vec2& offset);
-    void Rotate(float offset);
     void Zoom(float factor);
+
+    glm::mat4 GetProjection();
+    void SetProjection(glm::mat4 projection);
     
     glm::mat4 GetViewMatrix() const;
+    glm::vec2 screenToWorld(const glm::vec2& screenCoords, const glm::vec2& screenSize) const;
+
+    float GetViewWidth() const;
+    float GetViewHeight() const;
 private:
+    glm::mat4 projection;
+
     glm::vec2 position;
     float rotation;
     float zoom;

@@ -11,12 +11,12 @@
 
 DockManager::DockManager() {
     // Initialize panels
-    panels[P_WORK_SCENE] = std::make_unique<WorkScenePanel>();
-    panels[P_TREE_VIEW_INSPECTOR] = std::make_unique<TreeViewPanel>();
-    panels[P_PROJECT_FILES] = std::make_unique<ProjectFilesPanel>();
-    panels[P_CONSOLE] = std::make_unique<ConsolePanel>();
-    panels[P_OBJECT_INSPECTOR] = std::make_unique<ObjectInspectorPanel>();
-    panels[P_WORLD_PROPERTIES] = std::make_unique<WorldPropertiesPanel>();
+    panels[P_WORK_SCENE] = std::make_unique<WorkScenePanel>(this);
+    panels[P_TREE_VIEW_INSPECTOR] = std::make_unique<TreeViewPanel>(this);
+    panels[P_PROJECT_FILES] = std::make_unique<ProjectFilesPanel>(this);
+    panels[P_CONSOLE] = std::make_unique<ConsolePanel>(this);
+    panels[P_OBJECT_INSPECTOR] = std::make_unique<ObjectInspectorPanel>(this);
+    panels[P_WORLD_PROPERTIES] = std::make_unique<WorldPropertiesPanel>(this);
 }
 
 void DockManager::RenderPanels() {

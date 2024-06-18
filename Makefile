@@ -4,16 +4,13 @@ OS := $(shell uname)
 # Compiler and flags
 CC = g++
 CXXFLAGS = -Wall -g $(shell pkg-config --cflags glfw3)
-INC_DIRS = $(shell find core/include -type d | sed 's/^/-I/') -Icore/include -I.deps/imgui -I.deps/glm -I.deps/glfw/include -I.deps/glut/include -I.deps/freetype/include
+INC_DIRS = -Icore/include -I.deps/imgui -I.deps/glm -I.deps/glfw/include -I.deps/glut/include -I.deps/freetype/include
 
 # Libraries
 ifeq ($(OS), Linux)
     LIBS = $(shell pkg-config --libs glfw3 glew freetype2) -lGL -lglfw
 else
     LIBS = $(shell pkg-config --libs glfw3) -lopengl32 -lglfw3 -lglew32 -lfreetype
-ICON_RES = icon.res
-ICON_RES = icon.res
-
 # Innosetup compiler
     ICON_RES = icon.res
 

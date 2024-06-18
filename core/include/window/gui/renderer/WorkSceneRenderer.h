@@ -2,7 +2,7 @@
 #define WORK_SCENE_RENDERER_H
 
 #include "graphics/drivers/GLHelper.h"
-#include "graphics/utils/SceneCamera.h"
+#include "graphics/scene/SceneCamera.h"
 #include "graphics/scene/SceneManager.h"
 
 #include <GL/glew.h>
@@ -17,22 +17,26 @@ public:
     ~WorkSceneRenderer();
 
     void render(SceneCamera* camera, SceneManager* sceneManager);
-    void updateSize(int newX, int newY, int newWidth, int newHeight);
+    void updateSize(SceneCamera* camera, int newX, int newY, int newWidth, int newHeight);
     GLuint getTexture() const;
-
 private:
     void setupFramebuffer();
-    void batchRender(SceneCamera* camera, SceneManager* sceneManager);
     void clearVertexData();
+
+    void renderDebugIfNeeded(SceneCamera* camera);
+    void batchRender(SceneCamera* camera, SceneManager* sceneManager);
+    
+    void setupRuler(SceneCamera* camera);
+    void renderRuler(SceneCamera* camera);
 
     std::shared_ptr<GLHelper> shader;
 
     std::vector<float> vertexData; // Buffer to store vertex data
+    std::vector<float> rulerVertices; // Buffer to store vertex data
 
     bool* debug;
     int posX, posY, width, height;
     GLuint texture_id, shaderProgram, VAO, VBO, EBO, FBO;
-    glm::mat4 projection;
 };
 
 #endif // WORK_SCENE_RENDERER_H
