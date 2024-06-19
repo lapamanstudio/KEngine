@@ -24,6 +24,43 @@ public:
         }
     }
 
+    std::unique_ptr<std::vector<std::shared_ptr<GameObject>>> GetObjectsInCoords(const glm::vec2& coords) const {
+        auto objectsInCoords = std::make_unique<std::vector<std::shared_ptr<GameObject>>>();
+        for (auto& object : objects) {
+            if (object->IsInCoords(coords)) {
+                objectsInCoords->push_back(object);
+            }
+        }
+        return objectsInCoords;
+    }
+    
+    std::unique_ptr<std::vector<std::shared_ptr<GameObject>>> GetObjectsInCoords(const glm::vec4& coords) const {
+        auto objectsInCoords = std::make_unique<std::vector<std::shared_ptr<GameObject>>>();
+
+        float minX = std::min(coords.x, coords.z);
+        float maxX = std::max(coords.x, coords.z);
+        float minY = std::min(coords.y, coords.w);
+        float maxY = std::max(coords.y, coords.w);
+
+        for (const auto& object : objects) {
+            glm::vec2 position = object->GetPosition();
+            glm::vec2 size = object->GetSize();
+
+            float objMinX = position.x;
+            float objMaxX = position.x + size.x;
+            float objMinY = position.y;
+            float objMaxY = position.y + size.y;
+
+            bool intersects = (minX <= objMaxX && maxX >= objMinX && minY <= objMaxY && maxY >= objMinY);
+
+            if (intersects) {
+                objectsInCoords->push_back(object);
+            }
+        }
+
+        return objectsInCoords;
+    }
+
     const std::vector<std::shared_ptr<GameObject>>& GetObjects() const {
         return objects;
     }

@@ -1,6 +1,10 @@
 #ifndef GAMEOBJECT_H
 #define GAMEOBJECT_H
 
+#include "graphics/drivers/GLHelper.h"
+#include "graphics/utils/Colors.h"
+
+#include <glm/gtc/matrix_transform.hpp>
 #include <glm/glm.hpp>
 #include <GL/glew.h>
 #include <vector>
@@ -26,6 +30,28 @@ public:
 
     glm::vec2 GetSize() const { return size; }
     void SetSize(const glm::vec2& sz) { size = sz; }
+
+    bool IsInCoords(const glm::vec2& coords) const {
+        return coords.x >= position.x && coords.x <= position.x + size.x &&
+               coords.y >= position.y && coords.y <= position.y + size.y;
+    }
+
+    void RenderSelectionBox(GLuint shaderProgram) {
+        GLHelper::useShader(shaderProgram);
+
+        glm::mat4 model = glm::mat4(1.0f);
+        model = glm::translate(model, glm::vec3(position, 0.0f));
+        model = glm::scale(model, glm::vec3(size, 1.0f));
+
+        GLHelper::setModelMatrix(model);
+        GLHelper::setColor3f(Colors::Yellow);
+
+        glBindVertexArray(VAO);
+        glDrawArrays(GL_LINE_LOOP, 0, 4);
+        glBindVertexArray(0);
+
+        GLHelper::unuseShader();
+    }
 
 protected:
     glm::vec2 position;

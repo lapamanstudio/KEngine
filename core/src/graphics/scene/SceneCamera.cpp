@@ -1,4 +1,5 @@
 #include "graphics/scene/SceneCamera.h"
+#include <cstdio>
 
 SceneCamera::SceneCamera() {
     position = { 0.0f, 0.0f };
@@ -49,8 +50,8 @@ glm::mat4 SceneCamera::GetViewMatrix() const {
 glm::vec2 SceneCamera::screenToWorld(const glm::vec2& screenCoords, const glm::vec2& screenSize) const {
     // Normalize screen coordinates to range [-1, 1]
     glm::vec2 normalizedScreen = glm::vec2(
-        (screenCoords.x / screenSize.x) * 2 - 1, // 0 - LEFT | 1 - RIGHT
-        1 - (screenCoords.y / screenSize.y) * 2  // 0 - TOP | 1 - BOTTOM
+        (screenCoords.x / (screenSize.x + 8)) * 2 - 1, // 0 - LEFT | 1 - RIGHT
+        1 - (screenCoords.y / (screenSize.y + 13)) * 2  // 1 - TOP | 0 - BOTTOM
     );
 
     // Convert normalized screen coordinates to homogeneous coordinates

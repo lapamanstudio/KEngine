@@ -7,6 +7,7 @@ WorkSceneController::WorkSceneController(int x, int y, int w, int h)
       sceneManager(std::make_shared<SceneManager>()),
       isDebugging(false),
       isMouseDragging(false),
+      isMouseSelecting(false),
       lastMouseX(0.0),
       lastMouseY(0.0),
       posX(x),
@@ -74,7 +75,7 @@ void WorkSceneController::processMouseInput(GLFWwindow* window, float mouseWheel
     if (glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_MIDDLE) == GLFW_PRESS) {
         if (!isMouseDragging) {
             isMouseDragging = true;
-            lastMouseX = mousePos.x;
+            lastMouseX = mousePos.x; 
             lastMouseY = mousePos.y;
         } else {
             glfwSetCursor(window, crossCursor);
@@ -98,23 +99,70 @@ void WorkSceneController::processMouseInput(GLFWwindow* window, float mouseWheel
         }
     }
 
+    // Reverse the Y axis
+    mousePos.y = height - mousePos.y + 32;
+
     // Select objects logic
-    if (glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_LEFT) == GLFW_PRESS) {
-        // Get mouse cordinates in the camera
-        // TODO ES AQUÍ
-        int mouseX = camera->screenToWorld(mousePos, glm::vec2(width, height)).x;
-        
-        printf("Mouse X: %d\n", mouseX);
+    if (glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_LEFT) == GLFW_PRESS && !isMouseDragging) {
+        // Check if mouse in work scene
+        if (mousePos.x < 0 || mousePos.x > width || mousePos.y < 0 || mousePos.y > height) {
+            isMouseSelectBlocked = true;
+            return;
+        }
+
+        if (isMouseSelectBlocked)
+            return;
+
+        if (!isMouseSelecting) {
+            isMouseSelecting = true;
+
+            lastMouseX = camera->screenToWorld(mousePos, glm::vec2(width, height)).x;
+            lastMouseY = camera->screenToWorld(mousePos, glm::vec2(width, height)).y;
+        } else {
+            // Get mouse coordinates in the camera
+            double finalMouseX = camera->screenToWorld(mousePos, glm::vec2(width, height)).x;
+            double finalMouseY = camera->screenToWorld(mousePos, glm::vec2(width, height)).y;
+
+            // Draw selection rectangle
+            workSceneRenderer->setSelectionBox(glm::vec4(lastMouseX, lastMouseY, finalMouseX, finalMouseY));
+        }
+    } else {
+        isMouseSelectBlocked = false;
+
+        if (isMouseSelecting) {
+            isMouseSelecting = false;
+
+            // Get mouse coordinates in the camera
+            double finalMouseX = camera->screenToWorld(mousePos, glm::vec2(width, height)).x;
+            double finalMouseY = camera->screenToWorld(mousePos, glm::vec2(width, height)).y;
+            
+            // Select object
+            std::unique_ptr<std::vector<std::shared_ptr<GameObject>>> filteredObjects;
+            if (((int) finalMouseX == (int)lastMouseX) && ((int) finalMouseY == (int)lastMouseY)) {
+                filteredObjects = sceneManager->GetObjectsInCoords(glm::vec2(finalMouseX, finalMouseY));
+            } else {
+                filteredObjects = sceneManager->GetObjectsInCoords(glm::vec4(lastMouseX, lastMouseY, finalMouseX, finalMouseY));
+            }
+
+            if (filteredObjects->size() == 0)
+                sceneManager->SetActiveObject(nullptr);
+            else if (filteredObjects->size() == 1)
+                sceneManager->SetActiveObject(filteredObjects->at(0));
+            else
+                printf("Multiple objects selected\n");
+
+            workSceneRenderer->clearSelectionBox();
+        }
     }
 
     // Zoom In/Out
     if (mouseWheel != 0) {
-        float zoomFactor = 1.0f + mouseWheel * 0.1f;
+        float zoomFactor = mouseWheel * 0.1f;
         float currentZoom = camera->GetZoom();
-        float newZoom = currentZoom * zoomFactor;
+        float newZoom = currentZoom + zoomFactor;
 
         // Constrain zoom level
-        if (newZoom >= 0.1f && newZoom <= 2.0f) {
+        if (newZoom > 0.1f && newZoom < 2.0f) {
             // Normalize mouse position between -1 and 1
             glm::vec2 mousePosNormalize = glm::vec2(
                 (mousePos.x - width / 2.0f) / (width / 2.0f),

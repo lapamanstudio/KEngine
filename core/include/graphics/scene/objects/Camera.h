@@ -3,9 +3,6 @@
 
 #include "graphics/scene/objects/GameObject.h"
 
-#include <glm/gtc/matrix_transform.hpp>
-#include <GL/glew.h>
-
 class Camera : public GameObject {
 public:
     Camera(float x, float y, float width, float height, float zoom = 1.0f)

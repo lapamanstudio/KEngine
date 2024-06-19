@@ -29,6 +29,8 @@ private:
     // Dragging
     bool isDebugging;
     bool isMouseDragging;
+    bool isMouseSelecting;
+    bool isMouseSelectBlocked;
     double lastMouseX, lastMouseY;
 
     // Container information

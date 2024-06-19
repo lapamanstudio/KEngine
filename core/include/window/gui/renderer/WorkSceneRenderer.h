@@ -19,6 +19,9 @@ public:
     void render(SceneCamera* camera, SceneManager* sceneManager);
     void updateSize(SceneCamera* camera, int newX, int newY, int newWidth, int newHeight);
     GLuint getTexture() const;
+
+    void setSelectionBox(const glm::vec4& box) { selectionBox = box; }
+    void clearSelectionBox() { selectionBox = glm::vec4(0.0f); }
 private:
     void setupFramebuffer();
     void clearVertexData();
@@ -33,6 +36,8 @@ private:
 
     std::vector<float> vertexData; // Buffer to store vertex data
     std::vector<float> rulerVertices; // Buffer to store vertex data
+
+    glm::vec4 selectionBox;
 
     bool* debug;
     int posX, posY, width, height;
