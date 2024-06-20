@@ -18,6 +18,11 @@ public:
     std::shared_ptr<SceneCamera> getCamera();
     GLuint getTexture();
     bool isDebug() const;
+
+    std::shared_ptr<SceneManager> getSceneManager() {
+        return sceneManager;
+    }
+    
 private:
     void processKeyboardInput(GLFWwindow* window, float deltaTime);
     void processMouseInput(GLFWwindow* window, float mouseWheel, float deltaTime);

@@ -3,6 +3,9 @@
 WorldPropertiesPanel::WorldPropertiesPanel(DockManager* dockManager) : dockManager(dockManager) {}
 
 void WorldPropertiesPanel::render(int posX, int posY, int width, int height) {
+    if (!dockManager->getWorkSceneController() || !dockManager->getWorkSceneController()->getCamera())
+        return;
+
     glm::vec2& position = const_cast<glm::vec2&>(dockManager->getWorkSceneController()->getCamera()->GetPosition());
     float zoom = dockManager->getWorkSceneController()->getCamera()->GetZoom();
 

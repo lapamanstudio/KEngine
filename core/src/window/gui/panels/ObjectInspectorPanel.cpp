@@ -3,5 +3,22 @@
 ObjectInspectorPanel::ObjectInspectorPanel(DockManager* dockManager) : dockManager(dockManager) {}
 
 void ObjectInspectorPanel::render(int posX, int posY, int width, int height) {
+    if (dockManager->getWorkSceneController() == nullptr) return;
 
+    std::shared_ptr<SceneManager> sceneManager = dockManager->getWorkSceneController()->getSceneManager();
+    if (sceneManager == nullptr) return;
+
+    std::shared_ptr<GameObject> object = dockManager->getWorkSceneController()->getSceneManager()->GetActiveObject();
+    if (object == nullptr) {
+        ImGui::SetWindowFocus(P_WORLD_PROPERTIES);
+        return;
+    }
+
+    const auto& properties = object->GetProperties();
+
+    ImGui::SeparatorText(std::string(object->GetObjectName() + std::string(" properties")).c_str());
+
+    for (const auto& [name, property] : properties) {
+        property->Render();
+    }
 }

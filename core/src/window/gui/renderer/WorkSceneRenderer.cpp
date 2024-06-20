@@ -88,7 +88,8 @@ void WorkSceneRenderer::renderRuler(SceneCamera* camera) {
 
     // Ruler steps
     int step;
-    if (zoomLevel < 0.6f) step = 50;
+    if (zoomLevel < 0.2f) step = 100;
+    else if (zoomLevel < 0.6f) step = 50;
     else if (zoomLevel < 1.0f) step = 20;
     else step = 10;
     int majorStep = step * 5;
