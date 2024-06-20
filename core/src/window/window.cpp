@@ -5,6 +5,7 @@
 #include <GL/glew.h>
 #include <GLFW/glfw3.h>
 
+#include "graphics/fonts/Fonts.h"
 #include "window/Window.h"
 #include "window/gui/DockManager.h"
 
@@ -17,6 +18,16 @@ void initialize_window(GLFWwindow* window) {
     // Enable docking
     ImGuiIO& io = ImGui::GetIO();
     io.ConfigFlags |= ImGuiConfigFlags_DockingEnable; // Enable Docking
+    ImFontConfig font_config = ImFontConfig();
+
+    static const ImWchar icons_ranges[] = { ICON_MIN_FA, ICON_MAX_16_FA, 0 };
+    ImFontConfig icons_config; 
+    icons_config.MergeMode = true; 
+    icons_config.PixelSnapH = true; 
+    icons_config.GlyphMinAdvanceX = 16;
+    float iconFontSize = 18 * 2.0f / 3.0f; // 13px is the font size
+    io.Fonts->AddFontFromMemoryTTF(Roboto_Regular_ttf, Roboto_Regular_ttf_len, 16, &font_config, io.Fonts->GetGlyphRangesDefault());
+    io.Fonts->AddFontFromMemoryTTF(font_awesome_ttf, font_awesome_ttf_len, iconFontSize, &icons_config, icons_ranges);
     io.IniFilename = NULL; // Disable INI file saving
 
     // Setup Platform/Renderer backends
@@ -107,7 +118,7 @@ void render_window() {
 
     // Setup Docking Environment
     ImGuiWindowFlags window_flags = ImGuiWindowFlags_MenuBar | ImGuiWindowFlags_NoDocking;
-    const ImGuiDockNodeFlags dockspace_flags = ImGuiDockNodeFlags_PassthruCentralNode;
+    const ImGuiDockNodeFlags dockspace_flags = ImGuiDockNodeFlags_PassthruCentralNode | ImGuiDockNodeFlags_NoWindowMenuButton;
 
     ImGui::SetNextWindowPos(viewport->Pos);
     ImGui::SetNextWindowSize(viewport->Size);
