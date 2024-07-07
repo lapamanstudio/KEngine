@@ -35,10 +35,15 @@ void initialize_window(GLFWwindow* window) {
     ImGui_ImplOpenGL3_Init("#version 330");
 
     ImGuiStyle& style = ImGui::GetStyle();
+    style.FrameRounding = 7.5f;
     style.Colors[ImGuiCol_WindowBg] = ImVec4(0.1f, 0.1f, 0.1f, 1.0f);  // Dark background
     style.Colors[ImGuiCol_TitleBg] = ImVec4(0.15f, 0.15f, 0.15f, 1.0f); // Dark title bar background
     style.Colors[ImGuiCol_TitleBgActive] = ImVec4(0.2f, 0.2f, 0.2f, 1.0f); // Slightly brighter title bar when active
     style.Colors[ImGuiCol_Separator] = ImVec4(0.2f, 0.2f, 0.2f, 1.0f); // Dark separator color
+
+    style.Colors[ImGuiCol_FrameBg] = ImVec4(0.15f, 0.15f, 0.15f, 1.0f); // Dark child background
+    style.Colors[ImGuiCol_FrameBgHovered] = ImVec4(0.2f, 0.2f, 0.2f, 1.0f); // Slightly brighter child background when hovered
+    style.Colors[ImGuiCol_FrameBgActive] = ImVec4(0.2f, 0.2f, 0.2f, 1.0f); // Slightly brighter child background when active
 
     style.Colors[ImGuiCol_Header] = ImVec4(0.2f, 0.2f, 0.2f, 1.00f); // Dark header background
     style.Colors[ImGuiCol_HeaderHovered] = ImVec4(0.4f, 0.4f, 0.4f, 1.0f); // Hovered header background
@@ -78,7 +83,7 @@ void initDockLayout() {
 
     // Dock windows into their respective places
     ImGui::DockBuilderDockWindow(P_TREE_VIEW_INSPECTOR, dock_id_left);
-    ImGui::DockBuilderDockWindow(P_PROJECT_FILES, dock_id_left);
+    ImGui::DockBuilderDockWindow(P_PROJECT_FILES, dock_id_down);
     ImGui::DockBuilderDockWindow(P_CONSOLE, dock_id_down);
     ImGui::DockBuilderDockWindow(P_OBJECT_INSPECTOR, dock_id_right);
     ImGui::DockBuilderDockWindow(P_WORLD_PROPERTIES, dock_id_right);
