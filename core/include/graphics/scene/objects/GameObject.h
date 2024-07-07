@@ -15,9 +15,18 @@
 
 class GameObject {
 public:
-    GameObject(float x, float y, float width, float height)
-        : position(x, y), size(width, height), rotation(0.0f) {
+    GameObject(const std::string& name, float x, float y, float width, float height)
+        : name(name), position(x, y), size(width, height), rotation(0.0f) {
+
         InitRenderData();
+
+        properties.AddProperty(std::make_shared<StringProperty>("Name", &this->name));
+        
+        auto transformGroup = std::make_shared<GroupProperty>("Transform");
+        transformGroup->AddProperty(std::make_shared<Vec2FloatProperty>("Position", &position.x, &position.y, 1.0f));
+        transformGroup->AddProperty(std::make_shared<FloatProperty>("Rotation", &rotation, 0.1f));
+
+        properties.AddProperty(transformGroup);
     }
 
     virtual ~GameObject() {
@@ -27,20 +36,19 @@ public:
 
     virtual void Update(float deltaTime) = 0;
     virtual void Render(GLuint shaderProgram) = 0;
-    virtual const char* GetObjectName() const = 0;
 
     glm::vec2 GetPosition() const { return position; }
     void SetPosition(const glm::vec2& pos) { position = pos; }
 
-    void Move(const glm::vec2& delta) {
-        position += delta;
-    }
+    void Move(const glm::vec2& delta) { position += delta; }
 
     glm::vec2 GetSize() const { return size; }
     void SetSize(const glm::vec2& sz) { size = sz; }
 
     float GetRotation() const { return rotation; }
     void SetRotation(float rot) { rotation = rot; }
+
+    std::string GetName() const { return name; }
 
     bool IsInCoords(const glm::vec2& coords) const {
         return MathUtil::IsPointInRect(coords, position, size);
@@ -67,15 +75,16 @@ public:
         GLHelper::unuseShader();
     }
 
-    void AddProperty(std::shared_ptr<Property> property) {
-        properties[property.get()->GetName()] = property;
-    }
-
-    const std::unordered_map<std::string, std::shared_ptr<Property>>& GetProperties() const {
+    const Properties& GetProperties() const {
         return properties;
     }
 
+    void RenderProperties() const {
+        properties.Render();
+    }
+
 protected:
+    std::string name;
     glm::vec2 position;
     glm::vec2 size;
     float rotation;
@@ -103,8 +112,9 @@ protected:
         glBindBuffer(GL_ARRAY_BUFFER, 0);
         glBindVertexArray(0);
     }
+
 private:
-    std::unordered_map<std::string, std::shared_ptr<Property>> properties;
+    Properties properties;
 };
 
 #endif // GAMEOBJECT_H

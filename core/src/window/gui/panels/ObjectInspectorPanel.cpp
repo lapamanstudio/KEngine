@@ -10,15 +10,9 @@ void ObjectInspectorPanel::render(int posX, int posY, int width, int height) {
 
     std::shared_ptr<GameObject> object = dockManager->getWorkSceneController()->getSceneManager()->GetActiveObject();
     if (object == nullptr) {
-        ImGui::SetWindowFocus(P_WORLD_PROPERTIES);
+        ImGui::SeparatorText("No object selected");
         return;
     }
-
-    const auto& properties = object->GetProperties();
-
-    ImGui::SeparatorText(std::string(object->GetObjectName() + std::string(" properties")).c_str());
-
-    for (const auto& [name, property] : properties) {
-        property->Render();
-    }
+    
+    object->RenderProperties();
 }
