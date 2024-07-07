@@ -233,9 +233,6 @@ void WorkSceneRenderer::batchRender(SceneCamera* camera, SceneManager* sceneMana
     glBindVertexArray(VAO);
     
     for (const auto& object : sceneManager->GetObjects()) {
-        // Render object name
-        shader->renderText("Camera", 0, object->GetSize().g + 5, 0.5f, Colors::White);
-
         // Render object
         object->Render(shader->getProgram());
 

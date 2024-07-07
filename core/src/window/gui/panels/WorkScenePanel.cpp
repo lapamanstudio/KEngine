@@ -28,7 +28,7 @@ void WorkScenePanel::render(int posX, int posY, int width, int height) {
     }
 
     int w = width - 12;
-    int h = height - (node && node->IsHiddenTabBar() ? 16 : 35); // 35 = padding size + header size
+    int h = height - (node && node->IsHiddenTabBar() ? 16 : 35) - 4; // 35 = padding size + header size
 
     ImGuiIO& io = ImGui::GetIO();
     
@@ -41,7 +41,7 @@ void WorkScenePanel::render(int posX, int posY, int width, int height) {
     lastFrameTime = currentFrameTime;
 
     workSceneController->update(WindowManager::getInstance().getWindow(), mouseInPanel ? ImGui::GetIO().MouseWheel : 0, deltaTime);
-    workSceneController->render(posX - 20, posY, w, h);
+    workSceneController->render(posX, posY, w, h);
 
     GLuint texID = workSceneController->getTexture();
     ImVec2 imageSize(w, h);

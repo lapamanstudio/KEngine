@@ -41,21 +41,6 @@ void WorkSceneController::render(int x, int y, int w, int h) {
 }
 
 void WorkSceneController::processKeyboardInput(GLFWwindow* window, float deltaTime) {
-    // Keyboard movement
-    float moveSpeed = 200.0f * deltaTime;
-    if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS) {
-        this->MoveCamera(moveSpeed * (2.3f - camera->GetZoom()), 0);
-    }
-    if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS) {
-        this->MoveCamera(0, moveSpeed * (2.3f - camera->GetZoom()));
-    }
-    if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS) {
-        this->MoveCamera(-moveSpeed * (2.3f - camera->GetZoom()), 0);
-    }
-    if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS) {
-        this->MoveCamera(0, -moveSpeed * (2.3f - camera->GetZoom()));
-    }
-
     // Debug key - F3
     if (glfwGetKey(window, GLFW_KEY_F3) == GLFW_PRESS) {
         if (!isF3Pressed) {
@@ -100,7 +85,7 @@ void WorkSceneController::processMouseInput(GLFWwindow* window, float mouseWheel
     }
 
     // Reverse the Y axis
-    mousePos.y = height - mousePos.y + 32;
+    mousePos.y = height - mousePos.y + 37;
 
     // Select objects logic
     if (glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_LEFT) == GLFW_PRESS && !isMouseDragging) {
