@@ -26,9 +26,9 @@ WorkSceneController::~WorkSceneController() {
     glfwDestroyCursor(crossCursor);
 }
 
-void WorkSceneController::update(GLFWwindow* window, float mouseWheel, float deltaTime) {
+void WorkSceneController::update(GLFWwindow* window, float mouseWheel, float deltaTime, bool isMouseOverPanel) {
     processKeyboardInput(window, deltaTime);
-    processMouseInput(window, mouseWheel, deltaTime);
+    processMouseInput(window, mouseWheel, deltaTime, isMouseOverPanel);
 }
 
 void WorkSceneController::render(int x, int y, int w, int h) {
@@ -52,13 +52,14 @@ void WorkSceneController::processKeyboardInput(GLFWwindow* window, float deltaTi
     }
 }
 
-void WorkSceneController::processMouseInput(GLFWwindow* window, float mouseWheel, float deltaTime) {
+void WorkSceneController::processMouseInput(GLFWwindow* window, float mouseWheel, float deltaTime, bool isMouseOverPanel) {
     double mouseX, mouseY;
     glfwGetCursorPos(window, &mouseX, &mouseY);
     glm::vec2 mousePos(mouseX - posX, mouseY - posY);
     
     if (glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_MIDDLE) == GLFW_PRESS) {
         if (!isMouseDragging) {
+            if (!isMouseOverPanel) return;
             isMouseDragging = true;
             lastMouseX = mousePos.x; 
             lastMouseY = mousePos.y;
@@ -90,7 +91,8 @@ void WorkSceneController::processMouseInput(GLFWwindow* window, float mouseWheel
     // Select objects logic
     if (glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_LEFT) == GLFW_PRESS && !isMouseDragging) {
         // Check if mouse in work scene
-        if (mousePos.x < 0 || mousePos.x > width || mousePos.y < 0 || mousePos.y > height) {
+        if (!isMouseSelecting && (mousePos.x < 0 || mousePos.x > width || mousePos.y < 0 || mousePos.y > height)) {
+            if (!isMouseOverPanel) return;
             isMouseSelectBlocked = true;
             return;
         }
@@ -99,6 +101,7 @@ void WorkSceneController::processMouseInput(GLFWwindow* window, float mouseWheel
             return;
 
         if (!isMouseSelecting) {
+            if (!isMouseOverPanel) return;
             isMouseSelecting = true;
 
             lastMouseX = camera->screenToWorld(mousePos, glm::vec2(width, height)).x;

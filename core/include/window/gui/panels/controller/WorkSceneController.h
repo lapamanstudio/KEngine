@@ -10,7 +10,7 @@ public:
     WorkSceneController(int x, int y, int w, int h);
     ~WorkSceneController();
 
-    void update(GLFWwindow* window, float mouseWheel, float deltaTime);
+    void update(GLFWwindow* window, float mouseWheel, float deltaTime, bool mouseInPanel);
     void render(int x, int y, int w, int h);
     void MoveCamera(float x, float y);
     void ModifyZoom(float zoom);
@@ -25,7 +25,7 @@ public:
     
 private:
     void processKeyboardInput(GLFWwindow* window, float deltaTime);
-    void processMouseInput(GLFWwindow* window, float mouseWheel, float deltaTime);
+    void processMouseInput(GLFWwindow* window, float mouseWheel, float deltaTime, bool mouseInPanel);
 
     std::shared_ptr<WorkSceneRenderer> workSceneRenderer;
     std::shared_ptr<SceneCamera> camera;

@@ -5,10 +5,8 @@ WorldPropertiesPanel::WorldPropertiesPanel(DockManager* dockManager) : dockManag
 }
 
 void ZoomFilter(float& value) {
-    if (value < 0.1f)
-        value = 0.1f;
-    if (value > 2.0f)
-        value = 2.0f;
+    if (value < 0.1f) value = 0.1f;
+    if (value > 2.0f) value = 2.0f;
 }
 
 void WorldPropertiesPanel::render(int posX, int posY, int width, int height) {

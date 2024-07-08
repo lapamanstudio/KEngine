@@ -40,8 +40,7 @@ void WorkScenePanel::render(int posX, int posY, int width, int height) {
     float deltaTime = static_cast<float>(currentFrameTime - lastFrameTime);
     lastFrameTime = currentFrameTime;
 
-    if (mouseInPanel)
-        workSceneController->update(WindowManager::getInstance().getWindow(), mouseInPanel ? ImGui::GetIO().MouseWheel : 0, deltaTime);
+    workSceneController->update(WindowManager::getInstance().getWindow(), mouseInPanel ? ImGui::GetIO().MouseWheel : 0, deltaTime, mouseInPanel);
     workSceneController->render(posX, posY, w, h);
 
     GLuint texID = workSceneController->getTexture();
