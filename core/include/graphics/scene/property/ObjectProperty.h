@@ -7,7 +7,6 @@
 #include <vector>
 #include <memory>
 #include <imgui.h>
-#include <windows.h>
 
 class Property {
 public:
@@ -19,7 +18,7 @@ public:
 protected:
     void RenderLabel() const {
         ImGui::AlignTextToFramePadding();
-        ImGui::Text(name.c_str());
+        ImGui::TextUnformatted(name.c_str());
         ImGui::SameLine(100);
         ImGui::PushItemWidth(-10);
         ImGui::SameLine();
@@ -77,7 +76,7 @@ public:
 
     void Render() override {
         RenderLabel();
-        ImGui::Text("X");
+        ImGui::TextUnformatted("X");
         ImGui::SameLine();
 
         float availableWidth = ImGui::GetContentRegionAvail().x;
@@ -88,7 +87,7 @@ public:
         ImGui::PopItemWidth();
 
         ImGui::SameLine();
-        ImGui::Text("Y");
+        ImGui::TextUnformatted("Y");
         ImGui::SameLine();
 
         ImGui::PushItemWidth(-10);

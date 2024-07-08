@@ -34,8 +34,8 @@ private:
 
     std::shared_ptr<GLHelper> shader;
 
-    std::vector<float> vertexData; // Buffer to store vertex data
-    std::vector<float> rulerVertices; // Buffer to store vertex data
+    std::vector<float> vertexData;
+    std::vector<float> rulerVertices;
 
     glm::vec4 selectionBox;
 

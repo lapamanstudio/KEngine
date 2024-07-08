@@ -29,8 +29,10 @@ int main(void) {
     glfwSetErrorCallback(error_callback);
     
     // Initialize the library
-    if (!glfwInit())
+    if (!glfwInit()) {
+        printf("Failed to initialize GLFW. Error E001\n");
         return -1;
+    }
 
     glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
     glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
@@ -41,6 +43,7 @@ int main(void) {
     WindowManager::getInstance().setWindow(window);
     if (!window) {
         glfwTerminate();
+        printf("Failed to create window. Error E002\n");
         return -1;
     }
 
@@ -54,8 +57,10 @@ int main(void) {
 #endif
 
     GLenum err = glewInit();
-    if (err != GLEW_OK)
+    if (err != GLEW_OK) {
+        printf("Failed to initialize GLEW. Error E003: %s\n", glewGetErrorString(err));
         return -1;
+    }
 
     // Initialize ImGui window
     initialize_window(window);

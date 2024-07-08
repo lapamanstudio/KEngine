@@ -22,6 +22,7 @@ GLHelper::GLHelper(const char* vertexShaderSource, const char* fragmentShaderSou
 
 GLHelper::~GLHelper() {
     glDeleteProgram(shaderProgram);
+    glDeleteProgram(textShaderProgram);
 
     for (auto& character : Characters) {
         glDeleteTextures(1, &character.second.TextureID);

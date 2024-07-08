@@ -5,3 +5,5 @@ ProjectFilesPanel::ProjectFilesPanel(DockManager* dockManager) : dockManager(doc
 void ProjectFilesPanel::render(int posX, int posY, int width, int height) {
 
 }
+
+ProjectFilesPanel::~ProjectFilesPanel() {}

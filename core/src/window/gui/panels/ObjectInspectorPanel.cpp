@@ -16,3 +16,5 @@ void ObjectInspectorPanel::render(int posX, int posY, int width, int height) {
     
     object->RenderProperties();
 }
+
+ObjectInspectorPanel::~ObjectInspectorPanel() {}

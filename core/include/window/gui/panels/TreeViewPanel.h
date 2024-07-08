@@ -7,6 +7,7 @@
 class TreeViewPanel : public IDockablePanel {
 public:
     TreeViewPanel(DockManager* dockManager);
+    ~TreeViewPanel();
     void render(int posX, int posY, int width, int height) override;
 private:
     DockManager* dockManager;

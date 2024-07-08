@@ -28,3 +28,5 @@ void TreeViewPanel::render(int posX, int posY, int width, int height) {
     }
     ImGui::PopStyleVar();
 }
+
+TreeViewPanel::~TreeViewPanel() {}

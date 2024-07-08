@@ -7,6 +7,7 @@
 class ObjectInspectorPanel : public IDockablePanel {
 public:
     ObjectInspectorPanel(DockManager* dockManager);
+    ~ObjectInspectorPanel();
     void render(int posX, int posY, int width, int height) override;
 private:
     DockManager* dockManager;

@@ -26,3 +26,5 @@ void WorldPropertiesPanel::render(int posX, int posY, int width, int height) {
     ImGui::SeparatorText("Scene Camera properties");
     properties.Render();
 }
+
+WorldPropertiesPanel::~WorldPropertiesPanel() {}

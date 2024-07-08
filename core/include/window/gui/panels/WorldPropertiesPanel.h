@@ -9,6 +9,7 @@
 class WorldPropertiesPanel : public IDockablePanel {
 public:
     WorldPropertiesPanel(DockManager* dockManager);
+    ~WorldPropertiesPanel();
     void render(int posX, int posY, int width, int height) override;
 private:
     DockManager* dockManager;

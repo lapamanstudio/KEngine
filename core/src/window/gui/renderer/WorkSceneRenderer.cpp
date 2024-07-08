@@ -6,6 +6,8 @@
 #include <cstdio>
 
 WorkSceneRenderer::WorkSceneRenderer(bool* debug, int posX, int posY, int width, int height) :
+    vertexData(),
+    rulerVertices(),
     selectionBox(glm::vec4(0.0f)),
     debug(debug),
     posX(posX),
@@ -60,13 +62,16 @@ void WorkSceneRenderer::setupFramebuffer() {
 }
 
 void WorkSceneRenderer::setupRuler(SceneCamera* camera) {
-    glGenVertexArrays(1, &VAO);
-    glGenBuffers(1, &VBO);
+    if (VAO == 0)
+        glGenVertexArrays(1, &VAO);
+    if (VBO == 0)
+        glGenBuffers(1, &VBO);
 
     glBindVertexArray(VAO);
-
     glBindBuffer(GL_ARRAY_BUFFER, VBO);
-    glBufferData(GL_ARRAY_BUFFER, rulerVertices.size() * sizeof(float), &rulerVertices[0], GL_STATIC_DRAW);
+
+    if (!rulerVertices.empty())
+        glBufferData(GL_ARRAY_BUFFER, rulerVertices.size() * sizeof(float), &rulerVertices[0], GL_STATIC_DRAW);
 
     glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 2 * sizeof(float), (void*)0);
     glEnableVertexAttribArray(0);

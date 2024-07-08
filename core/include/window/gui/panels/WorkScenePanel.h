@@ -8,6 +8,7 @@
 class WorkScenePanel : public IDockablePanel {
 public:
     WorkScenePanel(DockManager* dockManager);
+    ~WorkScenePanel();
     void render(int posX, int posY, int width, int height) override;
 private:
     WorkSceneController* workSceneController = nullptr;

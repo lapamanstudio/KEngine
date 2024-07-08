@@ -47,3 +47,7 @@ void WorkScenePanel::render(int posX, int posY, int width, int height) {
     ImVec2 imageSize(w, h);
     ImageWithoutBorder((void*)(intptr_t)texID, imageSize, padding);
 }
+
+WorkScenePanel::~WorkScenePanel() {
+    delete workSceneController;
+}

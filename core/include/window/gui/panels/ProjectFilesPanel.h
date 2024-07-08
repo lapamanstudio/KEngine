@@ -7,6 +7,7 @@
 class ProjectFilesPanel : public IDockablePanel {
 public:
     ProjectFilesPanel(DockManager* dockManager);
+    ~ProjectFilesPanel();
     void render(int posX, int posY, int width, int height) override;
 private:
     DockManager* dockManager;

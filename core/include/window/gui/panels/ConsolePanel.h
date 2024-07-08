@@ -7,6 +7,7 @@
 class ConsolePanel : public IDockablePanel {
 public:
     ConsolePanel(DockManager* dockManager);
+    ~ConsolePanel();
     void render(int posX, int posY, int width, int height) override;
 private:
     DockManager* dockManager;
