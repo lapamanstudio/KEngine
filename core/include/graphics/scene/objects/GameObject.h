@@ -5,6 +5,7 @@
 #include "graphics/utils/Colors.h"
 #include "graphics/scene/property/ObjectProperty.h"
 #include "graphics/math/MathUtil.h"
+#include "graphics/fonts/IconsFontAwesome5.h"
 
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/glm.hpp>
@@ -20,6 +21,7 @@ public:
 
         InitRenderData();
 
+        this->name.resize(32, '\0');
         properties.AddProperty(std::make_shared<StringProperty>("Name", &this->name));
         
         auto transformGroup = std::make_shared<GroupProperty>("Transform");
@@ -49,6 +51,7 @@ public:
     void SetRotation(float rot) { rotation = rot; }
 
     std::string GetName() const { return name; }
+    virtual std::string GetTypeIcon() const { return ICON_FA_H_SQUARE; }
 
     bool IsInCoords(const glm::vec2& coords) const {
         return MathUtil::IsPointInRect(coords, position, size);

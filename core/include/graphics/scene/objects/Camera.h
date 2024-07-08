@@ -6,10 +6,12 @@
 
 class Camera : public GameObject {
 public:
-    Camera(float x, float y, float width, float height) : GameObject(ICON_FA_CAMERA_RETRO " Camera", x, y, width, height) {}
+    Camera(float x, float y, float width, float height) : GameObject("Camera", x, y, width, height) {}
 
     void Update(float deltaTime) override {};
     void Render(GLuint shaderProgram) override;
+
+    std::string GetTypeIcon() const override { return ICON_FA_CAMERA_RETRO; }
 };
 
 #endif // CAMERA_H

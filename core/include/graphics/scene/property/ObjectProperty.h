@@ -53,17 +53,22 @@ private:
 
 class FloatProperty : public Property {
 public:
-    FloatProperty(const std::string& name, float* valuePtr, float step) : Property(name), valuePtr(valuePtr), step(step) {}
+    using FilterFunc = std::function<void(float&)>;
+
+    FloatProperty(const std::string& name, float* valuePtr, float step, FilterFunc filterFunc = nullptr) 
+        : Property(name), valuePtr(valuePtr), step(step), filterFunc(filterFunc) {}
 
     void Render() override {
         RenderLabel();
-        ImGui::DragFloat(imguiID.c_str(), valuePtr, step);
+        if (ImGui::DragFloat(imguiID.c_str(), valuePtr, step))
+            if (filterFunc) filterFunc(*valuePtr);
         EndRender();
     }
 
 private:
     float* valuePtr;
     float step;
+    FilterFunc filterFunc;
 };
 
 class Vec2FloatProperty : public Property {

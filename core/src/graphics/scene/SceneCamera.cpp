@@ -12,7 +12,7 @@ const glm::vec2& SceneCamera::GetPosition() const {
     return position;
 }
 
-float SceneCamera::GetZoom() const {
+float& SceneCamera::GetZoom() {
     return zoom;
 }
 

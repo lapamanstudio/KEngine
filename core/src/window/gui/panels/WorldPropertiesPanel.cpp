@@ -1,22 +1,30 @@
 #include "window/gui/panels/WorldPropertiesPanel.h"
 
-WorldPropertiesPanel::WorldPropertiesPanel(DockManager* dockManager) : dockManager(dockManager) {}
+WorldPropertiesPanel::WorldPropertiesPanel(DockManager* dockManager) : dockManager(dockManager) {
+    properties = Properties();
+}
+
+void ZoomFilter(float& value) {
+    if (value < 0.1f)
+        value = 0.1f;
+    if (value > 2.0f)
+        value = 2.0f;
+}
 
 void WorldPropertiesPanel::render(int posX, int posY, int width, int height) {
     if (!dockManager->getWorkSceneController() || !dockManager->getWorkSceneController()->getCamera())
         return;
 
-    glm::vec2& position = const_cast<glm::vec2&>(dockManager->getWorkSceneController()->getCamera()->GetPosition());
-    float zoom = dockManager->getWorkSceneController()->getCamera()->GetZoom();
+    if (!initialized) {
+        glm::vec2& position = const_cast<glm::vec2&>(dockManager->getWorkSceneController()->getCamera()->GetPosition());
+        float& zoom = dockManager->getWorkSceneController()->getCamera()->GetZoom();
+
+        properties.AddProperty(std::make_shared<Vec2FloatProperty>("Position", &position.x, &position.y, 1.0f));
+        properties.AddProperty(std::make_shared<FloatProperty>("Zoom", &zoom, 0.01f, ZoomFilter));
+        
+        initialized = true;
+    }
 
     ImGui::SeparatorText("Scene Camera properties");
-    ImGui::DragFloat("X##CameraX", &position.x, 1.0f);
-    ImGui::DragFloat("Y##CameraY", &position.y, 1.0f);
-    if (ImGui::DragFloat("Zoom##CameraZoom", &zoom, 0.01f, 0.1f, 2.0f)) {
-        if (zoom < 0.1f)
-            zoom = 0.1f;
-        if (zoom > 2.0f)
-            zoom = 2.0f;
-        dockManager->getWorkSceneController()->getCamera()->SetZoom(zoom);
-    }
+    properties.Render();
 }

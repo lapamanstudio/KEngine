@@ -33,14 +33,15 @@ void WorkScenePanel::render(int posX, int posY, int width, int height) {
     ImGuiIO& io = ImGui::GetIO();
     
     // Get if the mouse is inside the panel
-    bool mouseInPanel = io.MousePos.x >= posX - 20 && io.MousePos.x <= posX - 20 + width && io.MousePos.y >= posY && io.MousePos.y <= posY + height;
+    bool mouseInPanel = io.MousePos.x >= posX - 20 && io.MousePos.x <= posX - 20 + width && io.MousePos.y >= posY && io.MousePos.y <= posY + height && ImGui::IsWindowFocused();
 
     // DeltaTime
     double currentFrameTime = glfwGetTime();
     float deltaTime = static_cast<float>(currentFrameTime - lastFrameTime);
     lastFrameTime = currentFrameTime;
 
-    workSceneController->update(WindowManager::getInstance().getWindow(), mouseInPanel ? ImGui::GetIO().MouseWheel : 0, deltaTime);
+    if (mouseInPanel)
+        workSceneController->update(WindowManager::getInstance().getWindow(), mouseInPanel ? ImGui::GetIO().MouseWheel : 0, deltaTime);
     workSceneController->render(posX, posY, w, h);
 
     GLuint texID = workSceneController->getTexture();

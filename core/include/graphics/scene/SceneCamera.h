@@ -14,7 +14,7 @@ public:
     void SetZoom(float zoom);
     
     const glm::vec2& GetPosition() const;
-    float GetZoom() const;
+    float& GetZoom();
     
     void Move(const glm::vec2& offset);
     void Zoom(float factor);
