@@ -1,6 +1,6 @@
 # KEngine - Open Source Game Engine
 
-KEngine is an open-source 2D game creation engine with a primary focus on providing a platform for learning the inner workings of game development. Spearheaded by @NGoedix, this project is designed to offer a basic interface, facilitate simple game creation using C#. Our long-term vision is to evolve KEngine into a versatile game engine, drawing inspiration from Unity but with a commitment to remaining open source.
+KEngine is an open-source 2D game creation engine designed to offer a platform for learning the inner workings of game development. This project provides a basic interface to facilitate simple game creation using C#. Our long-term vision is to evolve KEngine into a versatile game engine, drawing inspiration from proprietary software like Unity, but with a commitment to remaining open source.
 
 ## Objectives:
 
@@ -13,8 +13,8 @@ KEngine is an open-source 2D game creation engine with a primary focus on provid
 - [ ] **Sprite Editor:**
    - Implement a robust sprite editor that allows users to easily create, modify, and manage sprites for their games. Ensure compatibility with various image formats.
 
-- [ ] **Plugin integration:**
-   - Capacity to create your own plugin and share it with the community.
+- [ ] **Plugin Integration:**
+   - Enable users to create their own plugins and share them with the community.
 
 - [ ] **3D Game Development (Future Goal):**
    - Plan and integrate features for 3D game development. This includes enhancing the engine's capabilities to support three-dimensional graphics, physics, and interactions.
@@ -49,7 +49,7 @@ To create an installer for KEngine, use the following steps:
    - Use packaging tools to bundle the compiled files, assets, and dependencies into a distributable package.
 
 3. **Create Installer:**
-   - Use make to create the installer with msys
+   - Use make to create the installer with msys:
      ```
      make installer
      ```
