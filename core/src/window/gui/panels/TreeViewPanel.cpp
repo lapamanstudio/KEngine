@@ -36,6 +36,8 @@ void TreeViewPanel::render(int posX, int posY, int width, int height) {
     ImGuiTreeNodeFlags node_flags = ImGuiTreeNodeFlags_OpenOnArrow | ImGuiTreeNodeFlags_OpenOnDoubleClick | ImGuiTreeNodeFlags_SpanAvailWidth | ImGuiTreeNodeFlags_SpanFullWidth;
 
     node_flags |= ImGuiTreeNodeFlags_Leaf | ImGuiTreeNodeFlags_FramePadding;
+    bool itemClicked = false;
+
     for (auto& object : sceneManager->GetObjects()) {
         ImGuiTreeNodeFlags currentNodeFlags = node_flags;
 
@@ -46,8 +48,20 @@ void TreeViewPanel::render(int posX, int posY, int width, int height) {
         bool nodeOpen = ImGui::TreeNodeEx((void*)(object.get()), currentNodeFlags, (object->GetTypeIcon() + " " + object->GetName()).c_str());
 
         if (ImGui::IsItemClicked() && !ImGui::IsItemToggledOpen()) {
-            sceneManager->GetActiveObjects().clear();
-            sceneManager->AddActiveObject(object);
+            itemClicked = true;
+            if (ImGui::GetIO().KeyShift) {
+                // Shift-click logic
+                auto& activeObjects = sceneManager->GetActiveObjects();
+                auto it = std::find(activeObjects.begin(), activeObjects.end(), object);
+                if (it != activeObjects.end()) {
+                    activeObjects.erase(it);
+                } else {
+                    sceneManager->AddActiveObject(object);
+                }
+            } else {
+                sceneManager->GetActiveObjects().clear();
+                sceneManager->AddActiveObject(object);
+            }
         }
 
         if (ImGui::BeginDragDropSource(ImGuiDragDropFlags_None)) {
@@ -68,7 +82,12 @@ void TreeViewPanel::render(int posX, int posY, int width, int height) {
 
         if (nodeOpen) ImGui::TreePop();
     }
+
     ImGui::PopStyleVar();
+
+    // Check if the background of the TreeViewPanel was clicked
+    if (ImGui::IsWindowHovered(ImGuiHoveredFlags_AllowWhenBlockedByPopup) && ImGui::IsMouseClicked(ImGuiMouseButton_Left) && !itemClicked)
+        sceneManager->GetActiveObjects().clear();
 }
 
 TreeViewPanel::~TreeViewPanel() {}
