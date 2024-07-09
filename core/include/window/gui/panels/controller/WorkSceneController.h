@@ -38,6 +38,8 @@ private:
     bool isMouseSelectBlocked;
     double lastMouseX, lastMouseY;
 
+    int lastSelectedObjectIndex = -1;
+
     // Container information
     int posX;
     int posY;

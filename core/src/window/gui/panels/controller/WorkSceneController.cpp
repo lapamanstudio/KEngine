@@ -126,18 +126,56 @@ void WorkSceneController::processMouseInput(GLFWwindow* window, float mouseWheel
             
             // Select object
             std::unique_ptr<std::vector<std::shared_ptr<GameObject>>> filteredObjects;
-            if (((int) finalMouseX == (int)lastMouseX) && ((int) finalMouseY == (int)lastMouseY)) {
+            bool isUniquePoint = ((int) finalMouseX == (int)lastMouseX) && ((int) finalMouseY == (int)lastMouseY);
+            if (isUniquePoint) {
                 filteredObjects = sceneManager->GetObjectsInCoords(glm::vec2(finalMouseX, finalMouseY));
             } else {
                 filteredObjects = sceneManager->GetObjectsInCoords(glm::vec4(lastMouseX, lastMouseY, finalMouseX, finalMouseY));
             }
 
-            if (filteredObjects->size() == 0)
-                sceneManager->SetActiveObject(nullptr);
-            else if (filteredObjects->size() == 1)
-                sceneManager->SetActiveObject(filteredObjects->at(0));
-            else
-                printf("Multiple objects selected\n");
+            auto& activeObjects = sceneManager->GetActiveObjects();
+
+            // If shift pressed don't clear
+            bool isShiftPressed = glfwGetKey(window, GLFW_KEY_LEFT_SHIFT) == GLFW_PRESS;
+
+            if (!isShiftPressed)
+                activeObjects.clear();
+
+            if (filteredObjects->size() == 0) {
+                // No objects found
+            } else if (filteredObjects->size() == 1) {
+                if (sceneManager->IsActiveObject(filteredObjects->at(0))) {
+                    sceneManager->RemoveActiveObject(filteredObjects->at(0));
+                } else {
+                    sceneManager->AddActiveObject(filteredObjects->at(0));
+                }
+                lastSelectedObjectIndex = -1;
+            } else {
+                if (isUniquePoint) {
+                    if (isShiftPressed) {
+                        for (const auto& object : *filteredObjects) {
+                            if (sceneManager->IsActiveObject(object)) {
+                                sceneManager->RemoveActiveObject(object);
+                            } else {
+                                sceneManager->AddActiveObject(object);
+                            }
+                        }
+                        lastSelectedObjectIndex = -1;
+                    } else {
+                        lastSelectedObjectIndex = (lastSelectedObjectIndex + 1) % filteredObjects->size();
+                        sceneManager->AddActiveObject(filteredObjects->at(lastSelectedObjectIndex));
+                    }
+                } else {
+                    for (const auto& object : *filteredObjects) {
+                        if (sceneManager->IsActiveObject(object)) {
+                            sceneManager->RemoveActiveObject(object);
+                        } else {
+                            sceneManager->AddActiveObject(object);
+                        }
+                    }
+                    lastSelectedObjectIndex = -1;
+                }
+            }
 
             workSceneRenderer->clearSelectionBox();
         }

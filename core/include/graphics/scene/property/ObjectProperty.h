@@ -54,13 +54,14 @@ class FloatProperty : public Property {
 public:
     using FilterFunc = std::function<void(float&)>;
 
-    FloatProperty(const std::string& name, float* valuePtr, float step, FilterFunc filterFunc = nullptr) 
-        : Property(name), valuePtr(valuePtr), step(step), filterFunc(filterFunc) {}
+    FloatProperty(const std::string& name, float* valuePtr, float step, FilterFunc filterFunc = nullptr, float minVal = -9999999, float maxVal = 9999999) 
+        : Property(name), valuePtr(valuePtr), step(step), filterFunc(filterFunc), minVal(minVal), maxVal(maxVal) {}
 
     void Render() override {
         RenderLabel();
-        if (ImGui::DragFloat(imguiID.c_str(), valuePtr, step))
+        if (ImGui::DragFloat(imguiID.c_str(), valuePtr, step, minVal, maxVal, "%.3f", ImGuiSliderFlags_AlwaysClamp)) {
             if (filterFunc) filterFunc(*valuePtr);
+        }
         EndRender();
     }
 
@@ -68,11 +69,14 @@ private:
     float* valuePtr;
     float step;
     FilterFunc filterFunc;
+    float minVal;
+    float maxVal;
 };
 
 class Vec2FloatProperty : public Property {
 public:
-    Vec2FloatProperty(const std::string& name, float* valuePtrX, float* valuePtrY, float step) : Property(name), valuePtrX(valuePtrX), valuePtrY(valuePtrY), step(step) {}
+    Vec2FloatProperty(const std::string& name, float* valuePtrX, float* valuePtrY, float step, float minVal = -9999999, float maxVal = 9999999) 
+        : Property(name), valuePtrX(valuePtrX), valuePtrY(valuePtrY), step(step), minVal(minVal), maxVal(maxVal) {}
 
     void Render() override {
         RenderLabel();
@@ -83,7 +87,7 @@ public:
         float itemWidth = (availableWidth - ImGui::CalcTextSize("X").x - ImGui::CalcTextSize("Y").x + 10 - ImGui::GetStyle().ItemSpacing.x * 4) / 2;
 
         ImGui::PushItemWidth(itemWidth);
-        ImGui::DragFloat((imguiID + "X").c_str(), valuePtrX, 1.0f);
+        ImGui::DragFloat((imguiID + "X").c_str(), valuePtrX, step, minVal, maxVal, "%.3f", ImGuiSliderFlags_AlwaysClamp);
         ImGui::PopItemWidth();
 
         ImGui::SameLine();
@@ -91,7 +95,7 @@ public:
         ImGui::SameLine();
 
         ImGui::PushItemWidth(-10);
-        ImGui::DragFloat((imguiID + "Y").c_str(), valuePtrY, 1.0f);
+        ImGui::DragFloat((imguiID + "Y").c_str(), valuePtrY, step, minVal, maxVal, "%.3f", ImGuiSliderFlags_AlwaysClamp);
         EndRender();
     }
 
@@ -99,6 +103,8 @@ private:
     float* valuePtrX;
     float* valuePtrY;
     float step;
+    float minVal;
+    float maxVal;
 };
 
 class IntProperty : public Property {

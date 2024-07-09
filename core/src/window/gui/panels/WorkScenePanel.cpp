@@ -35,6 +35,10 @@ void WorkScenePanel::render(int posX, int posY, int width, int height) {
     // Get if the mouse is inside the panel
     bool mouseInPanel = io.MousePos.x >= posX - 20 && io.MousePos.x <= posX - 20 + width && io.MousePos.y >= posY && io.MousePos.y <= posY + height && ImGui::IsWindowFocused();
 
+    // If not focus and click in the panel with click that is not left click, focus the panel
+    if (ImGui::IsWindowHovered() && (io.MouseClicked[1] || io.MouseClicked[2]))
+        ImGui::SetWindowFocus();
+
     // DeltaTime
     double currentFrameTime = glfwGetTime();
     float deltaTime = static_cast<float>(currentFrameTime - lastFrameTime);

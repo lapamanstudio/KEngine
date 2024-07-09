@@ -56,17 +56,42 @@ public:
         return objects;
     }
 
-    void SetActiveObject(std::shared_ptr<GameObject> object) {
-        activeObject = object;
+    bool IsActiveObject(std::shared_ptr<GameObject> object) {
+        return std::find(activeObjects.begin(), activeObjects.end(), object) != activeObjects.end();
     }
 
-    std::shared_ptr<GameObject> GetActiveObject() const {
-        return activeObject;
+    void RemoveActiveObject(std::shared_ptr<GameObject> object) {
+        auto it = std::find(activeObjects.begin(), activeObjects.end(), object);
+        if (it != activeObjects.end()) {
+            activeObjects.erase(it);
+        }
+    }
+
+    void AddActiveObject(std::shared_ptr<GameObject> object) {
+        activeObjects.push_back(object);
+    }
+
+    void ReorderObject(std::shared_ptr<GameObject> object, std::shared_ptr<GameObject> target) {
+        auto it = std::find(objects.begin(), objects.end(), object);
+        if (it != objects.end()) {
+            objects.erase(it);
+        }
+        
+        auto targetIt = std::find(objects.begin(), objects.end(), target);
+        if (targetIt != objects.end()) {
+            objects.insert(targetIt, object);
+        } else {
+            objects.push_back(object);
+        }
+    }
+
+    std::vector<std::shared_ptr<GameObject>>& GetActiveObjects() {
+        return activeObjects;
     }
 
 private:
     std::vector<std::shared_ptr<GameObject>> objects;
-    std::shared_ptr<GameObject> activeObject;
+    std::vector<std::shared_ptr<GameObject>> activeObjects;
 };
 
 #endif // SCENE_MANAGER_H

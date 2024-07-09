@@ -180,27 +180,6 @@ void WorkSceneRenderer::renderRuler(SceneCamera* camera) {
     GLHelper::unuseShader();
 }
 
-void WorkSceneRenderer::renderDebugIfNeeded(SceneCamera* camera) {
-    if (this->debug && *this->debug) {
-        float topLeftX = 0;
-        float topLeftY = this->height;
-
-        GLHelper::useShader(shader->getTextProgram());
-        GLHelper::setProjectionMatrix(camera->GetProjection());
-        GLHelper::setViewMatrix(glm::mat4(1.0f));
-
-        shader->renderText("Camera position X: " + std::to_string(camera->GetPosition().x), topLeftX, topLeftY - 20, 0.3f, Colors::White);
-        shader->renderText("Camera position Y: " + std::to_string(camera->GetPosition().y), topLeftX, topLeftY - 40, 0.3f, Colors::White);
-        shader->renderText("Camera end position X: " + std::to_string(camera->GetPosition().x + camera->GetViewWidth()), topLeftX, topLeftY - 60, 0.3f, Colors::White);
-        shader->renderText("Camera top position Y: " + std::to_string(camera->GetPosition().y + camera->GetViewHeight()), topLeftX, topLeftY - 80, 0.3f, Colors::White);
-        shader->renderText("Camera zoom: " + std::to_string(camera->GetZoom()), topLeftX, topLeftY - 100, 0.3f, Colors::White);
-        shader->renderText("Camera width: " + std::to_string(camera->GetViewWidth()), topLeftX, topLeftY - 120, 0.3f, Colors::White);
-        shader->renderText("Camera height: " + std::to_string(camera->GetViewHeight()), topLeftX, topLeftY - 140, 0.3f, Colors::White);
-
-        GLHelper::unuseShader();
-    }
-}
-
 void WorkSceneRenderer::render(SceneCamera* camera, SceneManager* sceneManager) {
     GLHelper::useShader(shader->getTextProgram());
     GLHelper::setProjectionMatrix(camera->GetProjection());
@@ -237,14 +216,13 @@ void WorkSceneRenderer::batchRender(SceneCamera* camera, SceneManager* sceneMana
     
     glBindVertexArray(VAO);
     
-    for (const auto& object : sceneManager->GetObjects()) {
-        // Render object
+    // Render objects
+    for (const auto& object : sceneManager->GetObjects())
         object->Render(shader->getProgram());
 
-        // If is active object, render the selection box
-        if (sceneManager->GetActiveObject() == object)
-            object->RenderSelectionBox(shader->getProgram());
-    }
+    // Render selection boxes
+    for (const auto& activeObject : sceneManager->GetActiveObjects())
+        activeObject->RenderSelectionBox(shader->getProgram());
 
     // Render selection box
     if (selectionBox.x != 0.0f && selectionBox.y != 0.0f && selectionBox.z != 0.0f && selectionBox.w != 0.0f) {
@@ -278,8 +256,6 @@ void WorkSceneRenderer::batchRender(SceneCamera* camera, SceneManager* sceneMana
 
         GLHelper::unuseShader();
     }
-
-    renderDebugIfNeeded(camera);
 
     glBindVertexArray(0);
 }
