@@ -4,7 +4,7 @@
 #include "window/WindowManager.h"
 #include "window/gui/utils/imGuiUtils.h"
 #include "window/gui/panels/WorkScenePanel.h"
-#include "window/gui/renderer/WorkSceneRenderer.h"
+#include "window/gui/panels/workscene/renderer/WorkSceneRenderer.h"
 
 #define PADDING_LEFT_RIGHT 8
 #define PADDING_TOP_BOTTOM 8

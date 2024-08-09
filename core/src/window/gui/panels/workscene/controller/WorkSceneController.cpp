@@ -1,10 +1,16 @@
-#include "window/gui/panels/controller/WorkSceneController.h"
+#include "window/gui/panels/workscene/controller/WorkSceneController.h"
+#include "window/gui/panels/workscene/gui/WorkSceneUI.h"
+#include "graphics/drivers/ShaderHelper.h"
+#include "graphics/drivers/GLHelper.h"
 #include "graphics/scene/objects/Camera.h"
+#include "graphics/icons/translation.h"
+#include "graphics/icons/free_camera.h"
 
 WorkSceneController::WorkSceneController(int x, int y, int w, int h) 
-    : workSceneRenderer(std::make_shared<WorkSceneRenderer>(&isDebugging, x, y, w, h)),
-      camera(std::make_shared<SceneCamera>()),
+    : shader(std::make_shared<GLHelper>(vertexShaderSource, fragmentShaderSource, textShaderSource, textFragmentShader)),
+      workSceneRenderer(std::make_shared<WorkSceneRenderer>(shader, x, y, w, h)),
       sceneManager(std::make_shared<SceneManager>()),
+      workSceneUI(std::make_shared<WorkSceneUI>()),
       isDebugging(false),
       isMouseDragging(false),
       isMouseSelecting(false),
@@ -15,13 +21,22 @@ WorkSceneController::WorkSceneController(int x, int y, int w, int h)
       width(w),
       height(h),
       isF3Pressed(false) {
-    sceneManager->AddObject(std::make_shared<Camera>(0, 0, 800, 600));
-    camera->Move(glm::vec2(-10, -10));
 
-    workSceneRenderer->updateSize(camera.get(), 4, 0, w, h); // PADDING_LEFT_RIGHT / 2, 0
+    sceneManager->AddObject(std::make_shared<Camera>(0, 0, 800, 600));
+    workSceneRenderer->updateSize(sceneManager->getCamera().get(), 4, 0, w, h); // PADDING_LEFT_RIGHT / 2, 0
+
+    // Add UI Buttons
+    workSceneUI->addButton(std::make_shared<UIButton>(this, 5, free_camera_png, free_camera_png_len, [this]() {
+        this->setMode(0);
+    }));
+
+    workSceneUI->addButton(std::make_shared<UIButton>(this, 5, translation_png, translation_png_len, [this]() {
+        this->setMode(1);
+    }));
 
     crossCursor = glfwCreateStandardCursor(GLFW_RESIZE_ALL_CURSOR);
 }
+
 WorkSceneController::~WorkSceneController() {
     glfwDestroyCursor(crossCursor);
 }
@@ -32,12 +47,14 @@ void WorkSceneController::update(GLFWwindow* window, float mouseWheel, float del
 }
 
 void WorkSceneController::render(int x, int y, int w, int h) {
-    workSceneRenderer->updateSize(camera.get(), 4, 0, w, h); // PADDING_LEFT_RIGHT / 2, 0
+    workSceneRenderer->updateSize(sceneManager->getCamera().get(), 4, 0, w, h); // PADDING_LEFT_RIGHT / 2, 0
     posX = x;
     posY = y;
     width = w;
     height = h;
-    workSceneRenderer->render(camera.get(), sceneManager.get());
+    workSceneRenderer->render(sceneManager->getCamera().get(), sceneManager.get());
+    workSceneUI->render(shader.get()->getProgram(), width, height);
+    workSceneRenderer->postRender();
 }
 
 void WorkSceneController::processKeyboardInput(GLFWwindow* window, float deltaTime) {
@@ -57,6 +74,8 @@ void WorkSceneController::processMouseInput(GLFWwindow* window, float mouseWheel
     glfwGetCursorPos(window, &mouseX, &mouseY);
     glm::vec2 mousePos(mouseX - posX, mouseY - posY);
     
+    SceneCamera* camera = this->sceneManager->getCamera().get();
+
     if (glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_MIDDLE) == GLFW_PRESS) {
         if (!isMouseDragging) {
             if (!isMouseOverPanel) return;
@@ -71,7 +90,7 @@ void WorkSceneController::processMouseInput(GLFWwindow* window, float mouseWheel
             double deltaY = mousePos.y - lastMouseY;
 
             // Adjust the camera based on mouse movement
-            this->MoveCamera(static_cast<float>(-deltaX / camera->GetZoom()), static_cast<float>(deltaY / camera->GetZoom()));
+            this->sceneManager->getCamera().get()->Move(glm::vec2(static_cast<float>(-deltaX / camera->GetZoom()), static_cast<float>(deltaY / camera->GetZoom())));
 
             lastMouseX = mousePos.x;
             lastMouseY = mousePos.y;
@@ -86,7 +105,28 @@ void WorkSceneController::processMouseInput(GLFWwindow* window, float mouseWheel
     }
 
     // Reverse the Y axis
-    mousePos.y = height - mousePos.y + 37;
+    mousePos.y = height - mousePos.y + 32;
+
+    // UI Buttons
+    auto uiButtons = workSceneUI->getButtons();
+    if (uiButtons.size() > 0 && (!isMouseDragging && !isMouseSelecting)) {
+        for (const auto& button : uiButtons) {
+            if (button->isMouseOver(mousePos)) {
+                button->setHovered(true);
+                if (glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_LEFT) == GLFW_PRESS) {
+                    button->setPressed(true);
+                } else if (button->isPressed()) {
+                    button->setPressed(false);
+                    button->onClick();
+                }
+            } else {
+                button->setHovered(false);
+                button->setPressed(false);
+            }
+        }
+    }
+
+    mousePos.y += 5;
 
     // Select objects logic
     if (glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_LEFT) == GLFW_PRESS && !isMouseDragging) {
@@ -207,18 +247,14 @@ void WorkSceneController::processMouseInput(GLFWwindow* window, float mouseWheel
             cameraPos = glm::mix(cameraPos, newCameraPos, 0.1f);
 
             // Set the new camera position and zoom
-            this->camera->SetPosition(cameraPos);
-            this->camera->SetZoom(newZoom);
+            camera->SetPosition(cameraPos);
+            camera->SetZoom(newZoom);
         }
     }
 }
 
-void WorkSceneController::MoveCamera(float x, float y) {
-    camera->Move(glm::vec2(x, y));
-}
-
 void WorkSceneController::ModifyZoom(float factor) {
-    camera->Zoom(factor);
+    this->sceneManager->getCamera()->Zoom(factor);
 }
 
 GLuint WorkSceneController::getTexture() {
@@ -227,8 +263,4 @@ GLuint WorkSceneController::getTexture() {
 
 bool WorkSceneController::isDebug() const {
     return isDebugging;
-}
-
-std::shared_ptr<SceneCamera> WorkSceneController::getCamera() {
-    return camera;
 }

@@ -31,6 +31,41 @@ GLHelper::~GLHelper() {
     glDeleteBuffers(1, &VBO);
 }
 
+void GLHelper::prepareRender(int width, int height, int multiplier) {
+    glBindFramebuffer(GL_FRAMEBUFFER, FBO);
+    glViewport(0, 0, width * multiplier, height * multiplier);
+    glClear(GL_COLOR_BUFFER_BIT);
+}
+
+void GLHelper::setupFramebuffer(GLuint& texture_id, int width, int height, int multiplier) {
+    if (FBO) {
+        glDeleteFramebuffers(1, &FBO);
+        glDeleteTextures(1, &texture_id);
+        texture_id = 0;
+    }
+
+    glGenFramebuffers(1, &FBO);
+    glBindFramebuffer(GL_FRAMEBUFFER, FBO);
+
+    glGenTextures(1, &texture_id);
+    glBindTexture(GL_TEXTURE_2D, texture_id);
+
+    int textureWidth = width * multiplier;
+    int textureHeight = height * multiplier;
+
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, textureWidth, textureHeight, 0, GL_RGBA, GL_UNSIGNED_BYTE, nullptr);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+    glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, texture_id, 0);
+
+    GLenum buffers[1] = { GL_COLOR_ATTACHMENT0 };
+    glDrawBuffers(1, buffers);
+
+    glBindFramebuffer(GL_FRAMEBUFFER, 0);
+}
+
 GLuint GLHelper::createShaderProgram(const char* vertexShaderSource, const char* fragmentShaderSource) {
     GLuint vertexShader = loadShader(vertexShaderSource, GL_VERTEX_SHADER);
     GLuint fragmentShader = loadShader(fragmentShaderSource, GL_FRAGMENT_SHADER);
@@ -110,6 +145,15 @@ void GLHelper::setViewMatrix(const glm::mat4& view) {
 
 void GLHelper::setProjectionMatrix(const glm::mat4& projection) {
     setMat4("projection", projection);
+}
+
+void GLHelper::disableTexture() {
+    glUniform1i(glGetUniformLocation(currentShaderProgram, "useTexture"), GL_FALSE);
+}
+
+void GLHelper::setTexture(unsigned int texture) {
+    glUniform1i(glGetUniformLocation(currentShaderProgram, "useTexture"), GL_TRUE);
+    glUniform1i(glGetUniformLocation(currentShaderProgram, "texture1"), texture);
 }
 
 bool GLHelper::initFreeType() {
@@ -202,7 +246,7 @@ float GLHelper::getTextWidth(const std::string& text, float scale) {
 
 void GLHelper::renderText(const std::string& text, float x, float y, float scale, glm::vec3 color) {
     useShader(textShaderProgram);
-    // glEnable(GL_CULL_FACE); For some reason this line breaks the text rendering when the orthographic projection is inverted
+    // glEnable(GL_CULL_FACE); // For some reason this line breaks the text rendering when the orthographic projection is inverted
     glEnable(GL_BLEND);
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
     glUniform3f(glGetUniformLocation(getCurrentShaderProgram(), "textColor"), color.x, color.y, color.z);

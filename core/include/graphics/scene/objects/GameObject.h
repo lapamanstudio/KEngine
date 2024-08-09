@@ -31,13 +31,11 @@ public:
         properties.AddProperty(transformGroup);
     }
 
-    virtual ~GameObject() {
-        glDeleteVertexArrays(1, &VAO);
-        glDeleteBuffers(1, &VBO);
-    }
+    virtual ~GameObject() {}
 
     virtual void Update(float deltaTime) = 0;
     virtual void Render(GLuint shaderProgram) = 0;
+    virtual std::shared_ptr<GameObject> Clone() const = 0;
 
     glm::vec2 GetPosition() const { return position; }
     void SetPosition(const glm::vec2& pos) { position = pos; }
@@ -86,34 +84,41 @@ public:
         properties.Render();
     }
 
+    static GLuint GetVAO() { return VAO; }
+    static GLuint GetVBO() { return VBO; }
+
 protected:
     std::string name;
     glm::vec2 position;
     glm::vec2 size;
     float rotation;
-    GLuint VAO, VBO;
+
+    static GLuint VAO;
+    static GLuint VBO;
 
     void InitRenderData() {
-        static const float vertices[] = {
-            0.0f, 0.0f, 0.0f,
-            1.0f, 0.0f, 0.0f,
-            1.0f, 1.0f, 0.0f,
-            0.0f, 1.0f, 0.0f
-        };
+        if (VAO == 0) {
+            static const float vertices[] = {
+                0.0f, 0.0f, 0.0f,
+                1.0f, 0.0f, 0.0f,
+                1.0f, 1.0f, 0.0f,
+                0.0f, 1.0f, 0.0f
+            };
 
-        glGenVertexArrays(1, &VAO);
-        glGenBuffers(1, &VBO);
+            glGenVertexArrays(1, &VAO);
+            glGenBuffers(1, &VBO);
 
-        glBindVertexArray(VAO);
+            glBindVertexArray(VAO);
 
-        glBindBuffer(GL_ARRAY_BUFFER, VBO);
-        glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
+            glBindBuffer(GL_ARRAY_BUFFER, VBO);
+            glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
 
-        glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
-        glEnableVertexAttribArray(0);
+            glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
+            glEnableVertexAttribArray(0);
 
-        glBindBuffer(GL_ARRAY_BUFFER, 0);
-        glBindVertexArray(0);
+            glBindBuffer(GL_ARRAY_BUFFER, 0);
+            glBindVertexArray(0);
+        }
     }
 
 private:

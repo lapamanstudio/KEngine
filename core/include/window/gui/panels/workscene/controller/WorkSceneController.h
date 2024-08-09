@@ -1,9 +1,11 @@
 #ifndef WORK_SCENE_CONTROLLER_H
 #define WORK_SCENE_CONTROLLER_H
 
-#include "window/gui/renderer/WorkSceneRenderer.h"
 #include "graphics/scene/SceneCamera.h"
 #include "graphics/scene/SceneManager.h"
+#include "window/gui/panels/workscene/renderer/WorkSceneRenderer.h"
+
+class WorkSceneUI;
 
 class WorkSceneController {
 public:
@@ -12,24 +14,41 @@ public:
 
     void update(GLFWwindow* window, float mouseWheel, float deltaTime, bool mouseInPanel);
     void render(int x, int y, int w, int h);
-    void MoveCamera(float x, float y);
     void ModifyZoom(float zoom);
     
-    std::shared_ptr<SceneCamera> getCamera();
     GLuint getTexture();
     bool isDebug() const;
 
     std::shared_ptr<SceneManager> getSceneManager() {
         return sceneManager;
     }
-    
+
+    void setCopiedObjects(const std::vector<std::shared_ptr<GameObject>>& copiedObjects) {
+        this->copiedObjects = copiedObjects;
+    }
+
+    const std::vector<std::shared_ptr<GameObject>>& getCopiedObjects() const {
+        return copiedObjects;
+    }
+
+    void setMode(int mode) {
+        this->mode = mode;
+    }
+
+    int getMode() const {
+        return mode;
+    }
+
 private:
     void processKeyboardInput(GLFWwindow* window, float deltaTime);
     void processMouseInput(GLFWwindow* window, float mouseWheel, float deltaTime, bool mouseInPanel);
 
+    std::shared_ptr<GLHelper> shader;
     std::shared_ptr<WorkSceneRenderer> workSceneRenderer;
-    std::shared_ptr<SceneCamera> camera;
     std::shared_ptr<SceneManager> sceneManager;
+    std::shared_ptr<WorkSceneUI> workSceneUI;
+
+    std::vector<std::shared_ptr<GameObject>> copiedObjects;
 
     // Dragging
     bool isDebugging;
@@ -38,6 +57,7 @@ private:
     bool isMouseSelectBlocked;
     double lastMouseX, lastMouseY;
 
+    int mode;
     int lastSelectedObjectIndex = -1;
 
     // Container information

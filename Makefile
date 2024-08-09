@@ -92,10 +92,6 @@ $(OUT_DIR)/.deps/imgui/backends/%.o: .deps/imgui/backends/%.cpp
 clean:
 	rm -rf $(OUT_DIR)
 
-# Test target
-tests: test/opengl/grid/main
-	./$<
-
 test/opengl/grid/main: test/opengl/grid/main.cpp
 	$(CC) $(CXXFLAGS) $(INC_DIRS) $< -o $@ $(LIBS)
 

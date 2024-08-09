@@ -6,8 +6,8 @@
 #include <string>
 #include <glm/gtc/type_ptr.hpp>
 #include <ft2build.h>
-#include FT_FREETYPE_H
 #include <map>
+#include FT_FREETYPE_H
 
 class GLHelper {
 public:
@@ -26,11 +26,15 @@ public:
     static void setModelMatrix(const glm::mat4& model);
     static void setViewMatrix(const glm::mat4& view);
     static void setProjectionMatrix(const glm::mat4& projection);
+    static void setTexture(unsigned int texture);
+    static void disableTexture();
     static void useShader(GLuint shaderProgram);
     static void unuseShader();
     static GLuint getCurrentShaderProgram();
 
     bool initFreeType();
+    void prepareRender(int width, int height, int multiplier);
+    void setupFramebuffer(GLuint& texture_id, int width, int height, int multiplier);
     float getTextWidth(const std::string& text, float scale);
     float getTextHeight(const std::string& text, float scale);
     void renderText(const std::string& text, float x, float y, float scale, glm::vec3 color);
@@ -52,7 +56,7 @@ private:
     };
 
     std::map<GLchar, Character> Characters;
-    GLuint VAO, VBO;
+    GLuint VAO, VBO, FBO;
 };
 
 #endif

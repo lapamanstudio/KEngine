@@ -2,7 +2,7 @@
 #define DOCK_MANAGER_H
 
 #include "window/gui/panels/IDockablePanel.h"
-#include "window/gui/panels/controller/WorkSceneController.h"
+#include "window/gui/panels/workscene/controller/WorkSceneController.h"
 #include "window/gui/utils/imGuiUtils.h"
 #include "graphics/fonts/Fonts.h"
 

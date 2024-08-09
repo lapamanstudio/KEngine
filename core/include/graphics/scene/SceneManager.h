@@ -2,14 +2,24 @@
 #define SCENE_MANAGER_H
 
 #include "graphics/scene/objects/GameObject.h"
+#include "graphics/scene/SceneCamera.h"
 
 #include <vector>
 #include <memory>
 
 class SceneManager {
 public:
+    SceneManager();
+
     void AddObject(std::shared_ptr<GameObject> object) {
         objects.push_back(object);
+    }
+
+    void RemoveObject(std::shared_ptr<GameObject> object) {
+        auto it = std::find(objects.begin(), objects.end(), object);
+        if (it != objects.end()) {
+            objects.erase(it);
+        }
     }
 
     void UpdateAll(float deltaTime) {
@@ -89,7 +99,13 @@ public:
         return activeObjects;
     }
 
+    std::shared_ptr<SceneCamera>& getCamera() {
+        return camera;
+    }
+
 private:
+    std::shared_ptr<SceneCamera> camera;
+
     std::vector<std::shared_ptr<GameObject>> objects;
     std::vector<std::shared_ptr<GameObject>> activeObjects;
 };

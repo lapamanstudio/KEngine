@@ -7,12 +7,15 @@
 const GLchar* vertexShaderSource = R"(
 #version 330 core
 layout (location = 0) in vec3 aPos;
+layout (location = 1) in vec2 aTexCoord;
 uniform mat4 model;
 uniform mat4 view;
 uniform mat4 projection;
+out vec2 TexCoord;
 
 void main() {
     gl_Position = projection * view * model * vec4(aPos, 1.0f);
+    TexCoord = aTexCoord;
 }
 )";
 
@@ -20,9 +23,16 @@ const GLchar* fragmentShaderSource = R"(
 #version 330 core
 out vec4 FragColor;
 uniform vec4 vertexColor;
+uniform sampler2D texture1;
+uniform bool useTexture = false;
+in vec2 TexCoord;
 
 void main() {
-    FragColor = vertexColor;
+    if (useTexture) {
+        FragColor = texture(texture1, TexCoord) * vertexColor;
+    } else {
+        FragColor = vertexColor;
+    }
 }
 )";
 

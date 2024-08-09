@@ -10,12 +10,12 @@ void ZoomFilter(float& value) {
 }
 
 void WorldPropertiesPanel::render(int posX, int posY, int width, int height) {
-    if (!dockManager->getWorkSceneController() || !dockManager->getWorkSceneController()->getCamera())
+    if (!dockManager->getWorkSceneController() || !dockManager->getWorkSceneController()->getSceneManager()->getCamera().get())
         return;
 
     if (!initialized) {
-        glm::vec2& position = const_cast<glm::vec2&>(dockManager->getWorkSceneController()->getCamera()->GetPosition());
-        float& zoom = dockManager->getWorkSceneController()->getCamera()->GetZoom();
+        glm::vec2& position = const_cast<glm::vec2&>(dockManager->getWorkSceneController()->getSceneManager()->getCamera().get()->GetPosition());
+        float& zoom = dockManager->getWorkSceneController()->getSceneManager()->getCamera().get()->GetZoom();
 
         properties.AddProperty(std::make_shared<Vec2FloatProperty>("Position", &position.x, &position.y, 1.0f));
         properties.AddProperty(std::make_shared<FloatProperty>("Zoom", &zoom, 0.01f, ZoomFilter));

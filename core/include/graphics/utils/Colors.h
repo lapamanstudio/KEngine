@@ -10,6 +10,7 @@ namespace Colors {
     const glm::vec3 Green(0.0f, 1.0f, 0.0f);
     const glm::vec3 Blue(0.0f, 0.0f, 1.0f);
     const glm::vec3 Yellow(1.0f, 1.0f, 0.0f);
+    const glm::vec3 DarkYellow(0.5f, 0.5f, 0.0f);
     const glm::vec3 Cyan(0.0f, 1.0f, 1.0f);
     const glm::vec3 Magenta(1.0f, 0.0f, 1.0f);
     const glm::vec3 Gray(0.5f, 0.5f, 0.5f);

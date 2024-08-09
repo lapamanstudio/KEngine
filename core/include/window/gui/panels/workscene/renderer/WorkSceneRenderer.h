@@ -1,6 +1,7 @@
 #ifndef WORK_SCENE_RENDERER_H
 #define WORK_SCENE_RENDERER_H
 
+#include "window/gui/panels/workscene/renderer/RulerRenderer.h"
 #include "graphics/drivers/GLHelper.h"
 #include "graphics/scene/SceneCamera.h"
 #include "graphics/scene/SceneManager.h"
@@ -13,35 +14,29 @@
 
 class WorkSceneRenderer {
 public:
-    WorkSceneRenderer(bool* debug, int posX, int posY, int width, int height);
+    WorkSceneRenderer(std::shared_ptr<GLHelper> shader, int posX, int posY, int width, int height);
     ~WorkSceneRenderer();
 
     void render(SceneCamera* camera, SceneManager* sceneManager);
+    void postRender();
     void updateSize(SceneCamera* camera, int newX, int newY, int newWidth, int newHeight);
-    GLuint getTexture() const;
 
     void setSelectionBox(const glm::vec4& box) { selectionBox = box; }
     void clearSelectionBox() { selectionBox = glm::vec4(0.0f); }
+
+    GLuint getTexture() const { return texture_id; }
 private:
-    void setupFramebuffer();
-    void clearVertexData();
-
-    void renderDebugIfNeeded(SceneCamera* camera);
     void batchRender(SceneCamera* camera, SceneManager* sceneManager);
-    
-    void setupRuler(SceneCamera* camera);
-    void renderRuler(SceneCamera* camera);
 
+    std::shared_ptr<RulerRenderer> rulerRenderer;
     std::shared_ptr<GLHelper> shader;
 
     std::vector<float> vertexData;
-    std::vector<float> rulerVertices;
 
     glm::vec4 selectionBox;
 
-    bool* debug;
     int posX, posY, width, height;
-    GLuint texture_id, shaderProgram, VAO, VBO, EBO, FBO;
+    GLuint texture_id, shaderProgram, VAO, VBO;
 };
 
 #endif // WORK_SCENE_RENDERER_H
