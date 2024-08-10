@@ -11,7 +11,6 @@ WorkSceneController::WorkSceneController(int x, int y, int w, int h)
       workSceneRenderer(std::make_shared<WorkSceneRenderer>(shader, x, y, w, h)),
       sceneManager(std::make_shared<SceneManager>()),
       workSceneUI(std::make_shared<WorkSceneUI>()),
-      isDebugging(false),
       isMouseDragging(false),
       isMouseSelecting(false),
       lastMouseX(0.0),
@@ -19,11 +18,10 @@ WorkSceneController::WorkSceneController(int x, int y, int w, int h)
       posX(x),
       posY(y),
       width(w),
-      height(h),
-      isF3Pressed(false) {
+      height(h) {
 
     sceneManager->AddObject(std::make_shared<Camera>(0, 0, 800, 600));
-    workSceneRenderer->updateSize(sceneManager->getCamera().get(), 4, 0, w, h); // PADDING_LEFT_RIGHT / 2, 0
+    workSceneRenderer->updateSize(sceneManager->getCamera().get(), w, h);
 
     // Add UI Buttons
     workSceneUI->addButton(std::make_shared<UIButton>(this, 5, translation_png, translation_png_len, [this]() {
@@ -50,7 +48,7 @@ void WorkSceneController::update(GLFWwindow* window, float mouseWheel, float del
 }
 
 void WorkSceneController::render(int x, int y, int w, int h) {
-    workSceneRenderer->updateSize(sceneManager->getCamera().get(), 4, 0, w, h); // PADDING_LEFT_RIGHT / 2, 0
+    workSceneRenderer->updateSize(sceneManager->getCamera().get(), w, h);
     posX = x;
     posY = y;
     width = w;
@@ -61,15 +59,7 @@ void WorkSceneController::render(int x, int y, int w, int h) {
 }
 
 void WorkSceneController::processKeyboardInput(GLFWwindow* window, float deltaTime) {
-    // Debug key - F3
-    if (glfwGetKey(window, GLFW_KEY_F3) == GLFW_PRESS) {
-        if (!isF3Pressed) {
-            this->isDebugging = !this->isDebugging;
-            isF3Pressed = true;
-        }
-    } else {
-        isF3Pressed = false;
-    }
+    
 }
 
 void WorkSceneController::processMouseInput(GLFWwindow* window, float mouseWheel, float deltaTime, bool isMouseOverPanel) {
@@ -108,7 +98,8 @@ void WorkSceneController::processMouseInput(GLFWwindow* window, float mouseWheel
     }
 
     // Reverse the Y axis
-    mousePos.y = height - mousePos.y + 32;
+    mousePos.y = height - mousePos.y;
+    workSceneRenderer->setMousePosition(mousePos.x, mousePos.y);
 
     // UI Buttons
     auto uiButtons = workSceneUI->getButtons();
@@ -128,8 +119,6 @@ void WorkSceneController::processMouseInput(GLFWwindow* window, float mouseWheel
             }
         }
     }
-
-    mousePos.y += 5;
 
     // Select objects logic
     if (glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_LEFT) == GLFW_PRESS && !isMouseDragging) {
@@ -275,6 +264,3 @@ GLuint WorkSceneController::getTexture() {
     return workSceneRenderer->getTexture();
 }
 
-bool WorkSceneController::isDebug() const {
-    return isDebugging;
-}

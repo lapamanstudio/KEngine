@@ -57,8 +57,6 @@ public:
 
     // Yellow selection box around the object
     void RenderSelectionBox(GLuint shaderProgram) {
-        GLHelper::useShader(shaderProgram);
-
         glm::mat4 model = glm::mat4(1.0f);
         model = glm::translate(model, glm::vec3(position, 0.0f));
         model = glm::translate(model, glm::vec3(size * 0.5f, 0.0f));
@@ -69,11 +67,7 @@ public:
         GLHelper::setModelMatrix(model);
         GLHelper::setColor3f(Colors::Yellow);
 
-        glBindVertexArray(VAO);
         glDrawArrays(GL_LINE_LOOP, 0, 4);
-        glBindVertexArray(0);
-
-        GLHelper::unuseShader();
     }
 
     const Properties& GetProperties() const {

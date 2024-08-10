@@ -73,7 +73,7 @@ void WorkSceneRenderer::batchRender(SceneCamera* camera, SceneManager* sceneMana
     // Render objects
     for (const auto& object : sceneManager->GetObjects())
         object->Render(shader->getProgram());
-    
+
     // Render selection boxes
     for (const auto& activeObject : sceneManager->GetActiveObjects())
         activeObject->RenderSelectionBox(shader->getProgram());
@@ -106,13 +106,11 @@ void WorkSceneRenderer::batchRender(SceneCamera* camera, SceneManager* sceneMana
         GLHelper::setColor3f(Colors::Gray);
 
         glDrawArrays(GL_LINE_LOOP, 0, 4);
+        glBindVertexArray(0);
     }
-    glBindVertexArray(0);
 }
 
-void WorkSceneRenderer::updateSize(SceneCamera* camera, int newX, int newY, int newWidth, int newHeight) {
-    posX = newX;
-    posY = newY;
+void WorkSceneRenderer::updateSize(SceneCamera* camera, int newWidth, int newHeight) {
     width = newWidth;
     height = newHeight;
 

@@ -19,25 +19,15 @@ public:
 
     void update(GLFWwindow* window, float mouseWheel, float deltaTime, bool mouseInPanel);
     void render(int x, int y, int w, int h);
-    void ModifyZoom(float zoom);
     
     GLuint getTexture();
-    bool isDebug() const;
+    std::shared_ptr<SceneManager> getSceneManager() { return sceneManager; }
+    
+    const std::vector<std::shared_ptr<GameObject>>& getCopiedObjects() const { return copiedObjects; }
+    void setCopiedObjects(const std::vector<std::shared_ptr<GameObject>>& copiedObjects) { this->copiedObjects = copiedObjects; }
 
-    std::shared_ptr<SceneManager> getSceneManager() {
-        return sceneManager;
-    }
-
-    void setCopiedObjects(const std::vector<std::shared_ptr<GameObject>>& copiedObjects) {
-        this->copiedObjects = copiedObjects;
-    }
-
-    const std::vector<std::shared_ptr<GameObject>>& getCopiedObjects() const {
-        return copiedObjects;
-    }
-
-    void setMode(WorkSceneMode mode);
     WorkSceneMode getMode() const { return currentMode; }
+    void setMode(WorkSceneMode mode);
 
 private:
     void processKeyboardInput(GLFWwindow* window, float deltaTime);
@@ -55,7 +45,6 @@ private:
     WorkSceneMode currentMode;
 
     // Dragging
-    bool isDebugging;
     bool isMouseDragging;
     bool isMouseSelecting;
     bool isMouseSelectBlocked;
@@ -68,9 +57,6 @@ private:
     int posY;
     int width;
     int height;
-
-    // Keys
-    bool isF3Pressed;
 
     // Cursors
     GLFWcursor* crossCursor;

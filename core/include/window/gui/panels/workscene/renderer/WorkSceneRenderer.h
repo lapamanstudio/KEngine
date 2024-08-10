@@ -19,7 +19,7 @@ public:
 
     void render(SceneCamera* camera, SceneManager* sceneManager);
     void postRender();
-    void updateSize(SceneCamera* camera, int newX, int newY, int newWidth, int newHeight);
+    void updateSize(SceneCamera* camera, int newWidth, int newHeight);
 
     void setSelectionBox(const glm::vec4& box) { selectionBox = box; }
     void clearSelectionBox() { selectionBox = glm::vec4(0.0f); }

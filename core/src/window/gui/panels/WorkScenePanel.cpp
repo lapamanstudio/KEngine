@@ -19,8 +19,6 @@ void WorkScenePanel::render(int posX, int posY, int width, int height) {
     if (width - PADDING_LEFT_RIGHT <= 0 || height - PADDING_TOP_BOTTOM <= 0) return;
     ImGui::SetScrollX(0);
 
-    ImGuiDockNode* node = ImGui::GetCurrentWindow()->DockNode;
-
     if (!workSceneController) {
         workSceneController = new WorkSceneController(posX, posY, width, height);
         dockManager->setWorkSceneController(workSceneController);
@@ -28,7 +26,7 @@ void WorkScenePanel::render(int posX, int posY, int width, int height) {
     }
 
     int w = width - 12;
-    int h = height - (node && node->IsHiddenTabBar() ? 16 : 35) - 4; // 35 = padding size + header size
+    int h = height - 38; // 38 = Adjust of header size
 
     ImGuiIO& io = ImGui::GetIO();
     
@@ -45,7 +43,7 @@ void WorkScenePanel::render(int posX, int posY, int width, int height) {
     lastFrameTime = currentFrameTime;
 
     workSceneController->update(WindowManager::getInstance().getWindow(), mouseInPanel ? ImGui::GetIO().MouseWheel : 0, deltaTime, mouseInPanel);
-    workSceneController->render(posX, posY, w, h);
+    workSceneController->render(posX - 7, posY + 21, w + 10, h + 16); // Adjust to final canvas limits
 
     GLuint texID = workSceneController->getTexture();
     ImVec2 imageSize(w, h);

@@ -50,8 +50,8 @@ glm::mat4 SceneCamera::GetViewMatrix() const {
 glm::vec2 SceneCamera::screenToWorld(const glm::vec2& screenCoords, const glm::vec2& screenSize) const {
     // Normalize screen coordinates to range [-1, 1]
     glm::vec2 normalizedScreen = glm::vec2(
-        (screenCoords.x / (screenSize.x + 8)) * 2 - 1, // 0 - LEFT | 1 - RIGHT
-        1 - (screenCoords.y / (screenSize.y + 13)) * 2  // 1 - TOP | 0 - BOTTOM
+        (screenCoords.x / screenSize.x) * 2.0f - 1.0f,  // 0 - LEFT | 1 - RIGHT
+        1.0f - (screenCoords.y / screenSize.y) * 2.0f   // 1 - TOP | 0 - BOTTOM
     );
 
     // Convert normalized screen coordinates to homogeneous coordinates
@@ -63,6 +63,12 @@ glm::vec2 SceneCamera::screenToWorld(const glm::vec2& screenCoords, const glm::v
 
     // Transform to world coordinates
     glm::vec4 worldCoordsH = inverseVPMatrix * screenCoordsH;
+
+    // From homogeneous to cartesian coordinates
+    if (worldCoordsH.w != 0.0f) {
+        worldCoordsH /= worldCoordsH.w;
+    }
+
     glm::vec2 worldCoords = glm::vec2(worldCoordsH);
 
     return worldCoords;
