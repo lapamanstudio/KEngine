@@ -1,16 +1,21 @@
 #include "window/gui/panels/workscene/gui/overlay/UIButton.h"
 #include "window/gui/panels/workscene/controller/WorkSceneController.h"
+#include "graphics/drivers/GLHelper.h"
+#include "graphics/utils/Colors.h"
 
-UIButton::UIButton(WorkSceneController* controller, float radius, const unsigned char* icon, unsigned int icon_len, std::function<void()> onClickListener)
-    : UIComponent(controller, radius), m_icon(icon), m_icon_len(icon_len), onClickListener(onClickListener) {
+UIButton::UIButton(WorkSceneController* controller, float radius, const unsigned char* icon, unsigned int icon_len, std::function<void()> onClickListener, WorkSceneMode associatedMode)
+    : UIComponent(controller, radius), m_icon(icon), m_icon_len(icon_len), onClickListener(onClickListener), mode(associatedMode) {
     loadIcon();
     setupButtonBuffers();
+    setupIconBuffers();
 }
 
 UIButton::~UIButton() {
-    glDeleteTextures(1, &m_iconTexture);
-    glDeleteBuffers(1, &m_VBO);
-    glDeleteVertexArrays(1, &m_VAO);
+    if (m_iconTexture) glDeleteTextures(1, &m_iconTexture);
+    if (m_VBO) glDeleteBuffers(1, &m_VBO);
+    if (m_VAO) glDeleteVertexArrays(1, &m_VAO);
+    if (m_iconVAO) glDeleteVertexArrays(1, &m_iconVAO);
+    if (m_iconVBO) glDeleteBuffers(1, &m_iconVBO);
 }
 
 void UIButton::render(int shaderProgram, float x, float y, float width, float height) {
@@ -19,8 +24,10 @@ void UIButton::render(int shaderProgram, float x, float y, float width, float he
     this->w = width;
     this->h = height;
 
-    renderButton(x, y, width, height);
-    // renderIcon(shaderProgram, x, y, width, height);
+    glUseProgram(shaderProgram);
+
+    renderButton();
+    renderIcon();
 }
 
 void UIButton::onClick() {
@@ -34,17 +41,18 @@ void UIButton::loadIcon() {
     if (data) {
         glGenTextures(1, &m_iconTexture);
         glBindTexture(GL_TEXTURE_2D, m_iconTexture);
-        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, m_iconWidth, m_iconHeight, 0, GL_RGBA, GL_UNSIGNED_BYTE, data);
 
+        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, m_iconWidth, m_iconHeight, 0, GL_RGBA, GL_UNSIGNED_BYTE, data);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
         glGenerateMipmap(GL_TEXTURE_2D);
+
         stbi_image_free(data);
     } else {
-        printf("Error loading icon texture\n");
+        std::cerr << "Error loading icon texture\n";
     }
 }
 
@@ -55,7 +63,7 @@ void UIButton::setupButtonBuffers() {
     glBindVertexArray(m_VAO);
 
     glBindBuffer(GL_ARRAY_BUFFER, m_VBO);
-    glBufferData(GL_ARRAY_BUFFER, 0, nullptr, GL_STATIC_DRAW);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(float) * 18, nullptr, GL_DYNAMIC_DRAW);
 
     glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
     glEnableVertexAttribArray(0);
@@ -63,15 +71,33 @@ void UIButton::setupButtonBuffers() {
     glBindVertexArray(0);
 }
 
-void UIButton::renderButton(float x, float y, float width, float height) {
-    std::vector<float> vertices = generateRoundedRectVertices(x, y, width, height, m_radius);
+void UIButton::setupIconBuffers() {
+    glGenVertexArrays(1, &m_iconVAO);
+    glGenBuffers(1, &m_iconVBO);
+
+    glBindVertexArray(m_iconVAO);
+
+    glBindBuffer(GL_ARRAY_BUFFER, m_iconVBO);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(float) * 20, nullptr, GL_DYNAMIC_DRAW);
+
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)0);
+    glEnableVertexAttribArray(0);
+    glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)(3 * sizeof(float)));
+    glEnableVertexAttribArray(1);
+
+    glBindVertexArray(0);
+}
+
+void UIButton::renderButton() {
+    std::vector<float> vertices = generateRoundedRectVertices(x, y, w, h, m_radius);
 
     glBindVertexArray(m_VAO);
 
     glBindBuffer(GL_ARRAY_BUFFER, m_VBO);
-    glBufferData(GL_ARRAY_BUFFER, vertices.size() * sizeof(float), vertices.data(), GL_STATIC_DRAW);
+    glBufferData(GL_ARRAY_BUFFER, vertices.size() * sizeof(float), vertices.data(), GL_DYNAMIC_DRAW);
 
-    GLHelper::setColor3f((controller && controller->getMode() == 1) ? Colors::DarkYellow : this->hovered ? Colors::Gray : Colors::DarkGray);
+    GLHelper::disableTexture();
+    GLHelper::setColor3f(this->active ? Colors::DarkYellow : this->hovered ? Colors::Gray : Colors::DarkGray);
     glDrawArrays(GL_TRIANGLE_FAN, 0, vertices.size() / 3);
 
     GLHelper::setColor3f(Colors::Gray);
@@ -80,45 +106,30 @@ void UIButton::renderButton(float x, float y, float width, float height) {
     glBindVertexArray(0);
 }
 
-void UIButton::renderIcon(int shaderProgram, float x, float y, float width, float height) {
+void UIButton::renderIcon() {
     if (m_iconTexture == 0) return;
 
+    glBindVertexArray(m_iconVAO);
+
     float iconVertices[] = {
-        x,            y,              0.0f, 0.0f, 1.0f,
-        x + width,    y,              0.0f, 1.0f, 1.0f,
-        x + width,    y + height,     0.0f, 1.0f, 0.0f,
-        x,            y + height,     0.0f, 0.0f, 0.0f
+        static_cast<float>(x), static_cast<float>(y), 0.0f, 0.0f, 1.0f,
+        static_cast<float>(x + w), static_cast<float>(y), 0.0f, 1.0f, 1.0f,
+        static_cast<float>(x + w), static_cast<float>(y + h), 0.0f, 1.0f, 0.0f,
+        static_cast<float>(x), static_cast<float>(y + h), 0.0f, 0.0f, 0.0f
     };
 
     unsigned int iconIndices[] = { 0, 1, 2, 2, 3, 0 };
 
-    unsigned int iconVAO, iconVBO, iconEBO;
-    glGenVertexArrays(1, &iconVAO);
-    glGenBuffers(1, &iconVBO);
-    glGenBuffers(1, &iconEBO);
-
-    glBindVertexArray(iconVAO);
-    glBindBuffer(GL_ARRAY_BUFFER, iconVBO);
+    glBindBuffer(GL_ARRAY_BUFFER, m_iconVBO);
     glBufferData(GL_ARRAY_BUFFER, sizeof(iconVertices), iconVertices, GL_STATIC_DRAW);
-    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, iconEBO);
-    glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(iconIndices), iconIndices, GL_STATIC_DRAW);
-
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)0);
-    glEnableVertexAttribArray(0);
-    glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)(3 * sizeof(float)));
-    glEnableVertexAttribArray(1);
-
-    GLHelper::setTexture(0);
-    GLHelper::setColor3f(Colors::White);
 
     glActiveTexture(GL_TEXTURE0);
     glBindTexture(GL_TEXTURE_2D, m_iconTexture);
 
-    glBindVertexArray(iconVAO);
-    glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
+    GLHelper::setTexture(0);
+    GLHelper::setColor3f(Colors::White);
+
+    glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, iconIndices);
 
     glBindVertexArray(0);
-    glDeleteVertexArrays(1, &iconVAO);
-    glDeleteBuffers(1, &iconVBO);
-    glDeleteBuffers(1, &iconEBO);
 }

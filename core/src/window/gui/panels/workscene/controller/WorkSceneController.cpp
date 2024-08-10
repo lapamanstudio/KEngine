@@ -26,13 +26,16 @@ WorkSceneController::WorkSceneController(int x, int y, int w, int h)
     workSceneRenderer->updateSize(sceneManager->getCamera().get(), 4, 0, w, h); // PADDING_LEFT_RIGHT / 2, 0
 
     // Add UI Buttons
-    workSceneUI->addButton(std::make_shared<UIButton>(this, 5, free_camera_png, free_camera_png_len, [this]() {
-        this->setMode(0);
-    }));
-
     workSceneUI->addButton(std::make_shared<UIButton>(this, 5, translation_png, translation_png_len, [this]() {
-        this->setMode(1);
-    }));
+        this->setMode(TRANSLATION_MODE);
+    }, TRANSLATION_MODE));
+
+    workSceneUI->addButton(std::make_shared<UIButton>(this, 5, free_camera_png, free_camera_png_len, [this]() {
+        this->setMode(FREE_CAMERA_MODE);
+    }, FREE_CAMERA_MODE));
+
+    this->setMode(FREE_CAMERA_MODE);
+    updateActiveButton();
 
     crossCursor = glfwCreateStandardCursor(GLFW_RESIZE_ALL_CURSOR);
 }
@@ -253,8 +256,19 @@ void WorkSceneController::processMouseInput(GLFWwindow* window, float mouseWheel
     }
 }
 
-void WorkSceneController::ModifyZoom(float factor) {
-    this->sceneManager->getCamera()->Zoom(factor);
+void WorkSceneController::setMode(WorkSceneMode mode) {
+    if (currentMode != mode) {
+        currentMode = mode;
+        updateActiveButton();
+    }
+}
+
+void WorkSceneController::updateActiveButton() {
+    auto uiButtons = workSceneUI->getButtons();
+
+    for (const auto& button : uiButtons) {
+        button->setActive(button->getMode() == currentMode);
+    }
 }
 
 GLuint WorkSceneController::getTexture() {

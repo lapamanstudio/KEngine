@@ -28,6 +28,14 @@ public:
         return this->pressed;
     }
 
+    void setActive(bool active) {
+        this->active = active;
+    }
+
+    bool isActive() const {
+        return this->active;
+    }
+
     int getHeight() const {
         return h;
     }
@@ -47,7 +55,7 @@ public:
 protected:
     WorkSceneController* controller;
     float m_radius;
-    bool hovered = false, pressed = false;
+    bool hovered = false, pressed = false, active = false;
     unsigned int x = 0, y = 0, w = 0, h = 0;
 };
 
