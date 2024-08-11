@@ -112,6 +112,7 @@ void WorkSceneController::processMouseInput(GLFWwindow* window, float mouseWheel
                     button->setPressed(false);
                     button->onClick();
                 }
+                return;
             } else {
                 button->setHovered(false);
                 button->setPressed(false);

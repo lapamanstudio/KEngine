@@ -34,7 +34,7 @@ void WorkSceneRenderer::render(SceneCamera* camera, SceneManager* sceneManager) 
     GLHelper::setViewMatrix(camera->GetViewMatrix());
     GLHelper::disableTexture();
 
-    glClearColor(0.03f, 0.03f, 0.03f, 1.0f);
+    glClearColor(0.04f, 0.04f, 0.04f, 1.0f);
     shader->prepareRender(width, height, 2);
 
     // As the width and height are doubled, the line width should be doubled as well

@@ -53,8 +53,9 @@ public:
         for (const auto& object : objects) {
             glm::vec2 pos2 = object->GetPosition();
             glm::vec2 size2 = object->GetSize();
+            float rotation = object->GetRotation();
 
-            if (MathUtil::DoRectsIntersect(pos1, size1, pos2, size2)) {
+            if (MathUtil::DoRectsIntersect(pos1, size1, pos2, size2, rotation)) {
                 objectsInCoords->push_back(object);
             }
         }

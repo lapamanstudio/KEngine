@@ -52,14 +52,14 @@ public:
     virtual std::string GetTypeIcon() const { return ICON_FA_H_SQUARE; }
 
     bool IsInCoords(const glm::vec2& coords) const {
-        return MathUtil::IsPointInRect(coords, position, size);
+        return MathUtil::IsPointInRect(coords, position, size, rotation);
     }
 
     // Yellow selection box around the object
     void RenderSelectionBox(GLuint shaderProgram) {
         glm::mat4 model = glm::mat4(1.0f);
-        model = glm::translate(model, glm::vec3(position, 0.0f));
-        model = glm::translate(model, glm::vec3(size * 0.5f, 0.0f));
+
+        model = glm::translate(model, glm::vec3(position + size * 0.5f, 0.0f));
         model = glm::rotate(model, glm::radians(rotation), glm::vec3(0.0f, 0.0f, 1.0f));
         model = glm::translate(model, glm::vec3(-size * 0.5f, 0.0f));
         model = glm::scale(model, glm::vec3(size, 1.0f));
