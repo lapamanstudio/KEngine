@@ -97,7 +97,7 @@ void UIButton::renderButton() {
     glBufferData(GL_ARRAY_BUFFER, vertices.size() * sizeof(float), vertices.data(), GL_DYNAMIC_DRAW);
 
     GLHelper::disableTexture();
-    GLHelper::setColor3f(this->active ? Colors::DarkYellow : this->hovered ? Colors::Gray : Colors::DarkGray);
+    GLHelper::setColor3f(this->active ? Colors::Orange : this->hovered ? Colors::Gray : Colors::DarkGray);
     glDrawArrays(GL_TRIANGLE_FAN, 0, vertices.size() / 3);
 
     GLHelper::setColor3f(Colors::Gray);

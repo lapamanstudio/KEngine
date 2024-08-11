@@ -20,8 +20,6 @@ WorkSceneRenderer::WorkSceneRenderer(std::shared_ptr<GLHelper> shader, int posX,
 
     glGenVertexArrays(1, &VAO);
     glGenBuffers(1, &VBO);
-
-    glEnable(GL_MULTISAMPLE);
 }
 
 WorkSceneRenderer::~WorkSceneRenderer() {
@@ -36,6 +34,7 @@ void WorkSceneRenderer::render(SceneCamera* camera, SceneManager* sceneManager) 
     GLHelper::setViewMatrix(camera->GetViewMatrix());
     GLHelper::disableTexture();
 
+    glClearColor(0.03f, 0.03f, 0.03f, 1.0f);
     shader->prepareRender(width, height, 2);
 
     // As the width and height are doubled, the line width should be doubled as well
@@ -74,13 +73,13 @@ void WorkSceneRenderer::batchRender(SceneCamera* camera, SceneManager* sceneMana
     for (const auto& object : sceneManager->GetObjects())
         object->Render(shader->getProgram());
 
-    // Render selection boxes
+    // Render selection boxes of active objects
     for (const auto& activeObject : sceneManager->GetActiveObjects())
         activeObject->RenderSelectionBox(shader->getProgram());
 
     glBindVertexArray(0);
 
-    // Render selection box
+    // Render cursor selection box
     if (selectionBox.x != 0.0f && selectionBox.y != 0.0f && selectionBox.z != 0.0f && selectionBox.w != 0.0f) {
         float x1 = selectionBox.x;
         float y1 = selectionBox.y;

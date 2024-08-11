@@ -99,7 +99,6 @@ void WorkSceneController::processMouseInput(GLFWwindow* window, float mouseWheel
 
     // Reverse the Y axis
     mousePos.y = height - mousePos.y;
-    workSceneRenderer->setMousePosition(mousePos.x, mousePos.y);
 
     // UI Buttons
     auto uiButtons = workSceneUI->getButtons();
