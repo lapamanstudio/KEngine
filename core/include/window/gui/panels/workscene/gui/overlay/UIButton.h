@@ -25,19 +25,13 @@ private:
     const unsigned char* m_icon;
     unsigned int m_icon_len;
     unsigned int m_iconTexture = 0;
-    unsigned int m_VAO = 0, m_iconVAO = 0;
-    unsigned int m_VBO = 0, m_iconVBO = 0;
-
-    int m_iconWidth = 0;
-    int m_iconHeight = 0;
+    unsigned int m_VAO = 0, m_VBO = 0;
 
     std::function<void()> onClickListener;
 
     WorkSceneMode mode;
 
-    void loadIcon();
     void setupButtonBuffers();
-    void setupIconBuffers();
     void renderButton();
     void renderIcon();
 };

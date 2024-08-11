@@ -2,6 +2,7 @@
 #include "window/gui/panels/workscene/gui/WorkSceneUI.h"
 #include "graphics/drivers/ShaderHelper.h"
 #include "graphics/drivers/GLHelper.h"
+#include "graphics/utils/TextureManager.h"
 #include "graphics/scene/objects/Camera.h"
 #include "graphics/icons/translation.h"
 #include "graphics/icons/free_camera.h"
@@ -22,6 +23,8 @@ WorkSceneController::WorkSceneController(int x, int y, int w, int h)
 
     sceneManager->AddObject(std::make_shared<Camera>(0, 0, 800, 600));
     workSceneRenderer->updateSize(sceneManager->getCamera().get(), w, h);
+
+    TextureManager::Init();
 
     // Add UI Buttons
     workSceneUI->addButton(std::make_shared<UIButton>(this, 5, translation_png, translation_png_len, [this]() {
