@@ -7,11 +7,6 @@
 
 class WorkSceneUI;
 
-enum WorkSceneMode {
-    FREE_CAMERA_MODE,
-    TRANSLATION_MODE
-};
-
 class WorkSceneController {
 public:
     WorkSceneController(int x, int y, int w, int h);
@@ -25,15 +20,12 @@ public:
     
     const std::vector<std::shared_ptr<GameObject>>& getCopiedObjects() const { return copiedObjects; }
     void setCopiedObjects(const std::vector<std::shared_ptr<GameObject>>& copiedObjects) { this->copiedObjects = copiedObjects; }
-
-    WorkSceneMode getMode() const { return currentMode; }
-    void setMode(WorkSceneMode mode);
-
 private:
     void processKeyboardInput(GLFWwindow* window, float deltaTime);
     void processMouseInput(GLFWwindow* window, float mouseWheel, float deltaTime, bool mouseInPanel);
 
-    void updateActiveButton();
+    void updateActiveButton(WorkSceneMode mode);
+    void setMode(WorkSceneMode mode);
 
     std::shared_ptr<GLHelper> shader;
     std::shared_ptr<WorkSceneRenderer> workSceneRenderer;
@@ -41,8 +33,6 @@ private:
     std::shared_ptr<WorkSceneUI> workSceneUI;
 
     std::vector<std::shared_ptr<GameObject>> copiedObjects;
-
-    WorkSceneMode currentMode;
 
     // Dragging
     bool isMouseDragging;

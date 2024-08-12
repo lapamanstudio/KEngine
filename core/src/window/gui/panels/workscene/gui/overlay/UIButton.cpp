@@ -25,7 +25,9 @@ void UIButton::render(int shaderProgram, float x, float y, float width, float he
     glUseProgram(shaderProgram);
 
     renderButton();
-    renderIcon();
+
+    GLHelper::setColor3f(Colors::White);
+    TextureManager::renderTexture(m_iconTexture, x, y, width, height);
 }
 
 void UIButton::onClick() {
@@ -63,34 +65,6 @@ void UIButton::renderButton() {
 
     GLHelper::setColor3f(Colors::Gray);
     glDrawArrays(GL_LINE_LOOP, 0, vertices.size() / 3);
-
-    glBindVertexArray(0);
-}
-
-void UIButton::renderIcon() {
-    if (m_iconTexture == 0) return;
-
-    TextureManager::BindVAO();
-
-    float iconVertices[] = {
-        static_cast<float>(x), static_cast<float>(y), 0.0f, 0.0f, 1.0f,
-        static_cast<float>(x + w), static_cast<float>(y), 0.0f, 1.0f, 1.0f,
-        static_cast<float>(x + w), static_cast<float>(y + h), 0.0f, 1.0f, 0.0f,
-        static_cast<float>(x), static_cast<float>(y + h), 0.0f, 0.0f, 0.0f
-    };
-
-    unsigned int iconIndices[] = { 0, 1, 2, 2, 3, 0 };
-
-    TextureManager::BindVBO();
-    glBufferData(GL_ARRAY_BUFFER, sizeof(iconVertices), iconVertices, GL_STATIC_DRAW);
-
-    glActiveTexture(GL_TEXTURE0);
-    glBindTexture(GL_TEXTURE_2D, m_iconTexture);
-
-    GLHelper::setTexture(0);
-    GLHelper::setColor3f(Colors::White);
-
-    glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, iconIndices);
 
     glBindVertexArray(0);
 }

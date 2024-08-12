@@ -1,7 +1,12 @@
 #include "window/gui/panels/workscene/renderer/WorkSceneRenderer.h"
 #include "window/gui/panels/workscene/gui/overlay/PanelRenderUtils.h"
 #include "graphics/drivers/GLHelper.h"
+#include "graphics/utils/TextureManager.h"
 #include "graphics/utils/Colors.h"
+
+#include "graphics/icons/translation_center_circle.h"
+#include "graphics/icons/translation_right_arrow.h"
+#include "graphics/icons/translation_up_arrow.h"
 
 #include <cstdio>
 
@@ -20,6 +25,10 @@ WorkSceneRenderer::WorkSceneRenderer(std::shared_ptr<GLHelper> shader, int posX,
 
     glGenVertexArrays(1, &VAO);
     glGenBuffers(1, &VBO);
+
+    translationUpArrowTexture = TextureManager::LoadTexture(translation_up_arrow_png, translation_up_arrow_png_len);
+    translationRigthArrowTexture = TextureManager::LoadTexture(translation_right_arrow_png, translation_right_arrow_png_len);
+    translationCenterCircleTexture = TextureManager::LoadTexture(translation_center_circle_png, translation_center_circle_png_len);
 }
 
 WorkSceneRenderer::~WorkSceneRenderer() {
@@ -79,6 +88,9 @@ void WorkSceneRenderer::batchRender(SceneCamera* camera, SceneManager* sceneMana
 
     glBindVertexArray(0);
 
+    // The model was changed in the selecion box of the active object so we need to reset it
+    GLHelper::setModelMatrix(glm::mat4(1.0f));
+
     // Render cursor selection box
     if (selectionBox.x != 0.0f && selectionBox.y != 0.0f && selectionBox.z != 0.0f && selectionBox.w != 0.0f) {
         float x1 = selectionBox.x;
@@ -101,11 +113,24 @@ void WorkSceneRenderer::batchRender(SceneCamera* camera, SceneManager* sceneMana
         glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 2 * sizeof(float), (void*)0);
         glEnableVertexAttribArray(0);
 
-        GLHelper::setModelMatrix(glm::mat4(1.0f));
+        GLHelper::disableTexture();
         GLHelper::setColor3f(Colors::Gray);
 
         glDrawArrays(GL_LINE_LOOP, 0, 4);
         glBindVertexArray(0);
+    }
+
+    if (sceneManager->GetMode() == TRANSLATION_MODE) {
+        auto middleOpt = sceneManager->GetMiddlePositionOfActiveObjects();
+        if (!middleOpt.has_value()) return;
+
+        glm::vec2 middle = middleOpt.value();
+
+        GLHelper::setColor3f(Colors::White);
+        // TODO: The positions are wrong when changed the icons (cause the icons were paint designed)
+        TextureManager::renderTexture(translationCenterCircleTexture, middle.x - 64, middle.y - 64, 128, 128);
+        TextureManager::renderTexture(translationRigthArrowTexture, middle.x + 20, middle.y - 64, 128, 128);
+        TextureManager::renderTexture(translationUpArrowTexture, middle.x - 64, middle.y + 10, 128, 128);
     }
 }
 

@@ -4,7 +4,6 @@
 #include "window/gui/panels/workscene/gui/overlay/UIComponent.h"
 #include "window/gui/panels/workscene/gui/overlay/PanelRenderUtils.h"
 #include "window/gui/panels/workscene/controller/WorkSceneController.h"
-#include "graphics/utils/stb_image.h"
 #include <memory>
 #include <string>
 #include <vector>
@@ -33,7 +32,6 @@ private:
 
     void setupButtonBuffers();
     void renderButton();
-    void renderIcon();
 };
 
 #endif // UI_BUTTON_H

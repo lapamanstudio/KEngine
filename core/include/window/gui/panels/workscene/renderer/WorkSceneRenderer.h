@@ -37,6 +37,8 @@ private:
 
     int posX, posY, width, height;
     GLuint texture_id, shaderProgram, VAO, VBO;
+
+    GLuint translationRigthArrowTexture, translationUpArrowTexture, translationCenterCircleTexture;
 };
 
 #endif // WORK_SCENE_RENDERER_H

@@ -1,4 +1,5 @@
 #include "graphics/utils/TextureManager.h"
+#define STB_IMAGE_IMPLEMENTATION
 #include "graphics/utils/stb_image.h"
 
 #include <unordered_map>
@@ -49,4 +50,31 @@ GLuint TextureManager::LoadTexture(const unsigned char* image, unsigned int imag
     stbi_image_free(data);
 
     return textureID;
+}
+
+void TextureManager::renderTexture(GLuint texture, int x, int y, int w, int h) {
+    if (texture == 0) return;
+
+    glBindVertexArray(VAO);
+
+    float iconVertices[] = {
+        static_cast<float>(x), static_cast<float>(y), 0.0f, 0.0f, 1.0f,
+        static_cast<float>(x + w), static_cast<float>(y), 0.0f, 1.0f, 1.0f,
+        static_cast<float>(x + w), static_cast<float>(y + h), 0.0f, 1.0f, 0.0f,
+        static_cast<float>(x), static_cast<float>(y + h), 0.0f, 0.0f, 0.0f
+    };
+
+    unsigned int iconIndices[] = { 0, 1, 2, 2, 3, 0 };
+
+    glBindBuffer(GL_ARRAY_BUFFER, VBO);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(iconVertices), iconVertices, GL_STATIC_DRAW);
+
+    glActiveTexture(GL_TEXTURE0);
+    glBindTexture(GL_TEXTURE_2D, texture);
+
+    GLHelper::setTexture(0);
+
+    glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, iconIndices);
+
+    glBindVertexArray(0);
 }

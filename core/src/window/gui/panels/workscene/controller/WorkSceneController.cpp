@@ -36,7 +36,7 @@ WorkSceneController::WorkSceneController(int x, int y, int w, int h)
     }, FREE_CAMERA_MODE));
 
     this->setMode(FREE_CAMERA_MODE);
-    updateActiveButton();
+    updateActiveButton(FREE_CAMERA_MODE);
 
     crossCursor = glfwCreateStandardCursor(GLFW_RESIZE_ALL_CURSOR);
 }
@@ -222,9 +222,7 @@ void WorkSceneController::processMouseInput(GLFWwindow* window, float mouseWheel
         float currentZoom = camera->GetZoom();
         float newZoom = currentZoom + zoomFactor;
 
-        // Constrain zoom level
         if (newZoom > 0.1f && newZoom < 2.0f) {
-            // Normalize mouse position between -1 and 1
             glm::vec2 mousePosNormalize = glm::vec2(
                 (mousePos.x - width / 2.0f) / (width / 2.0f),
                 (mousePos.y - height / 2.0f) / (height / 2.0f)
@@ -241,7 +239,6 @@ void WorkSceneController::processMouseInput(GLFWwindow* window, float mouseWheel
             // Smooth interpolation of the camera position
             cameraPos = glm::mix(cameraPos, newCameraPos, 0.1f);
 
-            // Set the new camera position and zoom
             camera->SetPosition(cameraPos);
             camera->SetZoom(newZoom);
         }
@@ -249,21 +246,20 @@ void WorkSceneController::processMouseInput(GLFWwindow* window, float mouseWheel
 }
 
 void WorkSceneController::setMode(WorkSceneMode mode) {
-    if (currentMode != mode) {
-        currentMode = mode;
-        updateActiveButton();
+    if (sceneManager.get()->GetMode() != mode) {
+        sceneManager.get()->SetMode(mode);
+        updateActiveButton(mode);
     }
 }
 
-void WorkSceneController::updateActiveButton() {
+void WorkSceneController::updateActiveButton(WorkSceneMode mode) {
     auto uiButtons = workSceneUI->getButtons();
 
     for (const auto& button : uiButtons) {
-        button->setActive(button->getMode() == currentMode);
+        button->setActive(button->getMode() == mode);
     }
 }
 
 GLuint WorkSceneController::getTexture() {
     return workSceneRenderer->getTexture();
 }
-

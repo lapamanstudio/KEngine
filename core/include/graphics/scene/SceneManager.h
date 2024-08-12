@@ -6,14 +6,18 @@
 
 #include <vector>
 #include <memory>
+#include <optional>
+
+enum WorkSceneMode {
+    FREE_CAMERA_MODE,
+    TRANSLATION_MODE
+};
 
 class SceneManager {
 public:
     SceneManager();
 
-    void AddObject(std::shared_ptr<GameObject> object) {
-        objects.push_back(object);
-    }
+    void AddObject(std::shared_ptr<GameObject> object) { objects.push_back(object); }
 
     void RemoveObject(std::shared_ptr<GameObject> object) {
         auto it = std::find(objects.begin(), objects.end(), object);
@@ -34,81 +38,29 @@ public:
         }
     }
 
-    std::unique_ptr<std::vector<std::shared_ptr<GameObject>>> GetObjectsInCoords(const glm::vec2& coords) const {
-        auto objectsInCoords = std::make_unique<std::vector<std::shared_ptr<GameObject>>>();
-        for (const auto& object : objects) {
-            if (object->IsInCoords(coords)) {
-                objectsInCoords->push_back(object);
-            }
-        }
-        return objectsInCoords;
-    }
+    std::optional<glm::vec2> GetMiddlePositionOfActiveObjects() const;
+
+    bool IsActiveObject(std::shared_ptr<GameObject> object);
+    void ReorderObject(std::shared_ptr<GameObject> object, std::shared_ptr<GameObject> target);
     
-    std::unique_ptr<std::vector<std::shared_ptr<GameObject>>> GetObjectsInCoords(const glm::vec4& coords) const {
-        auto objectsInCoords = std::make_unique<std::vector<std::shared_ptr<GameObject>>>();
+    void RemoveActiveObject(std::shared_ptr<GameObject> object);
+    void AddActiveObject(std::shared_ptr<GameObject> object) { activeObjects.push_back(object); }
 
-        glm::vec2 pos1(std::min(coords.x, coords.z), std::min(coords.y, coords.w));
-        glm::vec2 size1(std::abs(coords.z - coords.x), std::abs(coords.w - coords.y));
+    std::unique_ptr<std::vector<std::shared_ptr<GameObject>>> GetObjectsInCoords(const glm::vec2& coords) const;
+    std::unique_ptr<std::vector<std::shared_ptr<GameObject>>> GetObjectsInCoords(const glm::vec4& coords) const;
+    const std::vector<std::shared_ptr<GameObject>>& GetObjects() const { return objects; }
+    std::vector<std::shared_ptr<GameObject>>& GetActiveObjects() { return activeObjects; }
+    std::shared_ptr<SceneCamera>& getCamera() { return camera; }
 
-        for (const auto& object : objects) {
-            glm::vec2 pos2 = object->GetPosition();
-            glm::vec2 size2 = object->GetSize();
-            float rotation = object->GetRotation();
-
-            if (MathUtil::DoRectsIntersect(pos1, size1, pos2, size2, rotation)) {
-                objectsInCoords->push_back(object);
-            }
-        }
-
-        return objectsInCoords;
-    }
-
-    const std::vector<std::shared_ptr<GameObject>>& GetObjects() const {
-        return objects;
-    }
-
-    bool IsActiveObject(std::shared_ptr<GameObject> object) {
-        return std::find(activeObjects.begin(), activeObjects.end(), object) != activeObjects.end();
-    }
-
-    void RemoveActiveObject(std::shared_ptr<GameObject> object) {
-        auto it = std::find(activeObjects.begin(), activeObjects.end(), object);
-        if (it != activeObjects.end()) {
-            activeObjects.erase(it);
-        }
-    }
-
-    void AddActiveObject(std::shared_ptr<GameObject> object) {
-        activeObjects.push_back(object);
-    }
-
-    void ReorderObject(std::shared_ptr<GameObject> object, std::shared_ptr<GameObject> target) {
-        auto it = std::find(objects.begin(), objects.end(), object);
-        if (it != objects.end()) {
-            objects.erase(it);
-        }
-        
-        auto targetIt = std::find(objects.begin(), objects.end(), target);
-        if (targetIt != objects.end()) {
-            objects.insert(targetIt, object);
-        } else {
-            objects.push_back(object);
-        }
-    }
-
-    std::vector<std::shared_ptr<GameObject>>& GetActiveObjects() {
-        return activeObjects;
-    }
-
-    std::shared_ptr<SceneCamera>& getCamera() {
-        return camera;
-    }
-
+    WorkSceneMode GetMode() const { return currentMode; }
+    void SetMode(WorkSceneMode mode) { currentMode = mode; }
 private:
     std::shared_ptr<SceneCamera> camera;
 
     std::vector<std::shared_ptr<GameObject>> objects;
     std::vector<std::shared_ptr<GameObject>> activeObjects;
+
+    WorkSceneMode currentMode;
 };
 
 #endif // SCENE_MANAGER_H
