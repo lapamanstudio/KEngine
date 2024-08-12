@@ -126,28 +126,21 @@ void WorkSceneController::processMouseInput(GLFWwindow* window, float mouseWheel
     // Select objects logic
     if (glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_LEFT) == GLFW_PRESS && !isMouseDragging) {
         // Check if mouse in work scene
-        if (!isMouseSelecting && (mousePos.x < 0 || mousePos.x > width || mousePos.y < 0 || mousePos.y > height)) {
+        if (!isMouseSelecting && !isMouseSelectBlocked) {
             if (!isMouseOverPanel) return;
-            isMouseSelectBlocked = true;
-            return;
-        }
-
-        if (isMouseSelectBlocked)
-            return;
-
-        if (!isMouseSelecting) {
-            if (!isMouseOverPanel) return;
+            if (mousePos.x < 0 || mousePos.x > width || mousePos.y < 0 || mousePos.y > height) {
+                isMouseSelectBlocked = true;
+                return;
+            }
+            
             isMouseSelecting = true;
 
-            lastMouseX = camera->screenToWorld(mousePos, glm::vec2(width, height)).x;
-            lastMouseY = camera->screenToWorld(mousePos, glm::vec2(width, height)).y;
+            glm::vec2 worldCoords = camera->screenToWorld(mousePos, glm::vec2(width, height));
+            lastMouseX = worldCoords.x;
+            lastMouseY = worldCoords.y;
         } else {
-            // Get mouse coordinates in the camera
-            double finalMouseX = camera->screenToWorld(mousePos, glm::vec2(width, height)).x;
-            double finalMouseY = camera->screenToWorld(mousePos, glm::vec2(width, height)).y;
-
-            // Draw selection rectangle
-            workSceneRenderer->setSelectionBox(glm::vec4(lastMouseX, lastMouseY, finalMouseX, finalMouseY));
+            glm::vec2 worldCoords = camera->screenToWorld(mousePos, glm::vec2(width, height));
+            workSceneRenderer->setSelectionBox(glm::vec4(lastMouseX, lastMouseY, worldCoords.x, worldCoords.y));
         }
     } else {
         isMouseSelectBlocked = false;
@@ -156,51 +149,27 @@ void WorkSceneController::processMouseInput(GLFWwindow* window, float mouseWheel
             isMouseSelecting = false;
 
             // Get mouse coordinates in the camera
-            double finalMouseX = camera->screenToWorld(mousePos, glm::vec2(width, height)).x;
-            double finalMouseY = camera->screenToWorld(mousePos, glm::vec2(width, height)).y;
+            glm::vec2 worldCoords = camera->screenToWorld(mousePos, glm::vec2(width, height));
+            double finalMouseX = worldCoords.x;
+            double finalMouseY = worldCoords.y;
             
-            // Select object
-            std::unique_ptr<std::vector<std::shared_ptr<GameObject>>> filteredObjects;
-            bool isUniquePoint = ((int) finalMouseX == (int)lastMouseX) && ((int) finalMouseY == (int)lastMouseY);
-            if (isUniquePoint) {
-                filteredObjects = sceneManager->GetObjectsInCoords(glm::vec2(finalMouseX, finalMouseY));
-            } else {
-                filteredObjects = sceneManager->GetObjectsInCoords(glm::vec4(lastMouseX, lastMouseY, finalMouseX, finalMouseY));
-            }
+            // Determine if selection is a single point or a rectangle
+            bool isUniquePoint = (static_cast<int>(finalMouseX) == static_cast<int>(lastMouseX)) &&
+                                (static_cast<int>(finalMouseY) == static_cast<int>(lastMouseY));
+
+            // Get filtered objects based on selection
+            std::unique_ptr<std::vector<std::shared_ptr<GameObject>>> filteredObjects = isUniquePoint
+                ? sceneManager->GetObjectsInCoords(glm::vec2(finalMouseX, finalMouseY))
+                : sceneManager->GetObjectsInCoords(glm::vec4(lastMouseX, lastMouseY, finalMouseX, finalMouseY));
 
             auto& activeObjects = sceneManager->GetActiveObjects();
-
-            // If shift pressed don't clear
             bool isShiftPressed = glfwGetKey(window, GLFW_KEY_LEFT_SHIFT) == GLFW_PRESS;
 
             if (!isShiftPressed)
                 activeObjects.clear();
 
-            if (filteredObjects->size() == 0) {
-                // No objects found
-            } else if (filteredObjects->size() == 1) {
-                if (sceneManager->IsActiveObject(filteredObjects->at(0))) {
-                    sceneManager->RemoveActiveObject(filteredObjects->at(0));
-                } else {
-                    sceneManager->AddActiveObject(filteredObjects->at(0));
-                }
-                lastSelectedObjectIndex = -1;
-            } else {
-                if (isUniquePoint) {
-                    if (isShiftPressed) {
-                        for (const auto& object : *filteredObjects) {
-                            if (sceneManager->IsActiveObject(object)) {
-                                sceneManager->RemoveActiveObject(object);
-                            } else {
-                                sceneManager->AddActiveObject(object);
-                            }
-                        }
-                        lastSelectedObjectIndex = -1;
-                    } else {
-                        lastSelectedObjectIndex = (lastSelectedObjectIndex + 1) % filteredObjects->size();
-                        sceneManager->AddActiveObject(filteredObjects->at(lastSelectedObjectIndex));
-                    }
-                } else {
+            if (!filteredObjects->empty()) {
+                if (filteredObjects->size() == 1 || !isUniquePoint) {
                     for (const auto& object : *filteredObjects) {
                         if (sceneManager->IsActiveObject(object)) {
                             sceneManager->RemoveActiveObject(object);
@@ -209,6 +178,9 @@ void WorkSceneController::processMouseInput(GLFWwindow* window, float mouseWheel
                         }
                     }
                     lastSelectedObjectIndex = -1;
+                } else {
+                    lastSelectedObjectIndex = (lastSelectedObjectIndex + 1) % filteredObjects->size();
+                    sceneManager->AddActiveObject(filteredObjects->at(lastSelectedObjectIndex));
                 }
             }
 
@@ -219,27 +191,15 @@ void WorkSceneController::processMouseInput(GLFWwindow* window, float mouseWheel
     // Zoom In/Out
     if (mouseWheel != 0) {
         float zoomFactor = mouseWheel * 0.1f;
-        float currentZoom = camera->GetZoom();
-        float newZoom = currentZoom + zoomFactor;
+        float newZoom = camera->GetZoom() + zoomFactor;
 
         if (newZoom > 0.1f && newZoom < 2.0f) {
-            glm::vec2 mousePosNormalize = glm::vec2(
-                (mousePos.x - width / 2.0f) / (width / 2.0f),
-                (mousePos.y - height / 2.0f) / (height / 2.0f)
-            );
-
+            glm::vec2 mousePosNormalize = (mousePos - glm::vec2(width / 2.0f, height / 2.0f)) / glm::vec2(width / 2.0f, height / 2.0f);
             glm::vec2 cameraPos = camera->GetPosition();
+            glm::vec2 worldMousePos = cameraPos + mousePosNormalize * (width / (2.0f * camera->GetZoom()));
 
-            // Calculate the world coordinates of the mouse position
-            glm::vec2 worldMousePos = cameraPos + mousePosNormalize * (width / (2.0f * currentZoom));
-
-            // Calculate the new camera position to maintain the zoom focal point
             glm::vec2 newCameraPos = worldMousePos - mousePosNormalize * (width / (2.0f * newZoom));
-
-            // Smooth interpolation of the camera position
-            cameraPos = glm::mix(cameraPos, newCameraPos, 0.1f);
-
-            camera->SetPosition(cameraPos);
+            camera->SetPosition(glm::mix(cameraPos, newCameraPos, 0.1f));
             camera->SetZoom(newZoom);
         }
     }

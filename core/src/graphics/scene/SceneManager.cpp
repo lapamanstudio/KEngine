@@ -60,15 +60,16 @@ std::unique_ptr<std::vector<std::shared_ptr<GameObject>>> SceneManager::GetObjec
     return objectsInCoords;
 }
 
-// TODO: Review this code
 std::optional<glm::vec2> SceneManager::GetMiddlePositionOfActiveObjects() const {
     if (activeObjects.empty()) return std::nullopt;
 
     glm::vec2 middle(0.0f, 0.0f);
 
     for (const auto& object : activeObjects) {
-        middle += (object->GetSize() / 2.0f) + object->GetPosition();
+        middle += object->GetPosition() + object->GetSize() / 2.0f;
     }
-    
+
+    middle /= static_cast<float>(activeObjects.size());
+
     return middle;
 }
