@@ -22,8 +22,17 @@ public:
         InitRenderData();
 
         this->name.resize(32, '\0');
-        properties.AddProperty(std::make_shared<StringProperty>("Name", &this->name));
-        
+        LinkProperties();
+    }
+
+    void CleanAndLinkProperties() {
+        properties.Clear();
+        LinkProperties();
+    }
+
+    void LinkProperties() {
+        properties.AddProperty(std::make_shared<StringProperty>("Name", &name));
+
         auto transformGroup = std::make_shared<GroupProperty>("Transform");
         transformGroup->AddProperty(std::make_shared<Vec2FloatProperty>("Position", &position.x, &position.y, 1.0f));
         transformGroup->AddProperty(std::make_shared<FloatProperty>("Rotation", &rotation, 0.1f));

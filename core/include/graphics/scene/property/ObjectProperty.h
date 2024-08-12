@@ -110,6 +110,7 @@ private:
 class IntProperty : public Property {
 public:
     IntProperty(const std::string& name, int* valuePtr) : Property(name), valuePtr(valuePtr) {}
+    
     void Render() override {
         RenderLabel();
         ImGui::DragInt(imguiID.c_str(), valuePtr, 1.0f);
@@ -123,6 +124,7 @@ private:
 class BoolProperty : public Property {
 public:
     BoolProperty(const std::string& name, bool* valuePtr) : Property(name), valuePtr(valuePtr) {}
+    
     void Render() override {
         RenderLabel();
         ImGui::Checkbox(imguiID.c_str(), valuePtr);
@@ -163,6 +165,10 @@ public:
         for (const auto& property : properties) {
             property->Render();
         }
+    }
+
+    void Clear() {
+        properties.clear();
     }
 
 private:

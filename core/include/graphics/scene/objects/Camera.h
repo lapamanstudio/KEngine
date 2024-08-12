@@ -10,7 +10,12 @@ public:
 
     void Update(float deltaTime) override {};
     void Render(GLuint shaderProgram) override;
-    std::shared_ptr<GameObject> Clone() const override { return std::make_shared<Camera>(*this); }
+
+    std::shared_ptr<GameObject> Clone() const override {
+        auto newCamera = std::make_shared<Camera>(*this);
+        newCamera->CleanAndLinkProperties();
+        return newCamera;
+    }
 
     std::string GetTypeIcon() const override { return ICON_FA_CAMERA_RETRO; }
 };
