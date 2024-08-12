@@ -43,8 +43,7 @@ void SceneCamera::SetProjection(glm::mat4 projection) {
 glm::mat4 SceneCamera::GetViewMatrix() const {
     glm::mat4 view = glm::mat4(1.0f);
     view = glm::scale(view, glm::vec3(1.0f * zoom, 1.0f * zoom, 1.0f));
-    view = glm::translate(view, -glm::vec3(position, 0.0f));
-    return view;
+    return glm::translate(view, -glm::vec3(position, 0.0f));
 }
 
 glm::vec2 SceneCamera::screenToWorld(const glm::vec2& screenCoords, const glm::vec2& screenSize) const {

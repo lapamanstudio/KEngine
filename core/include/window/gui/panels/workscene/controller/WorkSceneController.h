@@ -35,6 +35,7 @@ private:
     std::vector<std::shared_ptr<GameObject>> copiedObjects;
 
     // Dragging
+    bool isMouseMovingObjectsFromCenter, isMouseMovingObjectsFromUpper, isMouseMovingObjectsFromRight;
     bool isMouseDragging;
     bool isMouseSelecting;
     bool isMouseSelectBlocked;

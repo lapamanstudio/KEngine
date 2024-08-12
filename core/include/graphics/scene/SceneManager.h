@@ -54,6 +54,13 @@ public:
 
     WorkSceneMode GetMode() const { return currentMode; }
     void SetMode(WorkSceneMode mode) { currentMode = mode; }
+
+    void SetMouseInUpperArrow(bool value) { isMouseInUpperArrow = value; }
+    void SetMouseInRightArrow(bool value) { isMouseInRightArrow = value; }
+    void SetMouseInCenterCircle(bool value) { isMouseInCenterCircle = value; }
+    bool IsMouseInUpperArrow() const { return isMouseInUpperArrow; }
+    bool IsMouseInRightArrow() const { return isMouseInRightArrow; }
+    bool IsMouseInCenterCircle() const { return isMouseInCenterCircle; }
 private:
     std::shared_ptr<SceneCamera> camera;
 
@@ -61,6 +68,8 @@ private:
     std::vector<std::shared_ptr<GameObject>> activeObjects;
 
     WorkSceneMode currentMode;
+    
+    bool isMouseInUpperArrow, isMouseInRightArrow, isMouseInCenterCircle;
 };
 
 #endif // SCENE_MANAGER_H

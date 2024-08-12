@@ -38,6 +38,8 @@ public:
      */
     static bool DoRectsIntersect(const glm::vec2& pos1, const glm::vec2& size1, const glm::vec2& pos2, const glm::vec2& size2, float rotation);
 
+    static bool IsPointInRect(const glm::vec2& point, const glm::vec2& rectPos, const glm::vec2& rectSize);
+
 private:
     static std::vector<glm::vec2> GetCorners(const glm::vec2& pos, const glm::vec2& size, float rotation);
     static glm::vec2 RotatePointAroundCenter(const glm::vec2& point, const glm::vec2& center, float rotation);

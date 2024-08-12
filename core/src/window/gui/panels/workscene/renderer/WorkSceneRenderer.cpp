@@ -126,11 +126,13 @@ void WorkSceneRenderer::batchRender(SceneCamera* camera, SceneManager* sceneMana
 
         glm::vec2 middle = middleOpt.value();
 
-        GLHelper::setColor3f(Colors::White);
         // TODO: The positions are wrong when changed the icons (cause the icons were paint designed)
-        TextureManager::renderTexture(translationCenterCircleTexture, middle.x - 64, middle.y - 64, 128, 128);
+        GLHelper::setColor3f(sceneManager->IsMouseInRightArrow() ? Colors::Green : Colors::White);
         TextureManager::renderTexture(translationRigthArrowTexture, middle.x + 20, middle.y - 64, 128, 128);
+        GLHelper::setColor3f(sceneManager->IsMouseInUpperArrow() ? Colors::Green : Colors::White);
         TextureManager::renderTexture(translationUpArrowTexture, middle.x - 64, middle.y + 10, 128, 128);
+        GLHelper::setColor3f(sceneManager->IsMouseInCenterCircle() ? Colors::Green : Colors::White);
+        TextureManager::renderTexture(translationCenterCircleTexture, middle.x - 64, middle.y - 64, 128, 128);
     }
 }
 

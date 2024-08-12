@@ -83,3 +83,10 @@ void MathUtil::ProjectOntoAxis(const std::vector<glm::vec2>& corners, const glm:
         }
     }
 }
+
+bool MathUtil::IsPointInRect(const glm::vec2& point, const glm::vec2& rectPos, const glm::vec2& rectSize) {
+    if (point.x < rectPos.x || point.x > rectPos.x + rectSize.x) return false;
+    if (point.y < rectPos.y || point.y > rectPos.y + rectSize.y) return false;
+
+    return true;
+}

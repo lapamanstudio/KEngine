@@ -123,8 +123,64 @@ void WorkSceneController::processMouseInput(GLFWwindow* window, float mouseWheel
         }
     }
 
+    // Scene camera modes
+    if (sceneManager->GetMode() == WorkSceneMode::TRANSLATION_MODE) {
+        std::optional<glm::vec2> middlePosition = sceneManager->GetMiddlePositionOfActiveObjects();
+        glm::vec2 worldCoords = camera->screenToWorld(mousePos, glm::vec2(width, height));
+
+        if (middlePosition.has_value()) {
+            glm::vec2 middle = middlePosition.value();
+            glm::vec2 centerRectPos = middle - glm::vec2(32, 32);
+            glm::vec2 rightArrowRectPos = middle + glm::vec2(37, -30);
+            glm::vec2 upperArrowRectPos = middle + glm::vec2(-37, 37);
+
+            sceneManager->SetMouseInCenterCircle(MathUtil::IsPointInRect(worldCoords, centerRectPos, glm::vec2(64, 64)));
+            sceneManager->SetMouseInRightArrow(MathUtil::IsPointInRect(worldCoords, rightArrowRectPos, glm::vec2(111, 60)));
+            sceneManager->SetMouseInUpperArrow(MathUtil::IsPointInRect(worldCoords, upperArrowRectPos, glm::vec2(74, 101)));
+        }
+
+        if (glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_LEFT) == GLFW_PRESS && !isMouseDragging && !isMouseSelecting) {
+            static glm::vec2 initialMouseWorldCoords;
+            bool freeCheck = !isMouseMovingObjectsFromCenter && !isMouseMovingObjectsFromRight && !isMouseMovingObjectsFromUpper;
+
+            auto handleMovement = [&](bool& isMovingFlag, bool isMouseInArea, auto updatePosition) {
+                if (isMouseInArea && freeCheck) {
+                    isMovingFlag = true;
+                    initialMouseWorldCoords = worldCoords;
+                }
+
+                if (isMovingFlag) {
+                    glm::vec2 mouseDelta = worldCoords - initialMouseWorldCoords;
+                    for (const auto& object : sceneManager->GetActiveObjects()) {
+                        updatePosition(object, mouseDelta);
+                    }
+                    initialMouseWorldCoords = worldCoords;
+                }
+            };
+
+            handleMovement(isMouseMovingObjectsFromCenter, sceneManager->IsMouseInCenterCircle(), [](const auto& object, const glm::vec2& delta) {
+                object->SetPosition(object->GetPosition() + delta);
+            });
+
+            handleMovement(isMouseMovingObjectsFromRight, sceneManager->IsMouseInRightArrow(), [](const auto& object, const glm::vec2& delta) {
+                object->SetPosition(glm::vec2(object->GetPosition().x + delta.x, object->GetPosition().y));
+            });
+
+            handleMovement(isMouseMovingObjectsFromUpper, sceneManager->IsMouseInUpperArrow(), [](const auto& object, const glm::vec2& delta) {
+                object->SetPosition(glm::vec2(object->GetPosition().x, object->GetPosition().y + delta.y));
+            });
+
+            if (!freeCheck) return;
+        } else {
+            // Reset flags on release
+            isMouseMovingObjectsFromCenter = false;
+            isMouseMovingObjectsFromUpper = false;
+            isMouseMovingObjectsFromRight = false;
+        }
+    }
+
     // Select objects logic
-    if (glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_LEFT) == GLFW_PRESS && !isMouseDragging) {
+    if (glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_LEFT) == GLFW_PRESS && !isMouseDragging && !isMouseMovingObjectsFromCenter && !isMouseMovingObjectsFromUpper && !isMouseMovingObjectsFromRight) {
         // Check if mouse in work scene
         if (!isMouseSelecting && !isMouseSelectBlocked) {
             if (!isMouseOverPanel) return;
