@@ -36,8 +36,8 @@ public:
 
         auto transformGroup = std::make_shared<GroupProperty>("Transform");
         transformGroup->AddProperty(std::make_shared<Vec2FloatProperty>("Position", &position.x, &position.y, 1.0f));
-        transformGroup->AddProperty(std::make_shared<Vec2FloatProperty>("Size", &size.x, &size.y, 0.1f));
-        transformGroup->AddProperty(std::make_shared<Vec2FloatProperty>("Scale", &scale.x, &scale.y, 0.001f));
+        transformGroup->AddProperty(std::make_shared<Vec2FloatProperty>("Size", &size.x, &size.y, 0.1f, 0.0f));
+        transformGroup->AddProperty(std::make_shared<Vec2FloatProperty>("Scale", &scale.x, &scale.y, 0.001f, 0.0f));
         transformGroup->AddProperty(std::make_shared<FloatProperty>("Rotation", &rotation, 0.1f));
 
         properties.AddProperty(transformGroup);
@@ -47,17 +47,8 @@ public:
 
     void Render(GLuint shaderProgram) {
         if (components.size() == 0) {
-            glm::mat4 model = glm::mat4(1.0f);
-            model = glm::translate(model, glm::vec3(GetPosition(), 0.0f));
-            model = glm::translate(model, glm::vec3(GetSize() * 0.5f, 0.0f));
-            model = glm::rotate(model, glm::radians(GetRotation()), glm::vec3(0.0f, 0.0f, 1.0f));
-            model = glm::translate(model, glm::vec3(-GetSize() * 0.5f, 0.0f));
-            model = glm::scale(model, glm::vec3(GetSize(), 1.0f));
-
-            GLHelper::setModelMatrix(model);
             GLHelper::setColor3f(Colors::White);
-
-            glDrawArrays(GL_LINE_LOOP, 0, 4);
+            RenderHighlightedBox(shaderProgram);
         }
 
         for (auto& component : components) {
@@ -76,8 +67,11 @@ public:
 
     void Move(const glm::vec2& delta) { position += delta; }
 
-    glm::vec2 GetSize() const override { return size * scale; }
+    glm::vec2 GetSize() const override { return size; }
     void SetSize(const glm::vec2& sz) override { size = sz; }
+
+    glm::vec2 GetScale() const override { return scale; }
+    void SetScale(const glm::vec2& sc) override { scale = sc; }
 
     float GetRotation() const override { return rotation; }
     void SetRotation(float rot) override { rotation = rot; }
@@ -86,21 +80,24 @@ public:
     virtual std::string GetTypeIcon() const {  return components.size() == 0 ? ICON_FA_SQUARE : components[0]->GetTypeIcon(); }
 
     bool IsInCoords(const glm::vec2& coords) const {
-        return MathUtil::IsPointInRect(coords, position, size, rotation);
+        return MathUtil::IsPointInRect(coords, position, GetSize() * GetScale(), rotation);
+    }
+
+    void RenderHighlightedBox(GLuint shaderProgram) {
+        glm::mat4 model = glm::mat4(1.0f);
+
+        model = glm::translate(model, glm::vec3(GetPosition(), 0.0f));
+        model = glm::rotate(model, glm::radians(GetRotation()), glm::vec3(0.0f, 0.0f, 1.0f));
+        model = glm::scale(model, glm::vec3(GetSize() * GetScale(), 1.0f));
+
+        GLHelper::setModelMatrix(model);
+
+        glDrawArrays(GL_LINE_LOOP, 0, 4);
     }
 
     void RenderSelectedBox(GLuint shaderProgram) {
-        glm::mat4 model = glm::mat4(1.0f);
-
-        model = glm::translate(model, glm::vec3(position + size * 0.5f, 0.0f));
-        model = glm::rotate(model, glm::radians(rotation), glm::vec3(0.0f, 0.0f, 1.0f));
-        model = glm::translate(model, glm::vec3(-size * 0.5f, 0.0f));
-        model = glm::scale(model, glm::vec3(size, 1.0f));
-
-        GLHelper::setModelMatrix(model);
         GLHelper::setColor3f(Colors::Yellow);
-
-        glDrawArrays(GL_LINE_LOOP, 0, 4);
+        RenderHighlightedBox(shaderProgram);
     }
 
     const Properties& GetProperties() const {

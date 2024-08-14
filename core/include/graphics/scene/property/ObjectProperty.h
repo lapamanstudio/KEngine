@@ -7,6 +7,7 @@
 #include <vector>
 #include <memory>
 #include <imgui.h>
+#include <functional>
 
 class Property {
 public:

@@ -40,7 +40,7 @@ std::unique_ptr<std::vector<std::shared_ptr<EmptyObject>>> SceneManager::GetObje
 
     for (const auto& object : objects) {
         glm::vec2 pos2 = object->GetPosition();
-        glm::vec2 size2 = object->GetSize();
+        glm::vec2 size2 = object->GetSize() * object->GetScale();
         float rotation = object->GetRotation();
 
         if (MathUtil::DoRectsIntersect(pos1, size1, pos2, size2, rotation)) {

@@ -14,6 +14,9 @@ public:
     virtual glm::vec2 GetSize() const = 0;
     virtual void SetSize(const glm::vec2& sz) = 0;
     
+    virtual glm::vec2 GetScale() const = 0;
+    virtual void SetScale(const glm::vec2& sc) = 0;
+
     virtual float GetRotation() const = 0;
     virtual void SetRotation(float rot) = 0;
 

@@ -1,15 +1,10 @@
 #include "graphics/math/MathUtil.h"
 
 bool MathUtil::IsPointInRect(const glm::vec2& point, const glm::vec2& rectPos, const glm::vec2& rectSize, float rotation) {
-    glm::vec2 rectCenter = rectPos + rectSize * 0.5f;
-    glm::vec2 localPoint = point - rectCenter;
-
     float radians = glm::radians(-rotation);
     glm::vec2 rotatedPoint;
-    rotatedPoint.x = localPoint.x * cos(radians) - localPoint.y * sin(radians);
-    rotatedPoint.y = localPoint.x * sin(radians) + localPoint.y * cos(radians);
-
-    rotatedPoint += rectCenter;
+    rotatedPoint.x = point.x * cos(radians) - point.y * sin(radians);
+    rotatedPoint.y = point.x * sin(radians) + point.y * cos(radians);
 
     return rotatedPoint.x >= rectPos.x && rotatedPoint.x <= rectPos.x + rectSize.x &&
         rotatedPoint.y >= rectPos.y && rotatedPoint.y <= rectPos.y + rectSize.y;
@@ -27,7 +22,6 @@ bool MathUtil::DoRectsIntersect(const glm::vec2& pos1, const glm::vec2& size1, c
 }
 
 std::vector<glm::vec2> MathUtil::GetCorners(const glm::vec2& pos, const glm::vec2& size, float rotation) {
-    glm::vec2 center = pos + size * 0.5f;
     std::vector<glm::vec2> corners = {
         pos,
         pos + glm::vec2(size.x, 0),
@@ -37,7 +31,7 @@ std::vector<glm::vec2> MathUtil::GetCorners(const glm::vec2& pos, const glm::vec
 
     if (rotation != 0.0f) {
         for (auto& corner : corners) {
-            corner = RotatePointAroundCenter(corner, center, rotation);
+            corner = RotatePointAroundCenter(corner, pos, rotation);
         }
     }
 
