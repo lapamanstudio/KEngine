@@ -149,7 +149,6 @@ public:
         for (auto& property : properties) {
             property->Render();
         }
-        ImGui::SeparatorText("");
     }
 
 private:

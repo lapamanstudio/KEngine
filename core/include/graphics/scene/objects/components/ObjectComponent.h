@@ -11,16 +11,20 @@
 
 class ObjectComponent {
 public:
-    ObjectComponent(std::string name, std::weak_ptr<IObject> parent) 
-        : parentObject(parent), name(name)  {}
+    ObjectComponent(std::string name, std::weak_ptr<IObject> parent) : parentObject(parent), properties(name), name(name) {}
 
     virtual void Render(GLuint shaderProgram) = 0;
 
-    virtual std::string GetTypeIcon() const { return ICON_FA_H_SQUARE; }
+    void RenderProperties() {
+        properties.Render();
+    }
+
+    virtual std::string GetTypeIcon() const { return ICON_FA_H_SQUARE; }    
+    std::string GetName() const { return name; }
 
 protected:
     std::weak_ptr<IObject> parentObject;
-    Properties properties;
+    GroupProperty properties;
 
 private:
     std::string name;

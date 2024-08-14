@@ -37,7 +37,7 @@ public:
         auto transformGroup = std::make_shared<GroupProperty>("Transform");
         transformGroup->AddProperty(std::make_shared<Vec2FloatProperty>("Position", &position.x, &position.y, 1.0f));
         transformGroup->AddProperty(std::make_shared<Vec2FloatProperty>("Size", &size.x, &size.y, 0.1f, 0.0f));
-        transformGroup->AddProperty(std::make_shared<Vec2FloatProperty>("Scale", &scale.x, &scale.y, 0.001f, 0.0f));
+        transformGroup->AddProperty(std::make_shared<Vec2FloatProperty>("Scale", &scale.x, &scale.y, 0.001f));
         transformGroup->AddProperty(std::make_shared<FloatProperty>("Rotation", &rotation, 0.1f));
 
         properties.AddProperty(transformGroup);
@@ -52,7 +52,7 @@ public:
         }
 
         for (auto& component : components) {
-            component->Render(shaderProgram);
+            component.second.get()->Render(shaderProgram);
         }
     }
 
@@ -77,7 +77,7 @@ public:
     void SetRotation(float rot) override { rotation = rot; }
 
     std::string GetName() const override { return name; }
-    virtual std::string GetTypeIcon() const {  return components.size() == 0 ? ICON_FA_SQUARE : components[0]->GetTypeIcon(); }
+    virtual std::string GetTypeIcon() const {  return components.size() == 0 ? ICON_FA_SQUARE : components.begin()->second->GetTypeIcon(); }
 
     bool IsInCoords(const glm::vec2& coords) const {
         return MathUtil::IsPointInRect(coords, position, GetSize() * GetScale(), rotation);
@@ -106,13 +106,17 @@ public:
 
     void RenderProperties() const {
         properties.Render();
+        for (auto& component : components)
+            component.second.get()->RenderProperties();
     }
 
     static GLuint GetVAO() { return VAO; }
     static GLuint GetVBO() { return VBO; }
 
-    void AddComponent(std::shared_ptr<ObjectComponent> component) {
-        components.push_back(component);
+    bool AddComponent(std::shared_ptr<ObjectComponent> component) {
+        const auto& compName = component->GetName();
+        auto result = components.emplace(compName, component);
+        return result.second;
     }
 
 protected:
@@ -152,7 +156,7 @@ protected:
 
 private:
     Properties properties;
-    std::vector<std::shared_ptr<ObjectComponent>> components;
+    std::unordered_map<std::string, std::shared_ptr<ObjectComponent>> components;
 };
 
 #endif // EMPTYOBJECT_H

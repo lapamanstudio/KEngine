@@ -56,6 +56,10 @@ void initialize_window(GLFWwindow* window) {
     style.Colors[ImGuiCol_ResizeGrip] = ImVec4(0.8f, 0.8f, 0.8f, 0.10f); // Grip color
     style.Colors[ImGuiCol_ResizeGripHovered] = ImVec4(0.6f, 0.6f, 0.6f, 0.60f); // Hovered grip color
 
+    style.Colors[ImGuiCol_Button] = ImVec4(0.25f, 0.25f, 0.25f, 1.0f); // Default button color
+    style.Colors[ImGuiCol_ButtonHovered] = ImVec4(0.35f, 0.35f, 0.35f, 1.0f); // Hovered button color
+    style.Colors[ImGuiCol_ButtonActive] = ImVec4(0.15f, 0.15f, 0.15f, 1.0f); // Active button color
+
     style.Colors[ImGuiCol_Tab] = ImLerp(style.Colors[ImGuiCol_Header], style.Colors[ImGuiCol_TitleBgActive], 0.80f); // Dark tab color
     style.Colors[ImGuiCol_TabHovered] = style.Colors[ImGuiCol_HeaderHovered]; // Hovered tab color
     style.Colors[ImGuiCol_TabActive] = ImLerp(style.Colors[ImGuiCol_HeaderActive], style.Colors[ImGuiCol_TitleBgActive], 0.60f); // Active tab color

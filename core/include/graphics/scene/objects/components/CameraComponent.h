@@ -7,7 +7,10 @@
 
 class CameraComponent : public ObjectComponent {
 public:
-    CameraComponent(std::weak_ptr<IObject> parent) : ObjectComponent("Camera", parent) {}
+    CameraComponent(std::weak_ptr<IObject> parent) : ObjectComponent("Camera", parent) {
+        static float fov = 1.0f;
+        properties.AddProperty(std::make_shared<FloatProperty>("FOV", &fov, 0.1f));
+    }
 
     void Render(GLuint shaderProgram) override;
 
