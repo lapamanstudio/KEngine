@@ -6,6 +6,8 @@
 #include "graphics/icons/translation.h"
 #include "graphics/icons/free_camera.h"
 
+#include <imgui.h>
+
 WorkSceneController::WorkSceneController(int x, int y, int w, int h) 
     : shader(std::make_shared<GLHelper>(vertexShaderSource, fragmentShaderSource, textShaderSource, textFragmentShader)),
       workSceneRenderer(std::make_shared<WorkSceneRenderer>(shader, x, y, w, h)),
@@ -68,34 +70,31 @@ void WorkSceneController::processMouseInput(GLFWwindow* window, float mouseWheel
     double mouseX, mouseY;
     glfwGetCursorPos(window, &mouseX, &mouseY);
     glm::vec2 mousePos(mouseX - posX, mouseY - posY);
-    
+
     SceneCamera* camera = this->sceneManager->getCamera().get();
 
     if (glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_MIDDLE) == GLFW_PRESS) {
         if (!isMouseDragging) {
             if (!isMouseOverPanel) return;
             isMouseDragging = true;
-            lastMouseX = mousePos.x; 
+            lastMouseX = mousePos.x;
             lastMouseY = mousePos.y;
         } else {
-            glfwSetCursor(window, crossCursor);
+            ImGui::SetMouseCursor(ImGuiMouseCursor_ResizeAll);
 
             // Calculate the mouse movement
             double deltaX = mousePos.x - lastMouseX;
             double deltaY = mousePos.y - lastMouseY;
 
             // Adjust the camera based on mouse movement
-            this->sceneManager->getCamera().get()->Move(glm::vec2(static_cast<float>(-deltaX / camera->GetZoom()), static_cast<float>(deltaY / camera->GetZoom())));
+            camera->Move(glm::vec2(static_cast<float>(-deltaX / camera->GetZoom()), static_cast<float>(deltaY / camera->GetZoom())));
 
             lastMouseX = mousePos.x;
             lastMouseY = mousePos.y;
-            return;
         }
     } else {
-        // Release
         if (isMouseDragging) {
             isMouseDragging = false;
-            glfwSetCursor(window, nullptr);
         }
     }
 
@@ -143,6 +142,7 @@ void WorkSceneController::processMouseInput(GLFWwindow* window, float mouseWheel
             bool freeCheck = !isMouseMovingObjectsFromCenter && !isMouseMovingObjectsFromRight && !isMouseMovingObjectsFromUpper;
 
             auto handleMovement = [&](bool& isMovingFlag, bool isMouseInArea, auto updatePosition) {
+                ImGui::SetMouseCursor(ImGuiMouseCursor_ResizeAll);
                 if (isMouseInArea && freeCheck) {
                     isMovingFlag = true;
                     initialMouseWorldCoords = worldCoords;
