@@ -1,6 +1,7 @@
 #include "window/gui/panels/workscene/renderer/WorkSceneRenderer.h"
 #include "window/gui/panels/workscene/gui/overlay/PanelRenderUtils.h"
 #include "graphics/drivers/GLHelper.h"
+#include "graphics/scene/objects/EmptyObject.h"
 #include "graphics/utils/TextureManager.h"
 #include "graphics/utils/Colors.h"
 
@@ -76,7 +77,7 @@ void WorkSceneRenderer::batchRender(SceneCamera* camera, SceneManager* sceneMana
     if (sceneManager == nullptr || sceneManager->GetObjects().empty())
         return;
     
-    glBindVertexArray(GameObject::GetVAO());
+    glBindVertexArray(EmptyObject::GetVAO());
 
     // Render objects
     for (const auto& object : sceneManager->GetObjects())
@@ -84,7 +85,7 @@ void WorkSceneRenderer::batchRender(SceneCamera* camera, SceneManager* sceneMana
 
     // Render selection boxes of active objects
     for (const auto& activeObject : sceneManager->GetActiveObjects())
-        activeObject->RenderSelectionBox(shader->getProgram());
+        activeObject->RenderSelectedBox(shader->getProgram());
 
     glBindVertexArray(0);
 

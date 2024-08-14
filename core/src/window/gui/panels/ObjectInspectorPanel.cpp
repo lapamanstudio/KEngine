@@ -8,7 +8,7 @@ void ObjectInspectorPanel::render(int posX, int posY, int width, int height) {
     std::shared_ptr<SceneManager> sceneManager = dockManager->getWorkSceneController()->getSceneManager();
     if (sceneManager == nullptr) return;
 
-    std::vector<std::shared_ptr<GameObject>> activeObjects = dockManager->getWorkSceneController()->getSceneManager()->GetActiveObjects();
+    std::vector<std::shared_ptr<EmptyObject>> activeObjects = dockManager->getWorkSceneController()->getSceneManager()->GetActiveObjects();
     if (activeObjects.size() == 0) {
         ImGui::SeparatorText("No object selected");
         return;

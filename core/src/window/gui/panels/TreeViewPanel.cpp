@@ -1,7 +1,7 @@
 #include <imgui.h>
 #include <memory>
 #include "window/gui/panels/TreeViewPanel.h"
-#include "graphics/scene/objects/Camera.h"
+#include "graphics/scene/objects/components/CameraComponent.h"
 
 TreeViewPanel::TreeViewPanel(DockManager* dockManager) : dockManager(dockManager) {}
 
@@ -18,10 +18,16 @@ void TreeViewPanel::render(int posX, int posY, int width, int height) {
     ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, ImVec2(4, 4));
 
     if (ImGui::BeginPopupContextWindow()) {
+        if (ImGui::MenuItem("Create Empty")) {
+            sceneManager->AddObject(std::make_shared<EmptyObject>(0, 0, 800, 600));
+        }
+        
         if (ImGui::BeginMenu("Create"))
         {
             if (ImGui::MenuItem("Camera")) {
-                sceneManager->AddObject(std::make_shared<Camera>(0, 0, 800, 600));
+                std::shared_ptr<EmptyObject> camera = std::make_shared<EmptyObject>(0, 0, 800, 600, "Camera");
+                camera->AddComponent(std::make_shared<CameraComponent>(camera));
+                sceneManager->AddObject(camera);
             }
             ImGui::EndMenu();
         }
@@ -85,14 +91,14 @@ void TreeViewPanel::render(int posX, int posY, int width, int height) {
         }
 
         if (ImGui::BeginDragDropSource(ImGuiDragDropFlags_None)) {
-            ImGui::SetDragDropPayload("DND_GAME_OBJECT", &object, sizeof(std::shared_ptr<GameObject>));
+            ImGui::SetDragDropPayload("DND_GAME_OBJECT", &object, sizeof(std::shared_ptr<EmptyObject>));
             ImGui::Text("%s", (object->GetTypeIcon() + " " + object->GetName()).c_str());
             ImGui::EndDragDropSource();
         }
 
         if (ImGui::BeginDragDropTarget()) {
             if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("DND_GAME_OBJECT")) {
-                std::shared_ptr<GameObject> payloadObject = *(std::shared_ptr<GameObject>*)payload->Data;
+                std::shared_ptr<EmptyObject> payloadObject = *(std::shared_ptr<EmptyObject>*)payload->Data;
                 if (payloadObject != object) {
                     sceneManager->ReorderObject(payloadObject, object);
                 }

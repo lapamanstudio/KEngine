@@ -1,4 +1,5 @@
 #include "graphics/scene/SceneManager.h"
+#include "graphics/scene/property/ObjectProperty.h"
 
 int Property::idCounter = 0;
 
@@ -6,7 +7,7 @@ SceneManager::SceneManager() : camera(std::make_shared<SceneCamera>()) {
     camera.get()->Move(glm::vec2(-10, -10));
 }
 
-void SceneManager::ReorderObject(std::shared_ptr<GameObject> object, std::shared_ptr<GameObject> target) {
+void SceneManager::ReorderObject(std::shared_ptr<EmptyObject> object, std::shared_ptr<EmptyObject> target) {
     auto it = std::find(objects.begin(), objects.end(), object);
     if (it != objects.end()) {
         objects.erase(it);
@@ -20,19 +21,19 @@ void SceneManager::ReorderObject(std::shared_ptr<GameObject> object, std::shared
     }
 }
 
-void SceneManager::RemoveActiveObject(std::shared_ptr<GameObject> object) {
+void SceneManager::RemoveActiveObject(std::shared_ptr<EmptyObject> object) {
     auto it = std::find(activeObjects.begin(), activeObjects.end(), object);
     if (it != activeObjects.end()) {
         activeObjects.erase(it);
     }
 }
 
-bool SceneManager::IsActiveObject(std::shared_ptr<GameObject> object) {
+bool SceneManager::IsActiveObject(std::shared_ptr<EmptyObject> object) {
     return std::find(activeObjects.begin(), activeObjects.end(), object) != activeObjects.end();
 }
 
-std::unique_ptr<std::vector<std::shared_ptr<GameObject>>> SceneManager::GetObjectsInCoords(const glm::vec4& coords) const {
-    auto objectsInCoords = std::make_unique<std::vector<std::shared_ptr<GameObject>>>();
+std::unique_ptr<std::vector<std::shared_ptr<EmptyObject>>> SceneManager::GetObjectsInCoords(const glm::vec4& coords) const {
+    auto objectsInCoords = std::make_unique<std::vector<std::shared_ptr<EmptyObject>>>();
 
     glm::vec2 pos1(std::min(coords.x, coords.z), std::min(coords.y, coords.w));
     glm::vec2 size1(std::abs(coords.z - coords.x), std::abs(coords.w - coords.y));
@@ -50,8 +51,8 @@ std::unique_ptr<std::vector<std::shared_ptr<GameObject>>> SceneManager::GetObjec
     return objectsInCoords;
 }
 
-std::unique_ptr<std::vector<std::shared_ptr<GameObject>>> SceneManager::GetObjectsInCoords(const glm::vec2& coords) const {
-    auto objectsInCoords = std::make_unique<std::vector<std::shared_ptr<GameObject>>>();
+std::unique_ptr<std::vector<std::shared_ptr<EmptyObject>>> SceneManager::GetObjectsInCoords(const glm::vec2& coords) const {
+    auto objectsInCoords = std::make_unique<std::vector<std::shared_ptr<EmptyObject>>>();
     for (const auto& object : objects) {
         if (object->IsInCoords(coords)) {
             objectsInCoords->push_back(object);

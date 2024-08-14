@@ -18,8 +18,8 @@ public:
     GLuint getTexture();
     std::shared_ptr<SceneManager> getSceneManager() { return sceneManager; }
     
-    const std::vector<std::shared_ptr<GameObject>>& getCopiedObjects() const { return copiedObjects; }
-    void setCopiedObjects(const std::vector<std::shared_ptr<GameObject>>& copiedObjects) { this->copiedObjects = copiedObjects; }
+    const std::vector<std::shared_ptr<EmptyObject>>& getCopiedObjects() const { return copiedObjects; }
+    void setCopiedObjects(const std::vector<std::shared_ptr<EmptyObject>>& copiedObjects) { this->copiedObjects = copiedObjects; }
 private:
     void processKeyboardInput(GLFWwindow* window, float deltaTime);
     void processMouseInput(GLFWwindow* window, float mouseWheel, float deltaTime, bool mouseInPanel);
@@ -32,7 +32,7 @@ private:
     std::shared_ptr<SceneManager> sceneManager;
     std::shared_ptr<WorkSceneUI> workSceneUI;
 
-    std::vector<std::shared_ptr<GameObject>> copiedObjects;
+    std::vector<std::shared_ptr<EmptyObject>> copiedObjects;
 
     // Dragging
     bool isMouseMovingObjectsFromCenter, isMouseMovingObjectsFromUpper, isMouseMovingObjectsFromRight;

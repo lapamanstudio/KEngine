@@ -3,7 +3,6 @@
 #include "graphics/drivers/ShaderHelper.h"
 #include "graphics/drivers/GLHelper.h"
 #include "graphics/utils/TextureManager.h"
-#include "graphics/scene/objects/Camera.h"
 #include "graphics/icons/translation.h"
 #include "graphics/icons/free_camera.h"
 
@@ -21,7 +20,7 @@ WorkSceneController::WorkSceneController(int x, int y, int w, int h)
       width(w),
       height(h) {
 
-    sceneManager->AddObject(std::make_shared<Camera>(0, 0, 800, 600));
+    // sceneManager->AddObject(std::make_shared<Camera>(0, 0, 800, 600));
     workSceneRenderer->updateSize(sceneManager->getCamera().get(), w, h);
 
     TextureManager::Init();
@@ -214,7 +213,7 @@ void WorkSceneController::processMouseInput(GLFWwindow* window, float mouseWheel
                                 (static_cast<int>(finalMouseY) == static_cast<int>(lastMouseY));
 
             // Get filtered objects based on selection
-            std::unique_ptr<std::vector<std::shared_ptr<GameObject>>> filteredObjects = isUniquePoint
+            std::unique_ptr<std::vector<std::shared_ptr<EmptyObject>>> filteredObjects = isUniquePoint
                 ? sceneManager->GetObjectsInCoords(glm::vec2(finalMouseX, finalMouseY))
                 : sceneManager->GetObjectsInCoords(glm::vec4(lastMouseX, lastMouseY, finalMouseX, finalMouseY));
 
