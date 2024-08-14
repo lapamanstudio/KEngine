@@ -142,7 +142,6 @@ void WorkSceneController::processMouseInput(GLFWwindow* window, float mouseWheel
             bool freeCheck = !isMouseMovingObjectsFromCenter && !isMouseMovingObjectsFromRight && !isMouseMovingObjectsFromUpper;
 
             auto handleMovement = [&](bool& isMovingFlag, bool isMouseInArea, auto updatePosition) {
-                ImGui::SetMouseCursor(ImGuiMouseCursor_ResizeAll);
                 if (isMouseInArea && freeCheck) {
                     isMovingFlag = true;
                     initialMouseWorldCoords = worldCoords;
@@ -158,14 +157,17 @@ void WorkSceneController::processMouseInput(GLFWwindow* window, float mouseWheel
             };
 
             handleMovement(isMouseMovingObjectsFromCenter, sceneManager->IsMouseInCenterCircle(), [](const auto& object, const glm::vec2& delta) {
+                ImGui::SetMouseCursor(ImGuiMouseCursor_ResizeAll);
                 object->SetPosition(object->GetPosition() + delta);
             });
 
             handleMovement(isMouseMovingObjectsFromRight, sceneManager->IsMouseInRightArrow(), [](const auto& object, const glm::vec2& delta) {
+                ImGui::SetMouseCursor(ImGuiMouseCursor_ResizeEW);
                 object->SetPosition(glm::vec2(object->GetPosition().x + delta.x, object->GetPosition().y));
             });
 
             handleMovement(isMouseMovingObjectsFromUpper, sceneManager->IsMouseInUpperArrow(), [](const auto& object, const glm::vec2& delta) {
+                ImGui::SetMouseCursor(ImGuiMouseCursor_ResizeNS);
                 object->SetPosition(glm::vec2(object->GetPosition().x, object->GetPosition().y + delta.y));
             });
 

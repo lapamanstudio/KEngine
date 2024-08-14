@@ -9,6 +9,7 @@ class CameraComponent : public ObjectComponent {
 public:
     CameraComponent(std::weak_ptr<IObject> parent) : ObjectComponent("Camera", parent) {
         static float fov = 1.0f;
+        // TODO Remove this property or implement the FOV, but actually is not used
         properties.AddProperty(std::make_shared<FloatProperty>("FOV", &fov, 0.1f));
     }
 
