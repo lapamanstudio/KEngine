@@ -250,7 +250,7 @@ void WorkSceneController::processMouseInput(GLFWwindow* window, float mouseWheel
         float zoomFactor = mouseWheel * 0.1f;
         float newZoom = camera->GetZoom() + zoomFactor;
 
-        if (newZoom > 0.1f && newZoom < 2.0f) {
+        if (newZoom > 0.1f && newZoom <= 10.0f) {
             glm::vec2 mousePosNormalize = (mousePos - glm::vec2(width / 2.0f, height / 2.0f)) / glm::vec2(width / 2.0f, height / 2.0f);
             glm::vec2 cameraPos = camera->GetPosition();
             glm::vec2 worldMousePos = cameraPos + mousePosNormalize * (width / (2.0f * camera->GetZoom()));
