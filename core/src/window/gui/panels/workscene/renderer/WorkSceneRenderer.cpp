@@ -74,23 +74,22 @@ void WorkSceneRenderer::batchRender(SceneCamera* camera, SceneManager* sceneMana
     vertexData.clear();
 
     // Get vertex data from all objects in the scene
-    if (sceneManager == nullptr || sceneManager->GetObjects().empty())
-        return;
-    
-    glBindVertexArray(EmptyObject::GetVAO());
+    if (sceneManager != nullptr && !sceneManager->GetObjects().empty()) {
+        glBindVertexArray(EmptyObject::GetVAO());
 
-    // Render objects
-    for (const auto& object : sceneManager->GetObjects())
-        object->Render(shader->getProgram());
+        // Render objects
+        for (const auto& object : sceneManager->GetObjects())
+            object->Render(shader->getProgram());
 
-    // Render selection boxes of active objects
-    for (const auto& activeObject : sceneManager->GetActiveObjects())
-        activeObject->RenderSelectedBox(shader->getProgram());
+        // Render selection boxes of active objects
+        for (const auto& activeObject : sceneManager->GetActiveObjects())
+            activeObject->RenderSelectedBox(shader->getProgram());
 
-    glBindVertexArray(0);
+        glBindVertexArray(0);
 
-    // The model was changed in the selecion box of the active object so we need to reset it
-    GLHelper::setModelMatrix(glm::mat4(1.0f));
+        // The model was changed in the selection box of the active object, so we need to reset it
+        GLHelper::setModelMatrix(glm::mat4(1.0f));
+    }
 
     // Render cursor selection box
     if (selectionBox.x != 0.0f && selectionBox.y != 0.0f && selectionBox.z != 0.0f && selectionBox.w != 0.0f) {

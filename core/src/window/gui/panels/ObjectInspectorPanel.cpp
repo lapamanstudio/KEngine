@@ -1,4 +1,5 @@
 #include "window/gui/panels/ObjectInspectorPanel.h"
+#include "graphics/scene/objects/components/SpriteRendererComponent.h"
 #include "graphics/scene/objects/components/CameraComponent.h"
 
 ObjectInspectorPanel::ObjectInspectorPanel(DockManager* dockManager) : dockManager(dockManager) {}
@@ -31,7 +32,7 @@ void ObjectInspectorPanel::render(int posX, int posY, int width, int height) {
     if (ImGui::Button("Add Component", ImVec2(buttonWidth, buttonHeight)))
         ImGui::OpenPopup("ComponentPopup");
 
-    ImGui::SetNextWindowPos(ImVec2(ImGui::GetCursorScreenPos().x + buttonPosX, ImGui::GetCursorScreenPos().y));
+    ImGui::SetNextWindowPos(ImVec2(ImGui::GetCursorScreenPos().x + buttonPosX - 7.5f, ImGui::GetCursorScreenPos().y));
     ImGui::SetNextWindowSize(ImVec2(buttonWidth, 0));
 
     static bool openDuplicatedComponentPopup = false;
@@ -39,6 +40,12 @@ void ObjectInspectorPanel::render(int posX, int posY, int width, int height) {
     if (ImGui::BeginPopup("ComponentPopup")) {
         if (ImGui::Selectable("Camera")) {
             if (!activeObjects.at(0)->AddComponent(std::make_shared<CameraComponent>(activeObjects.at(0)))) {
+                ImGui::CloseCurrentPopup();
+                openDuplicatedComponentPopup = true;
+            }
+        }
+        if (ImGui::Selectable("Sprite Renderer")) {
+            if (!activeObjects.at(0)->AddComponent(std::make_shared<SpriteRendererComponent>(activeObjects.at(0)))) {
                 ImGui::CloseCurrentPopup();
                 openDuplicatedComponentPopup = true;
             }

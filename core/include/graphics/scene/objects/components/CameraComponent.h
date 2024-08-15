@@ -1,5 +1,5 @@
-#ifndef SPRITE_RENDERER_COMPONENT_H
-#define SPRITE_RENDERER_COMPONENT_H
+#ifndef CAMERA_COMPONENT_H
+#define CAMERA_COMPONENT_H
 
 #include "graphics/scene/objects/components/ObjectComponent.h"
 
@@ -18,4 +18,4 @@ public:
     std::string GetTypeIcon() const override { return ICON_FA_CAMERA_RETRO; }
 };
 
-#endif // SPRITE_RENDERER_COMPONENT_H
+#endif // CAMERA_COMPONENT_H

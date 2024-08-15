@@ -21,8 +21,6 @@ public:
         : name(name), position(x, y), size(width, height), scale(1, 1), rotation(0.0f), components() {
 
         InitRenderData();
-
-        this->name.resize(32, '\0');
         LinkProperties();
     }
 

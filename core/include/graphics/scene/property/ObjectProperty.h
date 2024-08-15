@@ -38,17 +38,26 @@ private:
 
 class StringProperty : public Property {
 public:
-    StringProperty(const std::string& name, std::string* valuePtr) 
-        : Property(name), valuePtr(valuePtr) {}
+    StringProperty(const std::string& name, std::string* valuePtr, std::function<void()> callback = nullptr) 
+        : Property(name), valuePtr(valuePtr), callback(callback) {}
 
     void Render() override {
         RenderLabel();
-        ImGui::InputText(imguiID.c_str(), &(*valuePtr)[0], 32);
+
+        char buffer[256];
+        strncpy(buffer, valuePtr->c_str(), sizeof(buffer));
+        buffer[sizeof(buffer) - 1] = '\0';
+
+        if (ImGui::InputText(imguiID.c_str(), buffer, sizeof(buffer))) {
+            *valuePtr = buffer;
+            if (callback) callback();
+        }
         EndRender();
     }
 
 private:
     std::string* valuePtr;
+    std::function<void()> callback;
 };
 
 class FloatProperty : public Property {
