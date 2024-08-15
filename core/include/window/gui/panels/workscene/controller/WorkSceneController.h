@@ -43,6 +43,9 @@ private:
 
     int lastSelectedObjectIndex = -1;
 
+    int mouseDirectionWhenMovingX = 0;
+    int mouseDirectionWhenMovingY = 0;
+
     // Container information
     int posX;
     int posY;

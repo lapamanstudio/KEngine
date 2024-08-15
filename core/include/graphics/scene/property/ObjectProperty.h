@@ -1,13 +1,14 @@
 #ifndef OBJECT_PROPERTY_H
 #define OBJECT_PROPERTY_H
 
-#include "window/io/PlatformMouse.h"
-
 #include <string>
 #include <vector>
 #include <memory>
 #include <imgui.h>
+#include <imgui_internal.h>
 #include <functional>
+
+#include "window/WindowManager.h"
 
 class Property {
 public:
@@ -27,6 +28,55 @@ protected:
 
     void EndRender() const {
         ImGui::PopItemWidth();
+    }
+
+    void WrapMousePos() {
+        ImGuiContext* g = ImGui::GetCurrentContext();
+        ImGuiIO& io = g->IO;
+        ImVec2& mousePos = io.MousePos;
+
+        GLFWwindow* window = WindowManager::getInstance().getWindow();
+        int windowPosX, windowPosY;
+        glfwGetWindowPos(window, &windowPosX, &windowPosY);
+
+        int windowWidth, windowHeight;
+        glfwGetWindowSize(window, &windowWidth, &windowHeight);
+
+        // io.MousePos is relative from window, so (0, 0)
+        ImVec2 windowMin = ImVec2(0, 0);
+        ImVec2 windowMax = ImVec2(static_cast<float>(windowWidth), static_cast<float>(windowHeight));
+
+        bool wrapped = false;
+        const float offset = 1.0f;
+
+        // Horizontal wrapping
+        if (io.MouseDelta.x < 0 && mousePos.x <= windowMin.x) {
+            glfwSetCursorPos(window, windowPosX + windowMax.x - offset, windowPosY + mousePos.y);
+            mousePos.x = windowMax.x - offset;
+            wrapped = true;
+        } else if (io.MouseDelta.x > 0 && mousePos.x >= windowMax.x - offset) {
+            glfwSetCursorPos(window, windowPosX + windowMin.x + offset, windowPosY + mousePos.y);
+            mousePos.x = windowMin.x + offset;
+            wrapped = true;
+        }
+
+        // Vertical wrapping
+        if (io.MouseDelta.y < 0 && mousePos.y <= windowMin.y) {
+            glfwSetCursorPos(window, windowPosX + mousePos.x, windowPosY + windowMax.y - offset);
+            mousePos.y = windowMax.y - offset;
+            wrapped = true;
+        } else if (io.MouseDelta.y > 0 && mousePos.y >= windowMax.y - offset) {
+            glfwSetCursorPos(window, windowPosX + mousePos.x, windowPosY + windowMin.y + offset);
+            mousePos.y = windowMin.y + offset;
+            wrapped = true;
+        }
+
+        // Update IO if wrapping occurred
+        if (wrapped) {
+            io.MousePosPrev = mousePos;
+            io.MouseDelta = ImVec2(0, 0);
+            io.WantSetMousePos = true;
+        }
     }
 
     std::string name;
@@ -72,6 +122,8 @@ public:
         if (ImGui::DragFloat(imguiID.c_str(), valuePtr, step, minVal, maxVal, "%.3f", ImGuiSliderFlags_AlwaysClamp)) {
             if (filterFunc) filterFunc(*valuePtr);
         }
+        if (ImGui::IsItemActive())
+            WrapMousePos();
         EndRender();
     }
 
@@ -98,6 +150,8 @@ public:
 
         ImGui::PushItemWidth(itemWidth);
         ImGui::DragFloat((imguiID + "X").c_str(), valuePtrX, step, minVal, maxVal, "%.3f", ImGuiSliderFlags_AlwaysClamp);
+        if (ImGui::IsItemActive())
+            WrapMousePos();
         ImGui::PopItemWidth();
 
         ImGui::SameLine();
@@ -106,6 +160,8 @@ public:
 
         ImGui::PushItemWidth(-10);
         ImGui::DragFloat((imguiID + "Y").c_str(), valuePtrY, step, minVal, maxVal, "%.3f", ImGuiSliderFlags_AlwaysClamp);
+        if (ImGui::IsItemActive())
+            WrapMousePos();
         EndRender();
     }
 
@@ -124,6 +180,8 @@ public:
     void Render() override {
         RenderLabel();
         ImGui::DragInt(imguiID.c_str(), valuePtr, 1.0f);
+        if (ImGui::IsItemActive())
+            WrapMousePos();
         EndRender();
     }
 

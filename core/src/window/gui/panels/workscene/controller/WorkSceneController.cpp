@@ -73,6 +73,25 @@ void WorkSceneController::processMouseInput(GLFWwindow* window, float mouseWheel
 
     SceneCamera* camera = this->sceneManager->getCamera().get();
 
+    // Mouse wrapping
+    if (isMouseDragging && mousePos.x > width) {
+        glfwSetCursorPos(window, posX, mouseY);
+        mousePos.x = 0;
+        mouseDirectionWhenMovingX = -1;
+    } else if (isMouseDragging && mousePos.x < 0) {
+        glfwSetCursorPos(window, posX + width, mouseY);
+        mousePos.x = width;
+        mouseDirectionWhenMovingX = 1;
+    } else if (isMouseDragging && mousePos.y > height) {
+        glfwSetCursorPos(window, mouseX, posY);
+        mousePos.y = 0;
+        mouseDirectionWhenMovingY = -1;
+    } else if (isMouseDragging && mousePos.y < 0) {
+        glfwSetCursorPos(window, mouseX, posY + height);
+        mousePos.y = height;
+        mouseDirectionWhenMovingY = 1;
+    }
+
     if (glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_MIDDLE) == GLFW_PRESS) {
         if (!isMouseDragging) {
             if (!isMouseOverPanel) return;
@@ -82,9 +101,16 @@ void WorkSceneController::processMouseInput(GLFWwindow* window, float mouseWheel
         } else {
             ImGui::SetMouseCursor(ImGuiMouseCursor_ResizeAll);
 
+            lastMouseX = lastMouseX + (width * mouseDirectionWhenMovingX);
+            lastMouseY = lastMouseY + (height * mouseDirectionWhenMovingY);
+
             // Calculate the mouse movement
             double deltaX = mousePos.x - lastMouseX;
             double deltaY = mousePos.y - lastMouseY;
+
+            // Reset mouse direction
+            mouseDirectionWhenMovingX = 0;
+            mouseDirectionWhenMovingY = 0;
 
             // Adjust the camera based on mouse movement
             camera->Move(glm::vec2(static_cast<float>(-deltaX / camera->GetZoom()), static_cast<float>(deltaY / camera->GetZoom())));
