@@ -32,6 +32,8 @@ void TreeViewPanel::render(int posX, int posY, int width, int height) {
             ImGui::EndMenu();
         }
 
+        ImGui::Separator();
+
         // UTILS - Copy, Paste, Cut
         if (ImGui::MenuItem("Copy", nullptr, false, !sceneManager->GetActiveObjects().empty())) {
             dockManager->getWorkSceneController()->setCopiedObjects(sceneManager->GetActiveObjects());
@@ -50,6 +52,14 @@ void TreeViewPanel::render(int posX, int posY, int width, int height) {
                 sceneManager->AddObject(newObject);
                 sceneManager->AddActiveObject(newObject);
             }
+        }
+
+        ImGui::Separator();
+
+        if (ImGui::MenuItem("Delete", nullptr, false, !sceneManager->GetActiveObjects().empty())) {
+            for (const auto& object : sceneManager->GetActiveObjects())
+                sceneManager->RemoveObject(object);
+            sceneManager->GetActiveObjects().clear();
         }
         ImGui::EndPopup();
     }
