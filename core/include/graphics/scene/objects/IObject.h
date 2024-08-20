@@ -8,6 +8,7 @@ class IObject {
 public:
     virtual ~IObject() = default;
 
+    // Transforms
     virtual glm::vec2 GetPosition() const = 0;
     virtual void SetPosition(const glm::vec2& pos) = 0;
     
@@ -21,6 +22,10 @@ public:
     virtual void SetRotation(float rot) = 0;
 
     virtual std::string GetName() const = 0;
+
+    // Utils
+    virtual void DrawRectangle() = 0;
+    virtual bool RemoveComponent(const std::string& compName) = 0;
 };
 
 #endif // IOBJECT_H

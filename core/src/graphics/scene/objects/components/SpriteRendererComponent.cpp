@@ -18,6 +18,11 @@ void SpriteRendererComponent::Render(GLuint shaderProgram) {
         GLHelper::setModelMatrix(model);
         GLHelper::setColor3f(Colors::White);
 
+        if (textureID == 0) {
+            GLHelper::setColor3f(Colors::Red);
+            parent->DrawRectangle();
+            return;
+        }
         TextureManager::renderTexture(textureID, 0, 0, 1, 1);
         GLHelper::disableTexture();
     }

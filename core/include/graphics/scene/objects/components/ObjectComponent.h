@@ -11,7 +11,12 @@
 
 class ObjectComponent {
 public:
-    ObjectComponent(std::string name, std::weak_ptr<IObject> parent) : parentObject(parent), properties(name), name(name) {}
+    ObjectComponent(const std::string& name, std::weak_ptr<IObject> parent)
+        : parentObject(parent), properties(name, true, [this, name]() {
+            if (auto parent = parentObject.lock()) {
+                parent->RemoveComponent(name);
+            }
+        }), name(name) {}
 
     virtual void Render(GLuint shaderProgram) = 0;
 

@@ -12,6 +12,7 @@
 #include <glm/glm.hpp>
 #include <GL/glew.h>
 #include <unordered_map>
+#include <unordered_set>
 #include <vector>
 #include <memory>
 
@@ -32,7 +33,7 @@ public:
     void LinkProperties() {
         properties.AddProperty(std::make_shared<StringProperty>("Name", &name));
 
-        auto transformGroup = std::make_shared<GroupProperty>("Transform");
+        auto transformGroup = std::make_shared<GroupProperty>("Transform", false);
         transformGroup->AddProperty(std::make_shared<Vec2FloatProperty>("Position", &position.x, &position.y, 1.0f));
         transformGroup->AddProperty(std::make_shared<Vec2FloatProperty>("Size", &size.x, &size.y, 0.1f, 0.0f));
         transformGroup->AddProperty(std::make_shared<Vec2FloatProperty>("Scale", &scale.x, &scale.y, 0.001f));
@@ -44,9 +45,11 @@ public:
     virtual ~EmptyObject() {}
 
     void Render(GLuint shaderProgram) {
+        PerformDeferredRemovals();
+
         if (components.size() == 0) {
             GLHelper::setColor3f(Colors::White);
-            RenderHighlightedBox(shaderProgram);
+            DrawRectangle();
         }
 
         for (auto& component : components) {
@@ -81,7 +84,7 @@ public:
         return MathUtil::IsPointInRect(coords, position, GetSize() * GetScale(), rotation);
     }
 
-    void RenderHighlightedBox(GLuint shaderProgram) {
+    void DrawRectangle() {
         glm::mat4 model = glm::mat4(1.0f);
 
         model = glm::translate(model, glm::vec3(GetPosition(), 0.0f));
@@ -95,7 +98,7 @@ public:
 
     void RenderSelectedBox(GLuint shaderProgram) {
         GLHelper::setColor3f(Colors::Yellow);
-        RenderHighlightedBox(shaderProgram);
+        DrawRectangle();
     }
 
     const Properties& GetProperties() const {
@@ -104,8 +107,10 @@ public:
 
     void RenderProperties() const {
         properties.Render();
-        for (auto& component : components)
-            component.second.get()->RenderProperties();
+        for (const auto& component : components) {
+            if (!component.second) continue;
+            component.second->RenderProperties();
+        }
     }
 
     static GLuint GetVAO() { return VAO; }
@@ -117,12 +122,22 @@ public:
         return result.second;
     }
 
+    bool RemoveComponent(const std::string& compName) {
+        if (components.find(compName) != components.end()) {
+            componentsToRemove.insert(compName);
+            return true;
+        }
+        return false;
+    }
+
 protected:
     std::string name;
     glm::vec2 position;
     glm::vec2 size;
     glm::vec2 scale;
     float rotation;
+
+    bool mustBeRemoved;
 
     static GLuint VAO;
     static GLuint VBO;
@@ -152,9 +167,20 @@ protected:
         }
     }
 
+    void PerformDeferredRemovals() {
+        for (const auto& compName : componentsToRemove) {
+            auto it = components.find(compName);
+            if (it != components.end()) {
+                components.erase(it);
+            }
+        }
+        componentsToRemove.clear();
+    }
+
 private:
     Properties properties;
     std::unordered_map<std::string, std::shared_ptr<ObjectComponent>> components;
+    std::unordered_set<std::string> componentsToRemove;
 };
 
 #endif // EMPTYOBJECT_H

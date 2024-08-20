@@ -205,7 +205,7 @@ private:
 
 class GroupProperty : public Property {
 public:
-    GroupProperty(const std::string& name) : Property(name) {}
+    GroupProperty(const std::string& name, bool renderButton, std::function<void()> callback = nullptr) : Property(name), renderButton(renderButton), callback(callback) {}
 
     void AddProperty(std::shared_ptr<Property> property) {
         properties.push_back(property);
@@ -213,6 +213,15 @@ public:
 
     void Render() override {
         ImGui::SeparatorText(name.c_str());
+
+        if (renderButton) {
+            ImVec2 contentRegion = ImGui::GetContentRegionAvail();
+            ImGui::SameLine(contentRegion.x - 20);
+            if (ImGui::Button("X", ImVec2(25, 0)))
+                if (callback) callback();
+        }
+
+        // Render properties
         for (auto& property : properties) {
             property->Render();
         }
@@ -220,6 +229,8 @@ public:
 
 private:
     std::vector<std::shared_ptr<Property>> properties;
+    bool renderButton;
+    std::function<void()> callback;
 };
 
 class Properties {
