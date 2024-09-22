@@ -86,6 +86,8 @@ void initialize_window(GLFWwindow* window) {
     style.Colors[ImGuiCol_TabActive] = ImLerp(style.Colors[ImGuiCol_HeaderActive], style.Colors[ImGuiCol_TitleBgActive], 0.60f); // Active tab color
     style.Colors[ImGuiCol_TabUnfocused] = ImLerp(style.Colors[ImGuiCol_Tab], style.Colors[ImGuiCol_TitleBg], 0.80f); // Unfocused tab color
     style.Colors[ImGuiCol_TabUnfocusedActive] = ImLerp(style.Colors[ImGuiCol_TabActive], style.Colors[ImGuiCol_TitleBg], 0.40f); // Unfocused active tab color
+    style.Colors[ImGuiCol_TabSelectedOverline] = ImVec4(0, 0, 0, 0);
+    style.Colors[ImGuiCol_TabDimmedSelectedOverline] = ImVec4(0, 0, 0, 0);
 
     style.Colors[ImGuiCol_DockingPreview] = style.Colors[ImGuiCol_Header]; // Docking preview color
 

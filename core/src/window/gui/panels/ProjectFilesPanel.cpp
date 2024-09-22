@@ -73,7 +73,7 @@ void ProjectFilesPanel::renderPathHeader() {
 
 void ProjectFilesPanel::renderFolder(const std::string& folderName) {
     ImGui::PushID(folderName.c_str());
-    if (ImGui::ImageButton((void*)(intptr_t)TextureManager::LoadTexture("icons/folder_icon.png"), ImVec2(48, 48))) {
+    if (ImGui::ImageButton("#", (void*)(intptr_t)TextureManager::LoadTexture("icons/folder_icon.png"), ImVec2(48, 48))) {
         currentDirectory += folderName + "/";
     }
     ImGui::PopID();
