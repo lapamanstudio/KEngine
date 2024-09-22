@@ -1,0 +1,19 @@
+[submodule ".deps/imgui"]
+	path = .deps/imgui
+	url = https://github.com/ocornut/imgui.git
+	branch = docking
+[submodule ".deps/json"]
+	path = .deps/json
+	url = https://github.com/nlohmann/json.git
+[submodule ".deps/glfw"]
+	path = .deps/glfw
+	url = https://github.com/glfw/glfw.git
+[submodule ".deps/freetype"]
+	path = .deps/freetype
+	url = https://github.com/freetype/freetype.git
+[submodule ".deps/glm"]
+	path = .deps/glm
+	url = https://github.com/g-truc/glm.git
+[submodule ".deps/glut"]
+	path = .deps/glut
+	url = https://github.com/markkilgard/glut.git

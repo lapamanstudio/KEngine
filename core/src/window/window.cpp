@@ -1,3 +1,4 @@
+#include <cstdlib>
 #include <imgui.h>
 #include <imgui_internal.h>
 #include <backends/imgui_impl_glfw.h>
@@ -5,11 +6,31 @@
 #include <GL/glew.h>
 #include <GLFW/glfw3.h>
 
+#include "core/ProjectConfig.h"
+#include "core/FileUtils.h"
 #include "graphics/fonts/Fonts.h"
+#include "graphics/utils/TextureManager.h"
 #include "window/Window.h"
 #include "window/gui/DockManager.h"
+#include "window/gui/utils/imGuiUtils.h"
+
+#if defined(_WIN32)
+    #include <windows.h>
+#elif defined(__APPLE__)
+    #include <TargetConditionals.h>
+#endif
 
 DockManager dockManager;
+
+void OpenURL(const char* url) {
+#if defined(_WIN32)
+    ShellExecute(0, 0, url, 0, 0, SW_SHOW);
+#elif defined(__APPLE__)
+    system(("open " + std::string(url)).c_str());
+#else
+    system(("xdg-open " + std::string(url)).c_str());
+#endif
+}
 
 void initialize_window(GLFWwindow* window) {
     IMGUI_CHECKVERSION();
@@ -26,7 +47,7 @@ void initialize_window(GLFWwindow* window) {
     icons_config.PixelSnapH = true; 
     icons_config.GlyphMinAdvanceX = 16;
     float iconFontSize = 18 * 2.0f / 3.0f; // 13px is the font size
-    io.Fonts->AddFontFromMemoryTTF(Roboto_Regular_ttf, Roboto_Regular_ttf_len, 16, &font_config, io.Fonts->GetGlyphRangesDefault());
+    io.Fonts->AddFontFromFileTTF(GetDataFilePath("fonts\\Roboto-Regular.ttf").c_str(), 16, &font_config, io.Fonts->GetGlyphRangesDefault());
     io.Fonts->AddFontFromMemoryTTF(font_awesome_ttf, font_awesome_ttf_len, iconFontSize, &icons_config, icons_ranges);
     io.IniFilename = NULL; // Disable INI file saving
 
@@ -67,6 +88,8 @@ void initialize_window(GLFWwindow* window) {
     style.Colors[ImGuiCol_TabUnfocusedActive] = ImLerp(style.Colors[ImGuiCol_TabActive], style.Colors[ImGuiCol_TitleBg], 0.40f); // Unfocused active tab color
 
     style.Colors[ImGuiCol_DockingPreview] = style.Colors[ImGuiCol_Header]; // Docking preview color
+
+    style.Colors[ImGuiCol_ModalWindowDimBg] = ImVec4(0.1f, 0.1f, 0.1f, 0.5f);
 }
 
 void initDockLayout() {
@@ -157,6 +180,224 @@ void render_window() {
     ImGui::End();
 
     dockManager.RenderPanels();
+
+    // Show intial popup
+    static bool showNewProjectPopup = false;
+    static bool showLoadProjectPopup = false;
+    static bool isConfiguringProject = false;
+
+    ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, 15.0f);
+    if (!ProjectConfig::getInstance().isConfigInitialized() && !isConfiguringProject)
+    {
+        ImGui::SetNextWindowSize(ImVec2(400, 400));
+        if (ImGui::BeginPopupModal("Project setup", NULL, ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoMove))
+        {
+            // TODO: Add image when kengine is in the 1.0
+            ImGuiEngined::ImageWithoutBorder((void*)(intptr_t)TextureManager::LoadTexture("splash.png"), ImVec2(400, 200));
+            ImGui::NewLine();
+
+            ImGui::Columns(2, NULL, false);
+
+            // --- First column ---
+            const char* projectActionsText = "Project actions";
+            float textWidth = ImGui::CalcTextSize(projectActionsText).x;
+            
+            ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(0.7f, 0.7f, 0.7f, 1.0f));
+            ImGui::SetCursorPosX((ImGui::GetColumnWidth() - textWidth) * 0.5f);
+            ImGui::Text(projectActionsText);
+            ImGui::NewLine();
+
+            ImGui::PopStyleColor();
+
+            float columnWidth = ImGui::GetContentRegionAvail().x;
+            float buttonWidth = 120.0f;
+            float offsetX = (columnWidth - buttonWidth) * 0.5f;
+
+            ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0, 0, 0, 0));
+
+            ImGui::SetCursorPosX(ImGui::GetCursorPosX() + offsetX);
+            if (ImGui::Button((std::string(ICON_FA_FOLDER_PLUS) + " New Project").c_str(), ImVec2(buttonWidth, 0))) {
+                ImGui::CloseCurrentPopup();
+                showNewProjectPopup = true;
+                isConfiguringProject = true;
+            }
+
+            ImGui::SetCursorPosX(ImGui::GetCursorPosX() + offsetX);
+            if (ImGui::Button((std::string(ICON_FA_FOLDER) + " Load Project").c_str(), ImVec2(buttonWidth, 0))) {
+                ImGui::CloseCurrentPopup();
+                showLoadProjectPopup = true;
+                isConfiguringProject = true;
+            }
+
+            ImGui::NextColumn();
+
+            // --- Second column ---
+            const char* dummyActionsText = "Recent projects";
+            textWidth = ImGui::CalcTextSize(dummyActionsText).x;
+
+            ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(0.7f, 0.7f, 0.7f, 1.0f));
+            ImGui::SetCursorPosX(ImGui::GetCursorPosX() - 8 + ((ImGui::GetColumnWidth() - textWidth) * 0.5)); // 8 is the padding
+            ImGui::Text(dummyActionsText);
+            ImGui::PopStyleColor();
+            ImGui::NewLine();
+
+            columnWidth = ImGui::GetContentRegionAvail().x;
+            offsetX = (columnWidth - buttonWidth) * 0.5f;
+
+            // ImGui::SetCursorPosX(ImGui::GetCursorPosX() + offsetX);
+            // if (ImGui::Button("dummy 1", ImVec2(buttonWidth, 0))) {
+            // }
+
+            // ImGui::SetCursorPosX(ImGui::GetCursorPosX() + offsetX);
+            // if (ImGui::Button("dummy 2", ImVec2(buttonWidth, 0))) {
+            // }
+
+            ImGui::Columns(1);
+            ImGui::PopStyleColor();
+
+            ImGui::NewLine();
+            ImGui::NewLine();
+
+            // Center the button
+            ImGui::SetCursorPosX((ImGui::GetWindowWidth() - buttonWidth) * 0.5f);
+            if (ImGui::Button((std::string(ICON_FA_HEART) + " Support us").c_str(), ImVec2(120, 0))) {
+                OpenURL("https://github.com/sponsors/lapamanstudio");
+            }
+            ImGui::EndPopup();
+        }
+
+        ImGui::OpenPopup("Project setup");
+    }
+
+    if (showNewProjectPopup) {
+        ImGui::SetNextWindowSize(ImVec2(400, 180));
+        ImGui::OpenPopup("New Project");
+        showNewProjectPopup = false;
+    }
+
+    if (showLoadProjectPopup) {
+        ImGui::SetNextWindowSize(ImVec2(400, 180));
+        ImGui::OpenPopup("Load Project");
+        showLoadProjectPopup = false;
+    }
+
+    if (ImGui::BeginPopupModal("New Project", NULL, ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoMove))
+    {
+        static char projectName[128] = "New Project";
+        static char projectDirectory[256] = "";
+        static bool directoryModifiedByUser = false;
+        static bool showError = false;
+        static std::string errorMessage = "";
+
+        auto generateUniqueProjectName = [](const std::string& baseName) -> std::string {
+            int count = 0;
+            std::string uniqueName = baseName;
+            std::string basePath = getProjectsBaseFolder();
+
+            while (directoryExists(basePath + "/" + uniqueName)) {
+                count++;
+                uniqueName = baseName + " (" + std::to_string(count) + ")";
+            }
+
+            return uniqueName;
+        };
+
+        auto isValidProjectName = [](const std::string& name) -> bool {
+            return !name.empty() && name.find_first_of("\\/:*?\"<>|") == std::string::npos;
+        };
+
+        if (ImGui::IsWindowAppearing()) {
+            std::string uniqueProjectName = generateUniqueProjectName("New Project");
+            strncpy(projectName, uniqueProjectName.c_str(), sizeof(projectName));
+            projectName[sizeof(projectName) - 1] = '\0';
+
+            std::string defaultDirectory = getProjectsBaseFolder() + getPathSeparator() + projectName;
+            strncpy(projectDirectory, defaultDirectory.c_str(), sizeof(projectDirectory));
+            projectDirectory[sizeof(projectDirectory) - 1] = '\0';
+
+            directoryModifiedByUser = false;
+            showError = false;
+            errorMessage = "";
+        }
+
+        ImGui::Text("Project Name:");
+        ImGui::SetNextItemWidth(350);
+        if (ImGui::InputText("##projectName", projectName, IM_ARRAYSIZE(projectName)))
+        {
+            if (!directoryModifiedByUser) {
+                std::string newProjectDirectory = getProjectsBaseFolder() + getPathSeparator() + std::string(projectName);
+                strncpy(projectDirectory, newProjectDirectory.c_str(), sizeof(projectDirectory));
+                projectDirectory[sizeof(projectDirectory) - 1] = '\0';
+            }
+            showError = !isValidProjectName(projectName);
+            if (showError) {
+                errorMessage = "Invalid project name! Avoid special characters.";
+            }
+        }
+        ImGui::SameLine();
+        ImGui::TextDisabled("(?)");
+        if (ImGui::IsItemHovered())
+            ImGui::SetTooltip("Avoid using special characters like \\ / : * ? \" < > |");
+
+        ImGui::Text("Project Directory:");
+        ImGui::SetNextItemWidth(350);
+        if (ImGui::InputText("##projectDirectory", projectDirectory, IM_ARRAYSIZE(projectDirectory)))
+        {
+            directoryModifiedByUser = true;
+        }
+
+        if (showError) {
+            ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(1.0f, 0.0f, 0.0f, 1.0f));
+            ImGui::Text("%s", errorMessage.c_str());
+            ImGui::PopStyleColor();
+        }
+
+        ImGui::NewLine();
+        if (!showError) ImGui::NewLine();
+
+        bool canCreateProject = !showError && isValidProjectName(projectName);
+        if (!canCreateProject) {
+            ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0.25f, 0.25f, 0.25f, 0.3f));
+            ImGui::PushItemFlag(ImGuiItemFlags_Disabled, true);
+        } else {
+            ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(1.0f, 0.4f, 0.0f, 1.0));
+        }
+        ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4(1.0f, 0.5f, 0.0f, 1.0));
+        if (ImGui::Button("Create", ImVec2(120, 0))) {
+            if (directoryExists(projectDirectory)) {
+                showError = true;
+                errorMessage = "Directory already exists!";
+            } else {
+                if (!std::filesystem::exists(projectDirectory)) {
+                    std::filesystem::create_directories(projectDirectory);
+                    std::filesystem::create_directories(std::string(projectDirectory) + getPathSeparator() + "assets");
+                    std::filesystem::create_directories(std::string(projectDirectory) + getPathSeparator() + "config");
+                    std::filesystem::create_directories(std::string(projectDirectory) + getPathSeparator() + "build");
+                    std::filesystem::create_directories(std::string(projectDirectory) + getPathSeparator() + "logs");
+                }
+
+                ProjectConfig::getInstance().projectName = projectName;
+                ProjectConfig::getInstance().projectDirectory = projectDirectory;
+                ProjectConfig::getInstance().isInitialized = true;
+                ProjectConfig::getInstance().saveToFile(std::string(projectDirectory) + getPathSeparator() + "project.json");
+                ImGui::CloseCurrentPopup();
+            }
+        }
+        ImGui::PopStyleColor(2);
+        if (!canCreateProject) {
+            ImGui::PopItemFlag();
+        }
+
+        ImGui::SameLine();
+        if (ImGui::Button("Cancel", ImVec2(120, 0))) {
+            isConfiguringProject = false;
+            ImGui::CloseCurrentPopup();
+        }
+
+        ImGui::EndPopup();
+    }
+
+    ImGui::PopStyleVar(); // window rounding
 
     // Rendering
     ImGui::Render();

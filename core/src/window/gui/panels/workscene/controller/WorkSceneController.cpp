@@ -3,8 +3,6 @@
 #include "graphics/drivers/ShaderHelper.h"
 #include "graphics/drivers/GLHelper.h"
 #include "graphics/utils/TextureManager.h"
-#include "graphics/icons/translation.h"
-#include "graphics/icons/free_camera.h"
 
 #include <imgui.h>
 
@@ -28,11 +26,11 @@ WorkSceneController::WorkSceneController(int x, int y, int w, int h)
     TextureManager::Init();
 
     // Add UI Buttons
-    workSceneUI->addButton(std::make_shared<UIButton>(this, 5, translation_png, translation_png_len, [this]() {
+    workSceneUI->addButton(std::make_shared<UIButton>(this, 5, "icons/translation.png", [this]() {
         this->setMode(TRANSLATION_MODE);
     }, TRANSLATION_MODE));
 
-    workSceneUI->addButton(std::make_shared<UIButton>(this, 5, free_camera_png, free_camera_png_len, [this]() {
+    workSceneUI->addButton(std::make_shared<UIButton>(this, 5, "icons/free_camera.png", [this]() {
         this->setMode(FREE_CAMERA_MODE);
     }, FREE_CAMERA_MODE));
 

@@ -76,6 +76,15 @@ int main(void) {
         auto current_time = std::chrono::high_resolution_clock::now();
         double elapsed_time = std::chrono::duration<double>(current_time - last_time).count();
 
+        int is_iconified = glfwGetWindowAttrib(window, GLFW_ICONIFIED);
+        int is_visible = glfwGetWindowAttrib(window, GLFW_VISIBLE);
+
+        if (is_iconified || !is_visible) {
+            std::this_thread::sleep_for(std::chrono::milliseconds(100));
+            glfwPollEvents();
+            continue;
+        }
+
         if (needs_render.load() || elapsed_time >= frame_time_limit) {
             render_this_frame = true;
             last_time = current_time;

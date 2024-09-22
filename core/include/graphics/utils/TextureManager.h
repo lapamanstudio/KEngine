@@ -13,6 +13,9 @@ private:
     static GLuint VAO;
     static GLuint VBO;
     static GLuint EBO;
+
+    static std::unordered_map<std::string, GLuint> textureCache; // File-based textures
+    static std::unordered_map<std::size_t, GLuint> memoryTextureCache; // Memory-based textures
 };
 
 #endif // TEXTURE_MANAGER_H

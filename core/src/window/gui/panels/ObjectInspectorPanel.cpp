@@ -61,6 +61,7 @@ void ObjectInspectorPanel::render(int posX, int posY, int width, int height) {
     ImVec2 center = ImGui::GetMainViewport()->GetCenter();
     ImGui::SetNextWindowPos(center, ImGuiCond_Appearing, ImVec2(0.5f, 0.5f));
 
+    ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, 6.0f);
     if (ImGui::BeginPopupModal("Duplicated component", NULL, ImGuiWindowFlags_AlwaysAutoResize))
     {
         ImGui::Text("This object already has the same component.");
@@ -68,6 +69,7 @@ void ObjectInspectorPanel::render(int posX, int posY, int width, int height) {
         if (ImGui::Button("OK", ImVec2(120, 0))) { ImGui::CloseCurrentPopup(); }
         ImGui::EndPopup();
     }
+    ImGui::PopStyleVar();
 }
 
 ObjectInspectorPanel::~ObjectInspectorPanel() {}

@@ -10,7 +10,12 @@ public:
     ~ProjectFilesPanel();
     void render(int posX, int posY, int width, int height) override;
 private:
+    void renderPathHeader();
+    void renderFolder(const std::string& folderName);
+    
     DockManager* dockManager;
+
+    std::string currentDirectory;
 };
 
 #endif // PROJECT_FILES_PANEL_H

@@ -5,10 +5,6 @@
 #include "graphics/utils/TextureManager.h"
 #include "graphics/utils/Colors.h"
 
-#include "graphics/icons/translation_center_circle.h"
-#include "graphics/icons/translation_right_arrow.h"
-#include "graphics/icons/translation_up_arrow.h"
-
 #include <cstdio>
 
 WorkSceneRenderer::WorkSceneRenderer(std::shared_ptr<GLHelper> shader, int posX, int posY, int width, int height) :
@@ -27,9 +23,9 @@ WorkSceneRenderer::WorkSceneRenderer(std::shared_ptr<GLHelper> shader, int posX,
     glGenVertexArrays(1, &VAO);
     glGenBuffers(1, &VBO);
 
-    translationUpArrowTexture = TextureManager::LoadTexture(translation_up_arrow_png, translation_up_arrow_png_len);
-    translationRigthArrowTexture = TextureManager::LoadTexture(translation_right_arrow_png, translation_right_arrow_png_len);
-    translationCenterCircleTexture = TextureManager::LoadTexture(translation_center_circle_png, translation_center_circle_png_len);
+    translationUpArrowTexture = TextureManager::LoadTexture("icons/translation_up_arrow.png");
+    translationRigthArrowTexture = TextureManager::LoadTexture("icons/translation_right_arrow.png");
+    translationCenterCircleTexture = TextureManager::LoadTexture("icons/translation_center_circle.png");
 }
 
 WorkSceneRenderer::~WorkSceneRenderer() {

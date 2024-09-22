@@ -4,11 +4,13 @@ AppVersion=0.0.2
 DefaultDirName={pf}\KEngine
 OutputDir=.\out
 OutputBaseFilename=KEngineInstaller
-SetupIconFile=..\icon.ico
+SetupIconFile=..\out\icon.ico
 
 [Files]
 Source: "..\out\KEngine.exe"; DestDir: "{app}"
-Source: ".\bins\*.dll"; DestDir: "{app}"
+Source: ".\bins\*.dll"; DestDir: "{app}\bins"
+Source: "..\resources\*"; DestDir: "{app}\datafiles"; Flags: recursesubdirs
+Source: "..\out\icon.ico"; DestDir: "{app}"
 
 [Tasks]
 Name: "desktopicon"; Description: "{cm:CreateDesktopIcon}"; GroupDescription: "{cm:AdditionalIcons}";

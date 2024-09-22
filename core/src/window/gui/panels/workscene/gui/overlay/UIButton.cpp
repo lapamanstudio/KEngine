@@ -4,9 +4,9 @@
 #include "graphics/drivers/GLHelper.h"
 #include "graphics/utils/Colors.h"
 
-UIButton::UIButton(WorkSceneController* controller, float radius, const unsigned char* icon, unsigned int icon_len, std::function<void()> onClickListener, WorkSceneMode associatedMode)
-    : UIComponent(controller, radius), m_icon(icon), m_icon_len(icon_len), onClickListener(onClickListener), mode(associatedMode) {
-    m_iconTexture = TextureManager::LoadTexture(m_icon, m_icon_len);
+UIButton::UIButton(WorkSceneController* controller, float radius, const char* icon_path, std::function<void()> onClickListener, WorkSceneMode associatedMode)
+    : UIComponent(controller, radius), m_icon_path(icon_path), onClickListener(onClickListener), mode(associatedMode) {
+    m_iconTexture = TextureManager::LoadTexture(m_icon_path);
     setupButtonBuffers();
 }
 

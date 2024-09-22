@@ -1,5 +1,6 @@
 #include "graphics/drivers/GLHelper.h"
 #include "graphics/fonts/Fonts.h"
+#include "core/FileUtils.h"
 
 #include <iostream>
 #include <fstream>
@@ -164,7 +165,7 @@ bool GLHelper::initFreeType() {
     }
 
     FT_Face face;
-    if (FT_New_Memory_Face(ft, Arial_ttf, Arial_ttf_len, 0, &face)) { // Arial_ttf y Arial_ttf_len son definidos en Arial.h
+    if (FT_New_Face(ft, GetDataFilePath("fonts\\Roboto-Regular.ttf").c_str(), 0, &face)) {
         std::cerr << "ERROR::FREETYPE: Failed to load font from memory" << std::endl;
         return false;
     }

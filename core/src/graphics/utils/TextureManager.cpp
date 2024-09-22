@@ -1,6 +1,7 @@
 #include "graphics/utils/TextureManager.h"
 #define STB_IMAGE_IMPLEMENTATION
 #include "graphics/utils/stb_image.h"
+#include "core/FileUtils.h"
 
 #include <unordered_map>
 #include <iostream>
@@ -9,6 +10,9 @@
 GLuint TextureManager::VAO = 0;
 GLuint TextureManager::VBO = 0;
 GLuint TextureManager::EBO = 0;
+
+std::unordered_map<std::string, GLuint> TextureManager::textureCache;
+std::unordered_map<std::size_t, GLuint> TextureManager::memoryTextureCache;
 
 void TextureManager::Init() {
     glGenVertexArrays(1, &VAO);
@@ -32,12 +36,18 @@ void TextureManager::Init() {
     glBindVertexArray(0);
 }
 
-GLuint TextureManager::LoadTexture(const char* image) {
-    std::ifstream file(image);
+GLuint TextureManager::LoadTexture(const char* image_path) {
+    std::string full_image_path = GetDataFilePath(image_path);
+    auto it = textureCache.find(full_image_path);
+    if (it != textureCache.end()) {
+        return it->second;
+    }
+
+    std::ifstream file(full_image_path);
     if (!file.good()) return 0;
 
     int width, height, nrChannels;
-    unsigned char* data = stbi_load(image, &width, &height, &nrChannels, 0);
+    unsigned char* data = stbi_load(full_image_path.c_str(), &width, &height, &nrChannels, 0);
     if (!data) {
         std::cerr << "Failed to load texture from memory." << std::endl;
         return 0;
@@ -59,10 +69,20 @@ GLuint TextureManager::LoadTexture(const char* image) {
 
     stbi_image_free(data);
 
+    textureCache[image_path] = textureID;
+
     return textureID;
 }
 
 GLuint TextureManager::LoadTexture(const unsigned char* image, unsigned int image_len) {
+    // Generate unique key to check in cache
+    std::size_t key = std::hash<const unsigned char*>{}(image) ^ std::hash<unsigned int>{}(image_len);
+
+    auto it = memoryTextureCache.find(key);
+    if (it != memoryTextureCache.end()) {
+        return it->second;
+    }
+
     int width, height, nrChannels;
     unsigned char* data = stbi_load_from_memory(image, image_len, &width, &height, &nrChannels, 0);
     if (!data) {
@@ -85,6 +105,8 @@ GLuint TextureManager::LoadTexture(const unsigned char* image, unsigned int imag
     glGenerateMipmap(GL_TEXTURE_2D);
 
     stbi_image_free(data);
+
+    memoryTextureCache[key] = textureID;
 
     return textureID;
 }

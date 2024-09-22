@@ -12,7 +12,7 @@
 
 class UIButton : public UIComponent {
 public:
-    UIButton(WorkSceneController* controller, float radius, const unsigned char* icon, unsigned int icon_len, std::function<void()> onClickListener, WorkSceneMode associatedMode);
+    UIButton(WorkSceneController* controller, float radius, const char* icon_path, std::function<void()> onClickListener, WorkSceneMode associatedMode);
     ~UIButton();
 
     void render(int shaderProgram, float x, float y, float width, float height) override;
@@ -21,8 +21,7 @@ public:
     WorkSceneMode getMode() const { return mode; }
 
 private:
-    const unsigned char* m_icon;
-    unsigned int m_icon_len;
+    const char* m_icon_path;
     unsigned int m_iconTexture = 0;
     unsigned int m_VAO = 0, m_VBO = 0;
 

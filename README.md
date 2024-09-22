@@ -57,4 +57,10 @@ To create an installer for KEngine, use the following steps:
 4. **Documentation:**
    - Include clear documentation with the installer, guiding users through the installation process and any potential troubleshooting steps.
 
-Feel free to reach out for any assistance or clarification. Happy coding with KEngine!
+## Libraries used on the project:
+- [GLFW](https://github.com/glfw/glfw)
+- [GLM](https://github.com/g-truc/glm)
+- [FREETYPE](https://github.com/freetype/freetype)
+- [IMGUI](https://github.com/ocornut/imgui)
+
+Feel free to reach out for any assistance or clarification. Happy game development with KEngine!
