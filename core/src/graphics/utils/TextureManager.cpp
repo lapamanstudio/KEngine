@@ -69,7 +69,7 @@ GLuint TextureManager::LoadTexture(const char* image_path) {
 
     stbi_image_free(data);
 
-    textureCache[image_path] = textureID;
+    textureCache[full_image_path] = textureID;
 
     return textureID;
 }
