@@ -90,25 +90,6 @@ $(ICON_RES_FLAG): icon.rc
 	windres icon.rc -O coff -o $@
 endif
 
-# Pre-build checks for dependencies
-pre-build:
-	@echo "Checking binaries and libraries..."
-	@if [ "$(OS)" = "Linux" ]; then \
-		if ! pkg-config --exists glfw3; then \
-			echo "Error: glfw3 package not found. Please make sure glfw3 and its development files are installed."; \
-			exit 1; \
-		fi; \
-		if ! pkg-config --exists freetype2; then \
-			echo "Error: freetype2 package not found. Please make sure freetype2 and its development files are installed."; \
-			exit 1; \
-		fi; \
-		if ! command -v g++ >/dev/null; then \
-			echo "Error: g++ not found. Please make sure a C++ compiler is installed."; \
-			exit 1; \
-		fi; \
-	fi
-	@echo "Dependencies ready."
-
 # Installer target (Windows only)
 installer: all
 ifeq ($(OS),Windows)
