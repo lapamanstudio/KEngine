@@ -21,6 +21,7 @@
 #endif
 
 DockManager dockManager;
+GLuint splash_texture;
 
 void OpenURL(const char* url) {
 #if defined(_WIN32)
@@ -121,6 +122,8 @@ void initDockLayout() {
     ImGui::DockBuilderDockWindow(P_WORK_SCENE, dockspace_id);
 
     ImGui::DockBuilderFinish(dockspace_id);
+
+    splash_texture = TextureManager::LoadTexture("splash.png");
 }
 
 void render_window() {
@@ -192,10 +195,11 @@ void render_window() {
     if (!ProjectConfig::getInstance().isConfigInitialized() && !isConfiguringProject)
     {
         ImGui::SetNextWindowSize(ImVec2(400, 400));
+        ImGui::SetNextWindowPos(ImVec2((viewport->Size.x - 400) * 0.5f, (viewport->Size.y - 400) * 0.5f));
         if (ImGui::BeginPopupModal("Project setup", NULL, ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoMove))
         {
             // TODO: Add image when kengine is in the 1.0
-            ImGuiEngined::ImageWithoutBorder((void*)(intptr_t)TextureManager::LoadTexture("splash.png"), ImVec2(400, 200));
+            ImGuiEngined::ImageWithoutBorder((void*)(intptr_t) splash_texture, ImVec2(400, 200));
             ImGui::NewLine();
 
             ImGui::Columns(2, NULL, false);
@@ -282,6 +286,9 @@ void render_window() {
         ImGui::OpenPopup("Load Project");
         showLoadProjectPopup = false;
     }
+
+    if (isConfiguringProject) 
+        ImGui::SetNextWindowPos(ImVec2((viewport->Size.x - 400) * 0.5f, (viewport->Size.y - 180) * 0.5f));
 
     if (ImGui::BeginPopupModal("New Project", NULL, ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoMove))
     {
@@ -378,6 +385,7 @@ void render_window() {
                     std::filesystem::create_directories(std::string(projectDirectory) + getPathSeparator() + "logs");
                 }
 
+                isConfiguringProject = false;
                 ProjectConfig::getInstance().projectName = projectName;
                 ProjectConfig::getInstance().projectDirectory = projectDirectory;
                 ProjectConfig::getInstance().isInitialized = true;
