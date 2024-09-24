@@ -1,7 +1,7 @@
 #include "graphics/utils/TextureManager.h"
 #define STB_IMAGE_IMPLEMENTATION
 #include "graphics/utils/stb_image.h"
-#include "core/FileUtils.h"
+#include "core/utils/FileUtils.h"
 
 #include <unordered_map>
 #include <iostream>
@@ -37,7 +37,7 @@ void TextureManager::Init() {
 }
 
 GLuint TextureManager::LoadTexture(const char* image_path) {
-    std::string full_image_path = GetDataFilePath(image_path);
+    std::string full_image_path = FileUtils::GetDataFilePath(image_path);
     auto it = textureCache.find(full_image_path);
     if (it != textureCache.end()) {
         return it->second;

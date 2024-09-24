@@ -1,4 +1,4 @@
-#include "core/FileUtils.h"
+#include "core/utils/FileUtils.h"
 #include "graphics/utils/stb_image.h"
 
 #include <iostream>
@@ -11,7 +11,7 @@
     #include <unistd.h>
 #endif
 
-std::string GetExecutablePath() {
+std::string FileUtils::GetExecutablePath() {
     char buffer[1024];
 
 #ifdef _WIN32
@@ -37,17 +37,17 @@ std::string GetExecutablePath() {
     return std::filesystem::path(buffer).parent_path().string();
 }
 
-std::string GetFilePath(const std::string& relativePath) {
-    std::filesystem::path filePath = std::filesystem::path(GetExecutablePath()) / relativePath;
+std::string FileUtils::GetFilePath(const std::string& relativePath) {
+    std::filesystem::path filePath = std::filesystem::path(FileUtils::GetExecutablePath()) / relativePath;
     return filePath.string();
 }
 
-std::string GetDataFilePath(const std::string& relativePath) {
-    std::filesystem::path dataFilePath = std::filesystem::path(GetExecutablePath()) / "datafiles" / relativePath;
+std::string FileUtils::GetDataFilePath(const std::string& relativePath) {
+    std::filesystem::path dataFilePath = std::filesystem::path(FileUtils::GetExecutablePath()) / "datafiles" / relativePath;
     return dataFilePath.string();
 }
 
-std::string getProjectsBaseFolder() {
+std::string FileUtils::GetProjectsBaseFolder() {
     const char* homeDir = nullptr;
 
 #ifdef _WIN32
@@ -57,7 +57,7 @@ std::string getProjectsBaseFolder() {
 #endif
 
     if (homeDir) {
-        std::filesystem::path projectsPath = std::filesystem::path(homeDir) / "kengine projects";
+        std::filesystem::path projectsPath = std::filesystem::path(homeDir) / "KEngine projects";
         return projectsPath.string();
     } else {
         std::cerr << "Failed to get home directory environment variable." << std::endl;
@@ -65,12 +65,15 @@ std::string getProjectsBaseFolder() {
     }
 }
 
-bool directoryExists(const std::string& path) {
+bool FileUtils::DirectoryExists(const std::string& path) {
     return std::filesystem::exists(path) && std::filesystem::is_directory(path);
 }
 
-// getPathSeparator
-char getPathSeparator() {
+bool FileUtils::FileExists(const std::string& path) {
+    return std::filesystem::exists(path);
+}
+
+char FileUtils::GetPathSeparator() {
 #ifdef _WIN32
     return '\\';
 #else

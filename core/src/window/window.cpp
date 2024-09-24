@@ -7,7 +7,7 @@
 #include <GLFW/glfw3.h>
 
 #include "core/ProjectConfig.h"
-#include "core/FileUtils.h"
+#include "core/utils/FileUtils.h"
 #include "graphics/fonts/Fonts.h"
 #include "graphics/utils/TextureManager.h"
 #include "window/Window.h"
@@ -48,7 +48,7 @@ void initialize_window(GLFWwindow* window) {
     icons_config.PixelSnapH = true; 
     icons_config.GlyphMinAdvanceX = 16;
     float iconFontSize = 18 * 2.0f / 3.0f; // 13px is the font size
-    io.Fonts->AddFontFromFileTTF(GetDataFilePath("fonts\\Roboto-Regular.ttf").c_str(), 16, &font_config, io.Fonts->GetGlyphRangesDefault());
+    io.Fonts->AddFontFromFileTTF(FileUtils::GetDataFilePath("fonts\\Roboto-Regular.ttf").c_str(), 16, &font_config, io.Fonts->GetGlyphRangesDefault());
     io.Fonts->AddFontFromMemoryTTF(font_awesome_ttf, font_awesome_ttf_len, iconFontSize, &icons_config, icons_ranges);
     io.IniFilename = NULL; // Disable INI file saving
 
@@ -91,6 +91,8 @@ void initialize_window(GLFWwindow* window) {
     style.Colors[ImGuiCol_TabDimmedSelectedOverline] = ImVec4(0, 0, 0, 0);
 
     style.Colors[ImGuiCol_DockingPreview] = style.Colors[ImGuiCol_Header]; // Docking preview color
+
+    style.Colors[ImGuiCol_DragDropTarget] = ImVec4(0.5f, 0.5f, 0.5f, 1.0f); // Drag and drop target color
 
     style.Colors[ImGuiCol_ModalWindowDimBg] = ImVec4(0.1f, 0.1f, 0.1f, 0.5f);
 }
@@ -250,13 +252,18 @@ void render_window() {
             columnWidth = ImGui::GetContentRegionAvail().x;
             offsetX = (columnWidth - buttonWidth) * 0.5f;
 
-            // ImGui::SetCursorPosX(ImGui::GetCursorPosX() + offsetX);
-            // if (ImGui::Button("dummy 1", ImVec2(buttonWidth, 0))) {
-            // }
+            std::vector<ProjectConfig> recentProjects = ProjectConfig::getInstance().getRecentProjects(FileUtils::GetProjectsBaseFolder());
 
-            // ImGui::SetCursorPosX(ImGui::GetCursorPosX() + offsetX);
-            // if (ImGui::Button("dummy 2", ImVec2(buttonWidth, 0))) {
-            // }
+            // One Button for each recent project
+            for (const ProjectConfig& project : recentProjects) {
+                ImGui::SetCursorPosX(ImGui::GetCursorPosX() + offsetX);
+                if (ImGui::Button(project.projectName.c_str(), ImVec2(buttonWidth, 0))) {
+                    ProjectConfig& configInstance = ProjectConfig::getInstance();
+                    configInstance.projectName = project.projectName;
+                    configInstance.projectDirectory = project.projectDirectory;
+                    configInstance.isInitialized = true;
+                }
+            }
 
             ImGui::Columns(1);
             ImGui::PopStyleColor();
@@ -301,9 +308,9 @@ void render_window() {
         auto generateUniqueProjectName = [](const std::string& baseName) -> std::string {
             int count = 0;
             std::string uniqueName = baseName;
-            std::string basePath = getProjectsBaseFolder();
+            std::string basePath = FileUtils::GetProjectsBaseFolder();
 
-            while (directoryExists(basePath + "/" + uniqueName)) {
+            while (FileUtils::DirectoryExists(basePath + "/" + uniqueName)) {
                 count++;
                 uniqueName = baseName + " (" + std::to_string(count) + ")";
             }
@@ -320,7 +327,7 @@ void render_window() {
             strncpy(projectName, uniqueProjectName.c_str(), sizeof(projectName));
             projectName[sizeof(projectName) - 1] = '\0';
 
-            std::string defaultDirectory = getProjectsBaseFolder() + getPathSeparator() + projectName;
+            std::string defaultDirectory = FileUtils::GetProjectsBaseFolder() + FileUtils::GetPathSeparator() + projectName;
             strncpy(projectDirectory, defaultDirectory.c_str(), sizeof(projectDirectory));
             projectDirectory[sizeof(projectDirectory) - 1] = '\0';
 
@@ -334,7 +341,7 @@ void render_window() {
         if (ImGui::InputText("##projectName", projectName, IM_ARRAYSIZE(projectName)))
         {
             if (!directoryModifiedByUser) {
-                std::string newProjectDirectory = getProjectsBaseFolder() + getPathSeparator() + std::string(projectName);
+                std::string newProjectDirectory = FileUtils::GetProjectsBaseFolder() + FileUtils::GetPathSeparator() + std::string(projectName);
                 strncpy(projectDirectory, newProjectDirectory.c_str(), sizeof(projectDirectory));
                 projectDirectory[sizeof(projectDirectory) - 1] = '\0';
             }
@@ -373,23 +380,24 @@ void render_window() {
         }
         ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4(1.0f, 0.5f, 0.0f, 1.0));
         if (ImGui::Button("Create", ImVec2(120, 0))) {
-            if (directoryExists(projectDirectory)) {
+            if (FileUtils::DirectoryExists(projectDirectory)) {
                 showError = true;
                 errorMessage = "Directory already exists!";
             } else {
                 if (!std::filesystem::exists(projectDirectory)) {
                     std::filesystem::create_directories(projectDirectory);
-                    std::filesystem::create_directories(std::string(projectDirectory) + getPathSeparator() + "assets");
-                    std::filesystem::create_directories(std::string(projectDirectory) + getPathSeparator() + "config");
-                    std::filesystem::create_directories(std::string(projectDirectory) + getPathSeparator() + "build");
-                    std::filesystem::create_directories(std::string(projectDirectory) + getPathSeparator() + "logs");
+                    std::filesystem::create_directories(std::string(projectDirectory) + FileUtils::GetPathSeparator() + "assets");
+                    std::filesystem::create_directories(std::string(projectDirectory) + FileUtils::GetPathSeparator() + "config");
+                    std::filesystem::create_directories(std::string(projectDirectory) + FileUtils::GetPathSeparator() + "build");
+                    std::filesystem::create_directories(std::string(projectDirectory) + FileUtils::GetPathSeparator() + "logs");
                 }
 
                 isConfiguringProject = false;
                 ProjectConfig::getInstance().projectName = projectName;
                 ProjectConfig::getInstance().projectDirectory = projectDirectory;
                 ProjectConfig::getInstance().isInitialized = true;
-                ProjectConfig::getInstance().saveToFile(std::string(projectDirectory) + getPathSeparator() + "project.json");
+                ProjectConfig::getInstance().saveToFile(std::string(projectDirectory) + FileUtils::GetPathSeparator() + "project.json");
+                ProjectConfig::getInstance().addRecentProject(FileUtils::GetProjectsBaseFolder());
                 ImGui::CloseCurrentPopup();
             }
         }

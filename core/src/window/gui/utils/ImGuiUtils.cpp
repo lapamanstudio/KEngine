@@ -60,3 +60,16 @@ bool ImGuiEngined::ButtonEx(const char* label, const ImVec2& size_arg, ImGuiButt
     IMGUI_TEST_ENGINE_ITEM_INFO(id, label, g.LastItemData.StatusFlags);
     return pressed;
 }
+
+bool ImGuiEngined::InputTextStdString(const char* label, std::string* str, ImGuiInputTextFlags flags, ImGuiInputTextCallback callback, void* user_data) {
+    char buf[256];
+    strncpy(buf, str->c_str(), sizeof(buf));
+    buf[sizeof(buf) - 1] = '\0';
+
+    bool changed = ImGui::InputText(label, buf, sizeof(buf), flags, callback, user_data);
+
+    if (changed) {
+        *str = buf;
+    }
+    return changed;
+}
