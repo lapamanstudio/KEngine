@@ -24,14 +24,11 @@ void ShowInExplorer(const std::string& path) {
     std::replace(fullPath.begin(), fullPath.end(), '/', FileUtils::GetPathSeparator());
 
 #ifdef _WIN32
-    // Windows
     ShellExecuteA(nullptr, "open", fullPath.c_str(), nullptr, nullptr, SW_SHOW);
 #elif __APPLE__
-    // macOS
     std::string command = "open \"" + fullPath + "\"";
     system(command.c_str());
 #elif __linux__
-    // Linux
     std::string command = "xdg-open \"" + fullPath + "\"";
     system(command.c_str());
 #else
@@ -209,7 +206,6 @@ void ProjectFilesPanel::renderPathHeader() {
             selectedItems.clear();
         }
 
-        // Begin drag and drop target
         if (ImGui::BeginDragDropTarget()) {
             if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("ITEM_PAYLOAD")) {
                 const char* droppedData = static_cast<const char*>(payload->Data);
@@ -261,7 +257,7 @@ bool ProjectFilesPanel::renderItem(const FileItem& item) {
     const bool isItemClicked = ImGui::IsItemClicked(ImGuiMouseButton_Left);
     const bool isItemDoubleClicked = ImGui::IsMouseDoubleClicked(ImGuiMouseButton_Left) && isItemHovered;
 
-    // Static variables to track click and drag state
+    // Track click and drag state
     static std::string clickedItemName;
     static bool isDraggingItem = false;
 
@@ -355,7 +351,6 @@ bool ProjectFilesPanel::renderItem(const FileItem& item) {
     const float imageY = cursorPos.y + 8.0f;
     ImGui::SetCursorScreenPos(ImVec2(imageX, imageY));
 
-    // Load texture
     GLuint texture = loadTextureForItem(item);
 
     ImGui::Image(reinterpret_cast<void*>(static_cast<intptr_t>(texture)), ImVec2(iconSize, iconSize));
