@@ -45,6 +45,17 @@ void ProjectFilesPanel::render(int posX, int posY, int width, int height) {
         return;
     }
 
+    if (ImGui::IsWindowFocused(ImGuiFocusedFlags_RootAndChildWindows)) {
+        // Ctrl + Shift + N to create a new folder
+        bool ctrlPressed = ImGui::GetIO().KeyCtrl;
+        bool shiftPressed = ImGui::GetIO().KeyShift;
+        bool nPressed = ImGui::IsKeyPressed(ImGuiKey_N, false);
+
+        if (ctrlPressed && shiftPressed && nPressed) {
+            createNewFolder();
+        }
+    }
+
     renderPathHeader();
 
     ImGui::SetCursorPosY(ImGui::GetCursorPosY() - 5);
@@ -166,8 +177,26 @@ void ProjectFilesPanel::saveRenameAndReset() {
         fs::path oldPath = fs::path(ProjectConfig::getInstance().projectDirectory) / currentDirectory / editingName;
         fs::path newPath = fs::path(ProjectConfig::getInstance().projectDirectory) / currentDirectory / newName;
 
-        if (fs::exists(oldPath) && !fs::exists(newPath)) {
-            fs::rename(oldPath, newPath);
+        try {
+            if (oldPath.string().length() > 260 || newPath.string().length() > 260) {
+                throw std::runtime_error("The path is too long.");
+            }
+
+            if (fs::exists(oldPath)) {
+                if (!fs::exists(newPath)) {
+                    fs::rename(oldPath, newPath);
+                } else {
+                    throw std::runtime_error("The item to rename already exists.");
+                }
+            } else {
+                throw std::runtime_error("The item to rename does not exist.");
+            }
+        } catch (const std::filesystem::filesystem_error& e) {
+            std::cerr << "Error with the fs: " << e.what() << std::endl;
+        } catch (const std::runtime_error& e) {
+            std::cerr << "Error: " << e.what() << std::endl;
+        } catch (...) {
+            std::cerr << "Error renaming the folder" << std::endl;
         }
     }
     editingName.clear();
