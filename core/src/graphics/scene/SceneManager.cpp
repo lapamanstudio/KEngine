@@ -31,7 +31,7 @@ void SceneManager::SaveScene() {
         sceneJson.push_back(object->Serialize());
     }
 
-    std::ofstream file(ProjectConfig::getInstance().projectDirectory + FileUtils::GetPathSeparator() + "scene.json");
+    std::ofstream file(ProjectConfig::getInstance().projectDirectory / "scene.json");
 
     if (file.is_open()) {
         file << sceneJson.dump(2);
@@ -43,8 +43,7 @@ void SceneManager::SaveScene() {
 }
 
 void SceneManager::LoadScene() {
-    std::ifstream file(ProjectConfig::getInstance().projectDirectory + FileUtils::GetPathSeparator() + "scene.json");
-    printf("Loading scene from %s\n", (ProjectConfig::getInstance().projectDirectory + FileUtils::GetPathSeparator() + "scene.json").c_str());
+    std::ifstream file(ProjectConfig::getInstance().projectDirectory / "scene.json");
 
     if (file.is_open()) {
         nlohmann::json sceneJson;
@@ -60,6 +59,16 @@ void SceneManager::LoadScene() {
     } else {
         std::cerr << "Error: Unable to open file for loading the scene." << std::endl;
     }
+}
+
+void SceneManager::BuildProject() {
+    // Extract resources being used on the scene!
+    std::vector<std::string> resources;
+
+    // TODO: This is only getting assets from the first scene (scene.json by default), in the future must contain multiple scenes!
+    
+
+    // Build resources
 }
 
 void SceneManager::RegisterComponents() {

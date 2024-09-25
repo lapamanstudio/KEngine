@@ -20,7 +20,7 @@ public:
     void SetSpriteName(const std::string& name) { spriteName = name; onChangeSpriteName(); }
 private:
     void onChangeSpriteName() {
-        textureID = spriteName.empty() ? 0 : TextureManager::LoadTexture(spriteName.c_str());
+        textureID = spriteName.empty() ? 0 : TextureManager::LoadTextureAsset(spriteName.c_str());
     }
 
     std::string spriteName;

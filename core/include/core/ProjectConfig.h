@@ -6,10 +6,13 @@
 #include <iostream>
 #include <string>
 #include <vector>
+#include <filesystem>
+
+namespace fs = std::filesystem;
 
 struct ProjectConfig {
     std::string projectName;
-    std::string projectDirectory;
+    fs::path projectDirectory;
 
     bool isInitialized = false;
 
@@ -28,20 +31,20 @@ struct ProjectConfig {
         file >> configJson;
 
         projectName = configJson.value("project_name", "Unnamed Project");
-        projectDirectory = configJson.value("project_directory", "build");
+        projectDirectory = fs::path(configJson.value("project_directory", "build"));
 
         isInitialized = true;
         return true;
     }
 
-    bool saveToFile(const std::string& filePath) const {
+    bool saveToFile(const fs::path& filePath) const {
         nlohmann::json configJson;
         configJson["project_name"] = projectName;
         configJson["project_directory"] = projectDirectory;
 
         std::ofstream file(filePath);
         if (!file.is_open()) {
-            std::cerr << "Error: Could not write to config file: " << filePath << std::endl;
+            std::cerr << "Error: Could not write to config file: " << filePath.string() << std::endl;
             return false;
         }
 
@@ -49,8 +52,8 @@ struct ProjectConfig {
         return true;
     }
 
-    void addRecentProject(const std::string& base_path) {
-        std::string recentProjectsFile = base_path + "/recent_projects.json";
+    void addRecentProject(const fs::path& base_path) {
+        fs::path recentProjectsFile = base_path / "recent_projects.json";
 
         nlohmann::json recentProjectsJson;
         std::ifstream fileIn(recentProjectsFile);
@@ -74,7 +77,7 @@ struct ProjectConfig {
         currentProjectJson["project_directory"] = projectDirectory;
 
         for (auto it = recentProjectsJson.begin(); it != recentProjectsJson.end(); ++it) {
-            if ((*it)["project_directory"] == projectDirectory) {
+            if ((*it)["project_directory"] == projectDirectory.string()) {
                 recentProjectsJson.erase(it);
                 break;
             }
@@ -97,8 +100,8 @@ struct ProjectConfig {
         fileOut.close();
     }
 
-    std::vector<ProjectConfig> getRecentProjects(const std::string& base_path) {
-        std::string recentProjectsFile = base_path + "/recent_projects.json";
+    std::vector<ProjectConfig> getRecentProjects(const fs::path& base_path) {
+        fs::path recentProjectsFile = base_path / "recent_projects.json";
 
         nlohmann::json recentProjectsJson;
         std::ifstream file(recentProjectsFile);

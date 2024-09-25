@@ -2,14 +2,17 @@
 #define FILE_UTILS_H
 
 #include <string>
+#include <filesystem>
+
+namespace fs = std::filesystem;
 
 class FileUtils {
 public:
-    static std::string GetExecutablePath();
-    static std::string GetFilePath(const std::string& relativePath);
-    static std::string GetDataFilePath(const std::string& relativePath);
-    static std::string GetProjectsBaseFolder();
-    static bool DirectoryExists(const std::string& path);
+    static fs::path GetExecutablePath();
+    static fs::path GetFilePath(const std::string& relativePath);
+    static fs::path GetDataFilePath(const std::string& relativePath);
+    static fs::path GetProjectsBaseFolder();
+    static bool DirectoryExists(const fs::path& path);
     static bool FileExists(const std::string& path);
     static char GetPathSeparator();
 };

@@ -23,9 +23,9 @@ WorkSceneRenderer::WorkSceneRenderer(std::shared_ptr<GLHelper> shader, int posX,
     glGenVertexArrays(1, &VAO);
     glGenBuffers(1, &VBO);
 
-    translationUpArrowTexture = TextureManager::LoadTexture("icons/translation_up_arrow.png");
-    translationRigthArrowTexture = TextureManager::LoadTexture("icons/translation_right_arrow.png");
-    translationCenterCircleTexture = TextureManager::LoadTexture("icons/translation_center_circle.png");
+    translationUpArrowTexture = TextureManager::LoadTextureFromDataFile("icons/translation_up_arrow.png");
+    translationRigthArrowTexture = TextureManager::LoadTextureFromDataFile("icons/translation_right_arrow.png");
+    translationCenterCircleTexture = TextureManager::LoadTextureFromDataFile("icons/translation_center_circle.png");
 }
 
 WorkSceneRenderer::~WorkSceneRenderer() {

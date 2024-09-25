@@ -48,7 +48,7 @@ void initialize_window(GLFWwindow* window) {
     icons_config.PixelSnapH = true; 
     icons_config.GlyphMinAdvanceX = 16;
     float iconFontSize = 18 * 2.0f / 3.0f; // 13px is the font size
-    io.Fonts->AddFontFromFileTTF(FileUtils::GetDataFilePath("fonts\\Roboto-Regular.ttf").c_str(), 16, &font_config, io.Fonts->GetGlyphRangesDefault());
+    io.Fonts->AddFontFromFileTTF(FileUtils::GetDataFilePath("fonts\\Roboto-Regular.ttf").string().c_str(), 16, &font_config, io.Fonts->GetGlyphRangesDefault());
     io.Fonts->AddFontFromMemoryTTF(font_awesome_ttf, font_awesome_ttf_len, iconFontSize, &icons_config, icons_ranges);
     io.IniFilename = NULL; // Disable INI file saving
 
@@ -125,7 +125,7 @@ void initDockLayout() {
 
     ImGui::DockBuilderFinish(dockspace_id);
 
-    splash_texture = TextureManager::LoadTexture("splash.png");
+    splash_texture = TextureManager::LoadTextureFromDataFile("splash.png");
 }
 
 void render_window() {
@@ -262,6 +262,7 @@ void render_window() {
                     configInstance.projectName = project.projectName;
                     configInstance.projectDirectory = project.projectDirectory;
                     configInstance.isInitialized = true;
+                    ProjectConfig::getInstance().addRecentProject(FileUtils::GetProjectsBaseFolder());
                     dockManager.getWorkSceneController()->getSceneManager()->LoadScene();
                 }
             }
@@ -310,9 +311,8 @@ void render_window() {
         auto generateUniqueProjectName = [](const std::string& baseName) -> std::string {
             int count = 0;
             std::string uniqueName = baseName;
-            std::string basePath = FileUtils::GetProjectsBaseFolder();
 
-            while (FileUtils::DirectoryExists(basePath + "/" + uniqueName)) {
+            while (FileUtils::DirectoryExists(FileUtils::GetProjectsBaseFolder() / uniqueName)) {
                 count++;
                 uniqueName = baseName + " (" + std::to_string(count) + ")";
             }
@@ -329,7 +329,7 @@ void render_window() {
             strncpy(projectName, uniqueProjectName.c_str(), sizeof(projectName));
             projectName[sizeof(projectName) - 1] = '\0';
 
-            std::string defaultDirectory = FileUtils::GetProjectsBaseFolder() + FileUtils::GetPathSeparator() + projectName;
+            std::string defaultDirectory = (FileUtils::GetProjectsBaseFolder() / projectName).string();
             strncpy(projectDirectory, defaultDirectory.c_str(), sizeof(projectDirectory));
             projectDirectory[sizeof(projectDirectory) - 1] = '\0';
 
@@ -343,7 +343,7 @@ void render_window() {
         if (ImGui::InputText("##projectName", projectName, IM_ARRAYSIZE(projectName)))
         {
             if (!directoryModifiedByUser) {
-                std::string newProjectDirectory = FileUtils::GetProjectsBaseFolder() + FileUtils::GetPathSeparator() + std::string(projectName);
+                std::string newProjectDirectory = (FileUtils::GetProjectsBaseFolder() / std::string(projectName)).string();
                 strncpy(projectDirectory, newProjectDirectory.c_str(), sizeof(projectDirectory));
                 projectDirectory[sizeof(projectDirectory) - 1] = '\0';
             }
@@ -387,18 +387,17 @@ void render_window() {
                 errorMessage = "Directory already exists!";
             } else {
                 if (!std::filesystem::exists(projectDirectory)) {
-                    std::filesystem::create_directories(projectDirectory);
-                    std::filesystem::create_directories(std::string(projectDirectory) + FileUtils::GetPathSeparator() + "assets");
-                    std::filesystem::create_directories(std::string(projectDirectory) + FileUtils::GetPathSeparator() + "config");
-                    std::filesystem::create_directories(std::string(projectDirectory) + FileUtils::GetPathSeparator() + "build");
-                    std::filesystem::create_directories(std::string(projectDirectory) + FileUtils::GetPathSeparator() + "logs");
+                    std::filesystem::create_directories(fs::path(projectDirectory) / "assets");
+                    std::filesystem::create_directories(fs::path(projectDirectory) / "config");
+                    std::filesystem::create_directories(fs::path(projectDirectory) / "build");
+                    std::filesystem::create_directories(fs::path(projectDirectory) / "logs");
                 }
 
                 isConfiguringProject = false;
                 ProjectConfig::getInstance().projectName = projectName;
                 ProjectConfig::getInstance().projectDirectory = projectDirectory;
                 ProjectConfig::getInstance().isInitialized = true;
-                ProjectConfig::getInstance().saveToFile(std::string(projectDirectory) + FileUtils::GetPathSeparator() + "project.json");
+                ProjectConfig::getInstance().saveToFile(fs::path(projectDirectory) / "project.json");
                 ProjectConfig::getInstance().addRecentProject(FileUtils::GetProjectsBaseFolder());
                 ImGui::CloseCurrentPopup();
             }

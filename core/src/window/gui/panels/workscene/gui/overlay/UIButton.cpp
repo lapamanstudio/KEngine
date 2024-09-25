@@ -6,7 +6,7 @@
 
 UIButton::UIButton(WorkSceneController* controller, float radius, const char* icon_path, std::function<void()> onClickListener, WorkSceneMode associatedMode)
     : UIComponent(controller, radius), m_icon_path(icon_path), onClickListener(onClickListener), mode(associatedMode) {
-    m_iconTexture = TextureManager::LoadTexture(m_icon_path);
+    m_iconTexture = TextureManager::LoadTextureFromDataFile(m_icon_path);
     setupButtonBuffers();
 }
 

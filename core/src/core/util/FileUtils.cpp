@@ -2,7 +2,6 @@
 #include "graphics/utils/stb_image.h"
 
 #include <iostream>
-#include <filesystem>
 #include <GL/gl.h>
 
 #ifdef _WIN32
@@ -11,7 +10,7 @@
     #include <unistd.h>
 #endif
 
-std::string FileUtils::GetExecutablePath() {
+fs::path FileUtils::GetExecutablePath() {
     char buffer[1024];
 
 #ifdef _WIN32
@@ -34,20 +33,18 @@ std::string FileUtils::GetExecutablePath() {
     }
 #endif
 
-    return std::filesystem::path(buffer).parent_path().string();
+    return fs::path(buffer).parent_path();
 }
 
-std::string FileUtils::GetFilePath(const std::string& relativePath) {
-    std::filesystem::path filePath = std::filesystem::path(FileUtils::GetExecutablePath()) / relativePath;
-    return filePath.string();
+fs::path FileUtils::GetFilePath(const std::string& relativePath) {
+    return fs::path(FileUtils::GetExecutablePath()) / relativePath;
 }
 
-std::string FileUtils::GetDataFilePath(const std::string& relativePath) {
-    std::filesystem::path dataFilePath = std::filesystem::path(FileUtils::GetExecutablePath()) / "datafiles" / relativePath;
-    return dataFilePath.string();
+fs::path FileUtils::GetDataFilePath(const std::string& relativePath) {
+    return fs::path(FileUtils::GetExecutablePath()) / "datafiles" / relativePath;
 }
 
-std::string FileUtils::GetProjectsBaseFolder() {
+fs::path FileUtils::GetProjectsBaseFolder() {
     const char* homeDir = nullptr;
 
 #ifdef _WIN32
@@ -57,20 +54,20 @@ std::string FileUtils::GetProjectsBaseFolder() {
 #endif
 
     if (homeDir) {
-        std::filesystem::path projectsPath = std::filesystem::path(homeDir) / "KEngine projects";
-        return projectsPath.string();
+        fs::path projectsPath = fs::path(homeDir) / "KEngine projects";
+        return projectsPath;
     } else {
         std::cerr << "Failed to get home directory environment variable." << std::endl;
         return ".";
     }
 }
 
-bool FileUtils::DirectoryExists(const std::string& path) {
-    return std::filesystem::exists(path) && std::filesystem::is_directory(path);
+bool FileUtils::DirectoryExists(const fs::path& path) {
+    return fs::exists(path) && fs::is_directory(path);
 }
 
 bool FileUtils::FileExists(const std::string& path) {
-    return std::filesystem::exists(path);
+    return fs::exists(path);
 }
 
 char FileUtils::GetPathSeparator() {

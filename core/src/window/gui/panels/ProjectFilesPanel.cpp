@@ -4,7 +4,6 @@
 #include "core/utils/FileUtils.h"
 #include "core/utils/StringUtils.h"
 
-#include <filesystem>
 #include <string>
 #include <vector>
 #include <unordered_map>
@@ -15,8 +14,6 @@
 #include <windows.h>
 #include <shellapi.h>
 #endif
-
-namespace fs = std::filesystem;
 
 void ShowInExplorer(const std::string& path) {
     std::string fullPath = path;
@@ -125,7 +122,7 @@ void ProjectFilesPanel::render(int posX, int posY, int width, int height) {
         }
         ImGui::Separator();
         if (ImGui::MenuItem("Show in Explorer")) {
-            ShowInExplorer(ProjectConfig::getInstance().projectDirectory + FileUtils::GetPathSeparator() + currentDirectory);
+            ShowInExplorer((ProjectConfig::getInstance().projectDirectory / currentDirectory).string());
         }
         ImGui::EndPopup();
     }
@@ -412,7 +409,7 @@ GLuint ProjectFilesPanel::loadTextureForItem(const FileItem& item) {
     static std::unordered_map<std::string, GLuint> iconCache;
 
     if (item.isDirectory) {
-        static GLuint folderTexture = TextureManager::LoadTexture("icons/folder_icon.png");
+        static GLuint folderTexture = TextureManager::LoadTextureFromDataFile("icons/folder_icon.png");
         return folderTexture;
     } else {
         std::string extension = fs::path(item.name).extension().string();
@@ -427,7 +424,7 @@ GLuint ProjectFilesPanel::loadTextureForItem(const FileItem& item) {
             if (!FileUtils::FileExists(iconFilename)) {
                 iconFilename = "icons/file_icon.png";
             }
-            GLuint texture = TextureManager::LoadTexture(iconFilename.c_str());
+            GLuint texture = TextureManager::LoadTextureFromDataFile(iconFilename.c_str());
             iconCache[extension] = texture;
             return texture;
         }

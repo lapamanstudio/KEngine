@@ -62,8 +62,11 @@ public:
     void SaveScene();
     void LoadScene();
 
+    void BuildProject();
+
     void RegisterComponents();
 
+    // TODO: Refactor this shit
     void SetMouseInUpperArrow(bool value) { isMouseInUpperArrow = value; }
     void SetMouseInRightArrow(bool value) { isMouseInRightArrow = value; }
     void SetMouseInCenterCircle(bool value) { isMouseInCenterCircle = value; }

@@ -2,6 +2,7 @@
 #define STB_IMAGE_IMPLEMENTATION
 #include "graphics/utils/stb_image.h"
 #include "core/utils/FileUtils.h"
+#include "core/ProjectConfig.h"
 
 #include <unordered_map>
 #include <iostream>
@@ -36,18 +37,27 @@ void TextureManager::Init() {
     glBindVertexArray(0);
 }
 
-GLuint TextureManager::LoadTexture(const char* image_path) {
-    std::string full_image_path = FileUtils::GetDataFilePath(image_path);
-    auto it = textureCache.find(full_image_path);
-    if (it != textureCache.end()) {
-        return it->second;
+GLuint TextureManager::LoadTextureFromDataFile(const char* image_path) {
+    return LoadTexture(FileUtils::GetDataFilePath(image_path).string().c_str(), true);
+}
+
+GLuint TextureManager::LoadTextureAsset(const char* image_path) {
+    return LoadTexture((ProjectConfig::getInstance().projectDirectory / image_path).string().c_str(), false);
+}
+
+GLuint TextureManager::LoadTexture(const char* full_image_path, bool useCache) {
+    if (useCache) {
+        auto it = textureCache.find(full_image_path);
+        if (it != textureCache.end()) {
+            return it->second;
+        }
     }
 
     std::ifstream file(full_image_path);
     if (!file.good()) return 0;
 
     int width, height, nrChannels;
-    unsigned char* data = stbi_load(full_image_path.c_str(), &width, &height, &nrChannels, 0);
+    unsigned char* data = stbi_load(full_image_path, &width, &height, &nrChannels, 0);
     if (!data) {
         std::cerr << "Failed to load texture from memory." << std::endl;
         return 0;
@@ -69,44 +79,8 @@ GLuint TextureManager::LoadTexture(const char* image_path) {
 
     stbi_image_free(data);
 
-    textureCache[full_image_path] = textureID;
-
-    return textureID;
-}
-
-GLuint TextureManager::LoadTexture(const unsigned char* image, unsigned int image_len) {
-    // Generate unique key to check in cache
-    std::size_t key = std::hash<const unsigned char*>{}(image) ^ std::hash<unsigned int>{}(image_len);
-
-    auto it = memoryTextureCache.find(key);
-    if (it != memoryTextureCache.end()) {
-        return it->second;
-    }
-
-    int width, height, nrChannels;
-    unsigned char* data = stbi_load_from_memory(image, image_len, &width, &height, &nrChannels, 0);
-    if (!data) {
-        std::cerr << "Failed to load texture from memory." << std::endl;
-        return 0;
-    }
-
-    GLuint textureID;
-    glGenTextures(1, &textureID);
-    glBindTexture(GL_TEXTURE_2D, textureID);
-
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-
-    GLenum format = (nrChannels == 4) ? GL_RGBA : GL_RGB;
-
-    glTexImage2D(GL_TEXTURE_2D, 0, format, width, height, 0, format, GL_UNSIGNED_BYTE, data);
-    glGenerateMipmap(GL_TEXTURE_2D);
-
-    stbi_image_free(data);
-
-    memoryTextureCache[key] = textureID;
+    if (useCache)
+        textureCache[full_image_path] = textureID;
 
     return textureID;
 }
