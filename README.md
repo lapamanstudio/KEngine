@@ -4,7 +4,7 @@ KEngine is an open-source 2D game creation engine designed to offer a platform f
 
 ## Objectives:
 
-- [ ] **Basic Interface:**
+- [x] **Basic Interface:**
    - Develop an intuitive and user-friendly interface to streamline the game development process. Focus on simplicity for beginners while offering depth for more advanced users.
 
 - [ ] **2D Game Creation:**
