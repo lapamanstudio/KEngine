@@ -69,6 +69,7 @@ void WorkSceneController::processKeyboardInput(GLFWwindow* window, float deltaTi
         } else if (ImGui::IsKeyPressed(ImGuiKey_F, false)) {
             setMode(FREE_CAMERA_MODE);
         } else if (ctrlPressed && ImGui::IsKeyPressed(ImGuiKey_S, false)) {
+            ProjectConfig::getInstance().saveToFile(ProjectConfig::getInstance().projectDirectory / "project.json");
             sceneManager->SaveScene();
         } else if (ctrlPressed && ImGui::IsKeyPressed(ImGuiKey_O, false)) {
             sceneManager->LoadScene();

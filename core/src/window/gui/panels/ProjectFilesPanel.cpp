@@ -35,7 +35,7 @@ void ShowInExplorer(const std::string& path) {
 
 
 ProjectFilesPanel::ProjectFilesPanel(DockManager* dockManager)
-    : dockManager(dockManager), currentDirectory("Assets/") {}
+    : dockManager(dockManager) {}
 
 void ProjectFilesPanel::render(int posX, int posY, int width, int height) {
     if (!ProjectConfig::getInstance().isInitialized) {
@@ -60,10 +60,10 @@ void ProjectFilesPanel::render(int posX, int posY, int width, int height) {
 
     // Clear items and load directory contents
     items.clear();
-    fs::path fullPath = fs::path(ProjectConfig::getInstance().projectDirectory) / currentDirectory;
+    fs::path fullPath = ProjectConfig::getInstance().getFullCurrentDirectory();
 
     if (!fs::exists(fullPath) || !fs::is_directory(fullPath)) {
-        currentDirectory = "Assets/";
+        ProjectConfig::getInstance().currentDirectory = "Assets/";
         return;
     }
 
@@ -122,7 +122,7 @@ void ProjectFilesPanel::render(int posX, int posY, int width, int height) {
         }
         ImGui::Separator();
         if (ImGui::MenuItem("Show in Explorer")) {
-            ShowInExplorer((ProjectConfig::getInstance().projectDirectory / currentDirectory).string());
+            ShowInExplorer(ProjectConfig::getInstance().getFullCurrentDirectory().string());
         }
         ImGui::EndPopup();
     }
@@ -171,8 +171,8 @@ void ProjectFilesPanel::render(int posX, int posY, int width, int height) {
 
 void ProjectFilesPanel::saveRenameAndReset() {
     if (!newName.empty()) {
-        fs::path oldPath = fs::path(ProjectConfig::getInstance().projectDirectory) / currentDirectory / editingName;
-        fs::path newPath = fs::path(ProjectConfig::getInstance().projectDirectory) / currentDirectory / newName;
+        fs::path oldPath = ProjectConfig::getInstance().getFullCurrentDirectory() / editingName;
+        fs::path newPath = ProjectConfig::getInstance().getFullCurrentDirectory() / newName;
 
         try {
             if (oldPath.string().length() > 260 || newPath.string().length() > 260) {
@@ -208,7 +208,7 @@ void ProjectFilesPanel::cancelRenaming() {
 }
 
 void ProjectFilesPanel::renderPathHeader() {
-    fs::path path(currentDirectory);
+    fs::path path(ProjectConfig::getInstance().currentDirectory);
     std::vector<fs::path> pathParts;
 
     for (const auto& part : path) {
@@ -228,7 +228,7 @@ void ProjectFilesPanel::renderPathHeader() {
 
         ImGui::PushID(i);
         if (ImGui::Button(pathParts[i].string().c_str())) {
-            currentDirectory = accumulatedPath.string() + "/";
+            ProjectConfig::getInstance().currentDirectory = accumulatedPath.string() + "/";
             selectedItems.clear();
         }
 
@@ -324,7 +324,7 @@ bool ProjectFilesPanel::renderItem(const FileItem& item) {
     // Handle double-click
     if (isItemDoubleClicked) {
         if (item.isDirectory) {
-            currentDirectory += item.name + "/";
+            ProjectConfig::getInstance().currentDirectory += item.name + "/";
             selectedItems.clear();
         } else {
             // openFile(item.name);
@@ -353,7 +353,7 @@ bool ProjectFilesPanel::renderItem(const FileItem& item) {
                 while (std::getline(droppedItems, itemName)) {
                     if (itemName == item.name) continue;
                     if (!itemName.empty()) {
-                        MoveItemToPath(itemName, currentDirectory + item.name);
+                        MoveItemToPath(itemName, ProjectConfig::getInstance().currentDirectory + item.name);
                     }
                 }
             }
@@ -435,10 +435,10 @@ void ProjectFilesPanel::createNewFolder() {
     std::string newFolderName = "New Folder";
     int folderIndex = 1;
 
-    fs::path fullPath = fs::path(ProjectConfig::getInstance().projectDirectory) / currentDirectory / newFolderName;
+    fs::path fullPath = ProjectConfig::getInstance().getFullCurrentDirectory() / newFolderName;
     while (fs::exists(fullPath)) {
         newFolderName = "New Folder (" + std::to_string(folderIndex++) + ")";
-        fullPath = fs::path(ProjectConfig::getInstance().projectDirectory) / currentDirectory / newFolderName;
+        fullPath = ProjectConfig::getInstance().getFullCurrentDirectory() / newFolderName;
     }
 
     fs::create_directory(fullPath);
@@ -452,10 +452,10 @@ void ProjectFilesPanel::createNewFile() {
     std::string newFileName = "New File";
     int fileIndex = 1;
 
-    fs::path fullPath = fs::path(ProjectConfig::getInstance().projectDirectory) / currentDirectory / newFileName;
+    fs::path fullPath = ProjectConfig::getInstance().getFullCurrentDirectory() / newFileName;
     while (fs::exists(fullPath)) {
         newFileName = "New File (" + std::to_string(fileIndex++) + ")";
-        fullPath = fs::path(ProjectConfig::getInstance().projectDirectory) / currentDirectory / newFileName;
+        fullPath = ProjectConfig::getInstance().getFullCurrentDirectory() / newFileName;
     }
 
     std::ofstream fileOut(fullPath);
@@ -474,7 +474,7 @@ void ProjectFilesPanel::startRenaming() {
 
 void ProjectFilesPanel::deleteSelectedItems() {
     for (const auto& item : selectedItems) {
-        fs::path path = fs::path(ProjectConfig::getInstance().projectDirectory) / currentDirectory / item;
+        fs::path path = ProjectConfig::getInstance().getFullCurrentDirectory() / item;
         if (fs::exists(path)) {
             if (fs::is_directory(path)) {
                 fs::remove_all(path);
@@ -487,8 +487,8 @@ void ProjectFilesPanel::deleteSelectedItems() {
 }
 
 void ProjectFilesPanel::MoveItemToPath(const std::string& itemName, const std::string& targetFolder) {
-    fs::path sourcePath = fs::path(ProjectConfig::getInstance().projectDirectory) / currentDirectory / itemName;
-    fs::path destinationPath = fs::path(ProjectConfig::getInstance().projectDirectory) / targetFolder / itemName;
+    fs::path sourcePath = ProjectConfig::getInstance().getFullCurrentDirectory() / itemName;
+    fs::path destinationPath = ProjectConfig::getInstance().projectDirectory / targetFolder / itemName;
 
     if (fs::exists(sourcePath) && fs::exists(destinationPath.parent_path())) {
         fs::rename(sourcePath, destinationPath);

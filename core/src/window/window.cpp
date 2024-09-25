@@ -261,6 +261,7 @@ void render_window() {
                     ProjectConfig& configInstance = ProjectConfig::getInstance();
                     configInstance.projectName = project.projectName;
                     configInstance.projectDirectory = project.projectDirectory;
+                    configInstance.currentDirectory = project.currentDirectory;
                     configInstance.isInitialized = true;
                     ProjectConfig::getInstance().addRecentProject(FileUtils::GetProjectsBaseFolder());
                     dockManager.getWorkSceneController()->getSceneManager()->LoadScene();
@@ -396,6 +397,7 @@ void render_window() {
                 isConfiguringProject = false;
                 ProjectConfig::getInstance().projectName = projectName;
                 ProjectConfig::getInstance().projectDirectory = projectDirectory;
+                ProjectConfig::getInstance().currentDirectory = "Assets/";
                 ProjectConfig::getInstance().isInitialized = true;
                 ProjectConfig::getInstance().saveToFile(fs::path(projectDirectory) / "project.json");
                 ProjectConfig::getInstance().addRecentProject(FileUtils::GetProjectsBaseFolder());

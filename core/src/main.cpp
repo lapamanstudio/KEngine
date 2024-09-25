@@ -9,6 +9,7 @@
 #include <iostream>
 
 #include "config.h"
+#include "core/ProjectConfig.h"
 #include "window/Window.h"
 #include "window/WindowManager.h"
 
@@ -21,6 +22,7 @@ void error_callback(int error, const char* description) {
 void framebuffer_size_callback(GLFWwindow* window, int width, int height);
 void key_callback(GLFWwindow* window, int key, int scancode, int action, int mods);
 void mouse_button_callback(GLFWwindow* window, int button, int action, int mods);
+void file_drop_callback(GLFWwindow* window, int count, const char** paths);
 
 int main(void) {
     printf("Running KEngine %ls\n", GAME_ENGINE_VERSION);
@@ -67,6 +69,7 @@ int main(void) {
 
     glfwSetKeyCallback(window, key_callback);
     glfwSetMouseButtonCallback(window, mouse_button_callback);
+    glfwSetDropCallback(window, file_drop_callback);
 
     const double frame_time_limit = 1.0 / 144; // 60 FPS
     auto last_time = std::chrono::high_resolution_clock::now();
@@ -111,6 +114,26 @@ int main(void) {
     cleanup_window();
     glfwTerminate();
     return 0;
+}
+
+// Copy files to project directory
+void file_drop_callback(GLFWwindow* window, int count, const char** paths) {
+    if (ProjectConfig::getInstance().isInitialized) {
+        for (int i = 0; i < count; ++i) {
+            fs::path sourcePath = fs::path(paths[i]);
+            fs::path destinationPath = ProjectConfig::getInstance().getFullCurrentDirectory() / sourcePath.filename();
+            
+            try {
+                if (fs::exists(destinationPath)) {
+                    fs::remove(destinationPath);
+                }
+
+                fs::copy_file(sourcePath, destinationPath, fs::copy_options::overwrite_existing);
+            } catch (const fs::filesystem_error& e) {
+                std::cerr << "Error copying file: " << e.what() << " [" << sourcePath << "] to [" << destinationPath << "]" << std::endl;
+            }
+        }
+    }
 }
 
 void key_callback(GLFWwindow* window, int key, int scancode, int action, int mods) {

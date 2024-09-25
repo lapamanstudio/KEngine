@@ -13,6 +13,7 @@ namespace fs = std::filesystem;
 struct ProjectConfig {
     std::string projectName;
     fs::path projectDirectory;
+    std::string currentDirectory;
 
     bool isInitialized = false;
 
@@ -32,6 +33,8 @@ struct ProjectConfig {
 
         projectName = configJson.value("project_name", "Unnamed Project");
         projectDirectory = fs::path(configJson.value("project_directory", "build"));
+        currentDirectory = configJson.value("current_directory", "Assets/");
+        currentDirectory == "" ? "Assets/" : currentDirectory;
 
         isInitialized = true;
         return true;
@@ -41,6 +44,7 @@ struct ProjectConfig {
         nlohmann::json configJson;
         configJson["project_name"] = projectName;
         configJson["project_directory"] = projectDirectory;
+        configJson["current_directory"] = currentDirectory;
 
         std::ofstream file(filePath);
         if (!file.is_open()) {
@@ -50,6 +54,10 @@ struct ProjectConfig {
 
         file << configJson.dump(4);
         return true;
+    }
+
+    fs::path getFullCurrentDirectory() const {
+        return projectDirectory / (currentDirectory == "" ? "Assets/" : currentDirectory);
     }
 
     void addRecentProject(const fs::path& base_path) {
@@ -75,6 +83,7 @@ struct ProjectConfig {
         nlohmann::json currentProjectJson;
         currentProjectJson["project_name"] = projectName;
         currentProjectJson["project_directory"] = projectDirectory;
+        currentProjectJson["current_directory"] = currentDirectory;
 
         for (auto it = recentProjectsJson.begin(); it != recentProjectsJson.end(); ++it) {
             if ((*it)["project_directory"] == projectDirectory.string()) {
@@ -118,6 +127,7 @@ struct ProjectConfig {
             ProjectConfig project;
             project.projectName = projectJson.value("project_name", "Unnamed Project");
             project.projectDirectory = projectJson.value("project_directory", "build");
+            project.currentDirectory = projectJson.value("current_directory", "Assets/");
             project.isInitialized = true;
 
             recentProjects.push_back(std::move(project));
@@ -136,12 +146,14 @@ struct ProjectConfig {
     ProjectConfig(ProjectConfig&& other) noexcept
         : projectName(std::move(other.projectName)),
           projectDirectory(std::move(other.projectDirectory)),
+          currentDirectory(std::move(other.currentDirectory)),
           isInitialized(other.isInitialized) {}
 
     ProjectConfig& operator=(ProjectConfig&& other) noexcept {
         if (this != &other) {
             projectName = std::move(other.projectName);
             projectDirectory = std::move(other.projectDirectory);
+            currentDirectory = std::move(other.currentDirectory);
             isInitialized = other.isInitialized;
         }
         return *this;

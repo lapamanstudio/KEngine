@@ -6,7 +6,7 @@
 #include <string>
 #include <unordered_set>
 #include <vector>
-#include <GL/glew.h> // Include this if you use OpenGL types like GLuint
+#include <GL/glew.h>
 
 class ProjectFilesPanel : public IDockablePanel {
 public:
@@ -37,7 +37,6 @@ private:
 
     // Member variables
     DockManager* dockManager;
-    std::string currentDirectory;
 
     // State flags
     bool isDeleting = false;
