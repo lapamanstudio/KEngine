@@ -2,7 +2,6 @@
 #define FILE_UTILS_H
 
 #include <string>
-#include <GL/gl.h>
 
 class FileUtils {
 public:

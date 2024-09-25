@@ -130,6 +130,47 @@ public:
         return false;
     }
 
+    nlohmann::json Serialize() {
+        nlohmann::json json;
+        json["name"] = name;
+
+        nlohmann::json propertiesJson = properties.Serialize();
+        propertiesJson.erase("Name");
+        
+        if (propertiesJson.contains("Transform")) {
+            json["Transform"] = propertiesJson["Transform"];
+        }
+
+        printf("EmptyObject::Serialize: %s\n", json.dump(4).c_str());
+
+        nlohmann::json componentsJson;
+        for (const auto& component : components) {
+            componentsJson[component.first] = component.second->Serialize();
+        }
+        json["components"] = componentsJson;
+
+        return json;
+    }
+
+    static std::shared_ptr<EmptyObject> Deserialize(const nlohmann::json& json) {
+        std::string name = json.value("name", "Unnamed Object");
+
+        glm::vec2 position = glm::vec2(0.0f, 0.0f);
+        glm::vec2 size = glm::vec2(1.0f, 1.0f);
+
+        auto object = std::make_shared<EmptyObject>(position.x, position.y, size.x, size.y, name);
+        object->properties.Deserialize(json);
+
+        if (json.contains("components")) {
+            for (const auto& componentJson : json["components"]) {
+                auto component = ObjectComponent::Deserialize(object, componentJson);
+                object->AddComponent(component);
+            }
+        }
+
+        return object;
+    }
+
 protected:
     std::string name;
     glm::vec2 position;

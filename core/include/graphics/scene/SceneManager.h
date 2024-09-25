@@ -1,6 +1,8 @@
 #ifndef SCENE_MANAGER_H
 #define SCENE_MANAGER_H
 
+#include "core/ProjectConfig.h"
+#include "core/utils/FileUtils.h"
 #include "graphics/scene/objects/EmptyObject.h"
 #include "graphics/scene/SceneCamera.h"
 #include "graphics/math/MathUtil.h"
@@ -56,6 +58,11 @@ public:
 
     WorkSceneMode GetMode() const { return currentMode; }
     void SetMode(WorkSceneMode mode) { currentMode = mode; }
+
+    void SaveScene();
+    void LoadScene();
+
+    void RegisterComponents();
 
     void SetMouseInUpperArrow(bool value) { isMouseInUpperArrow = value; }
     void SetMouseInRightArrow(bool value) { isMouseInRightArrow = value; }

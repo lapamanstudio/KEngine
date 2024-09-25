@@ -4,6 +4,7 @@
 #include "graphics/scene/property/ObjectProperty.h"
 #include "graphics/scene/objects/IObject.h"
 #include "graphics/fonts/IconsFontAwesome5.h"
+#include "graphics/scene/objects/components/ObjectComponentFactory.h"
 
 #include <GL/glew.h>
 #include <memory>
@@ -22,6 +23,27 @@ public:
 
     void RenderProperties() {
         properties.Render();
+    }
+
+    nlohmann::json Serialize() const {
+        nlohmann::json j;
+        j["name"] = name;
+        j["properties"] = properties.Serialize();
+        return j;
+    }
+
+    static std::shared_ptr<ObjectComponent> Deserialize(const std::weak_ptr<IObject> parent, const nlohmann::json& j) {
+        std::string componentName;
+        if (j.contains("name")) {
+            componentName = j["name"];
+        }
+
+        printf("Deserializing component: %s\n", componentName.c_str());
+        std::shared_ptr<ObjectComponent> component = ObjectComponentFactory::CreateComponent(componentName, parent);
+        if (component && j.contains("properties")) {
+            component->properties.Deserialize(j["properties"]);
+        }
+        return component;
     }
 
     virtual std::string GetTypeIcon() const { return ICON_FA_H_SQUARE; }    

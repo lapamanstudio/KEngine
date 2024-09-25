@@ -1,10 +1,13 @@
 #include "graphics/scene/SceneManager.h"
 #include "graphics/scene/property/ObjectProperty.h"
+#include "graphics/scene/objects/components/CameraComponent.h"
+#include "graphics/scene/objects/components/SpriteRendererComponent.h"
 
 int Property::idCounter = 0;
 
 SceneManager::SceneManager() : camera(std::make_shared<SceneCamera>()) {
     camera.get()->Move(glm::vec2(-10, -10));
+    RegisterComponents();
 }
 
 void SceneManager::ReorderObject(std::shared_ptr<EmptyObject> object, std::shared_ptr<EmptyObject> target) {
@@ -19,6 +22,49 @@ void SceneManager::ReorderObject(std::shared_ptr<EmptyObject> object, std::share
     } else {
         objects.push_back(object);
     }
+}
+
+void SceneManager::SaveScene() {
+    nlohmann::json sceneJson = nlohmann::json::array();
+
+    for (auto& object : objects) {
+        sceneJson.push_back(object->Serialize());
+    }
+
+    std::ofstream file(ProjectConfig::getInstance().projectDirectory + FileUtils::GetPathSeparator() + "scene.json");
+
+    if (file.is_open()) {
+        file << sceneJson.dump(2);
+        file.close();
+        std::cout << "Scene saved to scene.json" << std::endl;
+    } else {
+        std::cerr << "Error: Unable to open file for saving the scene." << std::endl;
+    }
+}
+
+void SceneManager::LoadScene() {
+    std::ifstream file(ProjectConfig::getInstance().projectDirectory + FileUtils::GetPathSeparator() + "scene.json");
+    printf("Loading scene from %s\n", (ProjectConfig::getInstance().projectDirectory + FileUtils::GetPathSeparator() + "scene.json").c_str());
+
+    if (file.is_open()) {
+        nlohmann::json sceneJson;
+        file >> sceneJson;
+        file.close();
+
+        for (auto& objectJson : sceneJson) {
+            auto object = EmptyObject::Deserialize(objectJson);
+            objects.push_back(object);
+        }
+
+        std::cout << "Scene loaded from scene.json" << std::endl;
+    } else {
+        std::cerr << "Error: Unable to open file for loading the scene." << std::endl;
+    }
+}
+
+void SceneManager::RegisterComponents() {
+    ObjectComponentFactory::RegisterComponent<CameraComponent>("Camera");
+    ObjectComponentFactory::RegisterComponent<SpriteRendererComponent>("Sprite Renderer");
 }
 
 void SceneManager::RemoveActiveObject(std::shared_ptr<EmptyObject> object) {

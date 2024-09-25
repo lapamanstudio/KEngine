@@ -61,7 +61,19 @@ void WorkSceneController::render(int x, int y, int w, int h) {
 }
 
 void WorkSceneController::processKeyboardInput(GLFWwindow* window, float deltaTime) {
-    
+    if (ImGui::IsWindowFocused(ImGuiFocusedFlags_RootAndChildWindows)) {
+        bool ctrlPressed = ImGui::GetIO().KeyCtrl;
+
+        if (ImGui::IsKeyPressed(ImGuiKey_G, false)) {
+            setMode(TRANSLATION_MODE);
+        } else if (ImGui::IsKeyPressed(ImGuiKey_F, false)) {
+            setMode(FREE_CAMERA_MODE);
+        } else if (ctrlPressed && ImGui::IsKeyPressed(ImGuiKey_S, false)) {
+            sceneManager->SaveScene();
+        } else if (ctrlPressed && ImGui::IsKeyPressed(ImGuiKey_R, false)) {
+            sceneManager->LoadScene();
+        }
+    }
 }
 
 void WorkSceneController::processMouseInput(GLFWwindow* window, float mouseWheel, float deltaTime, bool isMouseOverPanel) {

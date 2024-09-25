@@ -1,6 +1,7 @@
 #ifndef OBJECT_PROPERTY_H
 #define OBJECT_PROPERTY_H
 
+#include <nlohmann/json.hpp>
 #include <string>
 #include <vector>
 #include <memory>
@@ -9,13 +10,18 @@
 #include <functional>
 
 #include "window/WindowManager.h"
+#include "window/io/PlatformMouse.h"
 
 class Property {
 public:
     Property(const std::string& name) : name(name), imguiID("##" + std::to_string(idCounter++)) {}
     virtual ~Property() = default;
+    
     virtual void Render() = 0;
     const std::string& GetName() const { return name; }
+
+    virtual nlohmann::json Serialize() const = 0;
+    virtual void Deserialize(const nlohmann::json& j) = 0;
 
 protected:
     void RenderLabel() const {
@@ -28,55 +34,6 @@ protected:
 
     void EndRender() const {
         ImGui::PopItemWidth();
-    }
-
-    void WrapMousePos() {
-        ImGuiContext* g = ImGui::GetCurrentContext();
-        ImGuiIO& io = g->IO;
-        ImVec2& mousePos = io.MousePos;
-
-        GLFWwindow* window = WindowManager::getInstance().getWindow();
-        int windowPosX, windowPosY;
-        glfwGetWindowPos(window, &windowPosX, &windowPosY);
-
-        int windowWidth, windowHeight;
-        glfwGetWindowSize(window, &windowWidth, &windowHeight);
-
-        // io.MousePos is relative from window, so (0, 0)
-        ImVec2 windowMin = ImVec2(0, 0);
-        ImVec2 windowMax = ImVec2(static_cast<float>(windowWidth), static_cast<float>(windowHeight));
-
-        bool wrapped = false;
-        const float offset = 1.0f;
-
-        // Horizontal wrapping
-        if (io.MouseDelta.x < 0 && mousePos.x <= windowMin.x) {
-            glfwSetCursorPos(window, windowPosX + windowMax.x - offset, windowPosY + mousePos.y);
-            mousePos.x = windowMax.x - offset;
-            wrapped = true;
-        } else if (io.MouseDelta.x > 0 && mousePos.x >= windowMax.x - offset) {
-            glfwSetCursorPos(window, windowPosX + windowMin.x + offset, windowPosY + mousePos.y);
-            mousePos.x = windowMin.x + offset;
-            wrapped = true;
-        }
-
-        // Vertical wrapping
-        if (io.MouseDelta.y < 0 && mousePos.y <= windowMin.y) {
-            glfwSetCursorPos(window, windowPosX + mousePos.x, windowPosY + windowMax.y - offset);
-            mousePos.y = windowMax.y - offset;
-            wrapped = true;
-        } else if (io.MouseDelta.y > 0 && mousePos.y >= windowMax.y - offset) {
-            glfwSetCursorPos(window, windowPosX + mousePos.x, windowPosY + windowMin.y + offset);
-            mousePos.y = windowMin.y + offset;
-            wrapped = true;
-        }
-
-        // Update IO if wrapping occurred
-        if (wrapped) {
-            io.MousePosPrev = mousePos;
-            io.MouseDelta = ImVec2(0, 0);
-            io.WantSetMousePos = true;
-        }
     }
 
     std::string name;
@@ -105,6 +62,14 @@ public:
         EndRender();
     }
 
+    nlohmann::json Serialize() const override {
+        return *valuePtr;
+    }
+
+    void Deserialize(const nlohmann::json& j) override {
+        *valuePtr = j.get<std::string>();
+    }
+
 private:
     std::string* valuePtr;
     std::function<void()> callback;
@@ -125,6 +90,14 @@ public:
         if (ImGui::IsItemActive())
             WrapMousePos();
         EndRender();
+    }
+
+    nlohmann::json Serialize() const override {
+        return *valuePtr;
+    }
+
+    void Deserialize(const nlohmann::json& j) override {
+        *valuePtr = j.get<float>();
     }
 
 private:
@@ -165,6 +138,15 @@ public:
         EndRender();
     }
 
+    nlohmann::json Serialize() const override {
+        return { *valuePtrX, *valuePtrY };
+    }
+
+    void Deserialize(const nlohmann::json& j) override {
+        *valuePtrX = j[0].get<float>();
+        *valuePtrY = j[1].get<float>();
+    }
+
 private:
     float* valuePtrX;
     float* valuePtrY;
@@ -185,6 +167,14 @@ public:
         EndRender();
     }
 
+    nlohmann::json Serialize() const override {
+        return *valuePtr;
+    }
+
+    void Deserialize(const nlohmann::json& j) override {
+        *valuePtr = j.get<int>();
+    }
+
 private:
     int* valuePtr;
 };
@@ -197,6 +187,14 @@ public:
         RenderLabel();
         ImGui::Checkbox(imguiID.c_str(), valuePtr);
         EndRender();
+    }
+
+    nlohmann::json Serialize() const override {
+        return *valuePtr;
+    }
+
+    void Deserialize(const nlohmann::json& j) override {
+        *valuePtr = j.get<bool>();
     }
 
 private:
@@ -227,6 +225,22 @@ public:
         }
     }
 
+    nlohmann::json Serialize() const {
+        nlohmann::json j;
+        for (const auto& property : properties) {
+            j[property->GetName()] = property->Serialize();
+        }
+        return j;
+    }
+
+    void Deserialize(const nlohmann::json& j) {
+        for (const auto& property : properties) {
+            if (j.contains(property->GetName())) {
+                property->Deserialize(j[property->GetName()]);
+            }
+        }
+    }
+
 private:
     std::vector<std::shared_ptr<Property>> properties;
     bool renderButton;
@@ -247,6 +261,23 @@ public:
 
     void Clear() {
         properties.clear();
+    }
+
+    nlohmann::json Serialize() const {
+        nlohmann::json j;
+        for (const auto& property : properties) {
+            j[property->GetName()] = property->Serialize();
+        }
+        return j;
+    }
+
+    void Deserialize(const nlohmann::json& j) {
+        for (const auto& property : properties) {
+            if (j.contains(property->GetName())) {
+                printf("Deserializing property: %s\n", property->GetName().c_str());
+                property->Deserialize(j[property->GetName()]);
+            }
+        }
     }
 
 private:
