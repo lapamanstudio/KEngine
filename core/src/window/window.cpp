@@ -262,13 +262,15 @@ void render_window() {
                     configInstance.projectName = project.projectName;
                     configInstance.projectDirectory = project.projectDirectory;
                     configInstance.isInitialized = true;
+                    dockManager.getWorkSceneController()->getSceneManager()->LoadScene();
                 }
             }
 
             ImGui::Columns(1);
             ImGui::PopStyleColor();
 
-            ImGui::NewLine();
+            if (recentProjects.size() < 3)
+                ImGui::NewLine();
             ImGui::NewLine();
 
             // Center the button
