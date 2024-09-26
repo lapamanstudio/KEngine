@@ -138,6 +138,8 @@ void render_window() {
     ImGui_ImplGlfw_NewFrame();
     ImGui::NewFrame();
 
+    static bool isAboutOpen = false;
+
     // Menu Bar
     if (ImGui::BeginMainMenuBar()) {
         if (ImGui::BeginMenu("Project")) {
@@ -150,10 +152,47 @@ void render_window() {
         }
         if (ImGui::BeginMenu("Help")) {
             // Help menu items
+            if (ImGui::MenuItem("About Kengine")) {
+                ImGui::CloseCurrentPopup();
+                isAboutOpen = true;
+            }
             ImGui::EndMenu();
         }
         ImGui::EndMainMenuBar();
     }
+
+    if (isAboutOpen) {
+        ImGui::OpenPopup("About Kengine");
+    }
+
+    ImGui::SetNextWindowSize(ImVec2(400, 150));
+    ImGui::SetNextWindowPos(ImVec2(viewport->Size.x * 0.5f, viewport->Size.y * 0.5f), ImGuiCond_Appearing, ImVec2(0.5f, 0.5f));
+    ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, 15.0f);
+    if (ImGui::BeginPopupModal("About Kengine", &isAboutOpen, ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoCollapse)) {
+
+        ImGui::Text("KEngine 0.0.1 - Alpha");
+        ImGui::Text("Developer: Goedix");
+
+        // Artist
+        ImGui::Text("Artist:");
+        ImGui::SameLine();
+        ImGui::TextColored(ImVec4(0.0f, 0.7f, 1.0f, 1.0f), "@anarkh_angel");
+        if (ImGui::IsItemClicked()) {
+            OpenURL("https://twitter.com/anarkh_angel");
+        }
+
+        ImGui::Separator();
+        ImGui::Text("For more information, visit the Kengine website.");
+
+        // Website
+        if (ImGui::Button("Visit Kengine Website")) {
+            OpenURL("https://kengine.org");
+        }
+
+        ImGui::EndPopup();
+    }
+    ImGui::PopStyleVar();
+
 
     // Setup Docking Environment
     ImGuiWindowFlags window_flags = ImGuiWindowFlags_MenuBar | ImGuiWindowFlags_NoDocking;

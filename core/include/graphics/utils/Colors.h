@@ -30,6 +30,11 @@ namespace Colors {
     const glm::vec3 Mint(0.74f, 1.0f, 0.79f);
     const glm::vec3 Coral(1.0f, 0.5f, 0.31f);
     const glm::vec3 Salmon(0.98f, 0.5f, 0.45f);
+
+    // UI Colors
+    const glm::vec3 UIButtonHovered(0.1f, 0.1f, 0.1f); // Dark dark gray
+    const glm::vec3 UIButtonActive(0.2f, 0.2f, 0.2f); // Dark gray
+    const glm::vec3 UIButton = Black;
 }
 
 #endif // COLORS_H
