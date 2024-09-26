@@ -421,7 +421,7 @@ GLuint ProjectFilesPanel::loadTextureForItem(const FileItem& item) {
             return it->second;
         } else {
             std::string iconFilename = "icons/file_icon_" + extension + ".png";
-            if (!FileUtils::FileExists(iconFilename)) {
+            if (!FileUtils::FileExists(FileUtils::GetDataFilePath("") / iconFilename)) {
                 iconFilename = "icons/file_icon.png";
             }
             GLuint texture = TextureManager::LoadTextureFromDataFile(iconFilename.c_str());

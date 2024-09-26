@@ -66,7 +66,7 @@ bool FileUtils::DirectoryExists(const fs::path& path) {
     return fs::exists(path) && fs::is_directory(path);
 }
 
-bool FileUtils::FileExists(const std::string& path) {
+bool FileUtils::FileExists(const fs::path& path) {
     return fs::exists(path);
 }
 

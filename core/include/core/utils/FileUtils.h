@@ -13,7 +13,7 @@ public:
     static fs::path GetDataFilePath(const std::string& relativePath);
     static fs::path GetProjectsBaseFolder();
     static bool DirectoryExists(const fs::path& path);
-    static bool FileExists(const std::string& path);
+    static bool FileExists(const fs::path& path);
     static char GetPathSeparator();
 };
 
