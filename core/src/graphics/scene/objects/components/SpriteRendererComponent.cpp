@@ -8,6 +8,7 @@
 #include <glm/gtc/type_ptr.hpp>
 
 void SpriteRendererComponent::Render(GLuint shaderProgram) {
+    if (textureID == 0) onChangeSpriteName();
     if (auto parent = parentObject.lock()) { 
         glm::mat4 model = glm::mat4(1.0f);
         

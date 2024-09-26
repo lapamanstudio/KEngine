@@ -63,6 +63,7 @@ public:
     void LoadScene();
 
     void BuildProject();
+    void GetAssetsFromScene(const nlohmann::json& j, std::vector<std::string>& assets);
 
     void RegisterComponents();
 

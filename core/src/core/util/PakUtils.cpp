@@ -1,9 +1,10 @@
 #include "core/utils/PakUtils.h"
+#include "core/ProjectConfig.h"
 
 #include <iostream>
 #include <fstream>
 
-void PakUtils::BundleAssets(const std::string& pakPath, const std::vector<std::string>& assets) {
+void PakUtils::BundleAssets(const fs::path& pakPath, const std::vector<std::string>& assets) {
     std::ofstream pakFile(pakPath, std::ios::binary);
     std::vector<FileEntry> fileEntries;
 
@@ -11,7 +12,7 @@ void PakUtils::BundleAssets(const std::string& pakPath, const std::vector<std::s
 
     // Write each asset
     for (const auto& asset : assets) {
-        std::ifstream inputFile(asset, std::ios::binary | std::ios::ate);
+        std::ifstream inputFile(ProjectConfig::getInstance().projectDirectory / asset, std::ios::binary | std::ios::ate);
 
         if (!inputFile.is_open()) {
             std::cerr << "Error opening file: " << asset << std::endl;

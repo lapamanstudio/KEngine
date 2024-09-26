@@ -2,6 +2,7 @@
 #include "graphics/scene/property/ObjectProperty.h"
 #include "graphics/scene/objects/components/CameraComponent.h"
 #include "graphics/scene/objects/components/SpriteRendererComponent.h"
+#include "core/utils/PakUtils.h"
 
 int Property::idCounter = 0;
 
@@ -62,13 +63,14 @@ void SceneManager::LoadScene() {
 }
 
 void SceneManager::BuildProject() {
-    // Extract resources being used on the scene!
+    // Get Assets and bundle them
     std::vector<std::string> resources;
 
-    // TODO: This is only getting assets from the first scene (scene.json by default), in the future must contain multiple scenes!
-    
+    GetAssetsFromScene(nlohmann::json::parse(std::ifstream(ProjectConfig::getInstance().projectDirectory / "scene.json")), resources);
+    PakUtils::BundleAssets(ProjectConfig::getInstance().projectDirectory / "build" / "scene.pak", resources);
 
     // Build resources
+    
 }
 
 void SceneManager::RegisterComponents() {
@@ -128,4 +130,23 @@ std::optional<glm::vec2> SceneManager::GetMiddlePositionOfActiveObjects() const 
     middle /= static_cast<float>(activeObjects.size());
 
     return middle;
+}
+
+void SceneManager::GetAssetsFromScene(const nlohmann::json& j, std::vector<std::string>& assets) {
+    if (j.is_object()) {
+        for (auto it = j.begin(); it != j.end(); ++it) {
+            if (it.key().find("Assets/") == 0) {
+                assets.push_back(it.key());
+            }
+            if (it.value().is_string() && it.value().get<std::string>().find("Assets/") == 0) {
+                assets.push_back(it.value());
+            }
+            GetAssetsFromScene(it.value(), assets);
+        }
+    }
+    else if (j.is_array()) {
+        for (const auto& item : j) {
+            GetAssetsFromScene(item, assets);
+        }
+    }
 }
