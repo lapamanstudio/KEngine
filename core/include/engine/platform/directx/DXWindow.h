@@ -23,6 +23,8 @@ private:
     ID3D11DeviceContext* context;
     IDXGISwapChain* swapChain;
     ID3D11RenderTargetView* renderTargetView;
+
+    bool isClosing;
 };
 
 #endif //ENGINE_DXWINDOW_H

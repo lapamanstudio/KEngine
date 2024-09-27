@@ -87,10 +87,14 @@ void DXWindow::PollEvents() {
         TranslateMessage(&msg);
         DispatchMessage(&msg);
     }
+
+    if (msg.message == WM_QUIT) {
+        isClosing = true;
+    }
 }
 
 void DXWindow::Clear() {
-    float color[4] = { 0.1f, 0.1f, 0.1f, 1.0f };
+    float color[4] = { 0, 0, 0, 1 };
     context->ClearRenderTargetView(renderTargetView, color);
 }
 
@@ -99,12 +103,5 @@ void DXWindow::SwapBuffers() {
 }
 
 bool DXWindow::ShouldClose() {
-    MSG msg = { 0 };
-    while (PeekMessage(&msg, NULL, 0, 0, PM_REMOVE)) {
-        if (msg.message == WM_QUIT) {
-            return true;
-        }
-    }
-
-    return false;
+    return isClosing;
 }
