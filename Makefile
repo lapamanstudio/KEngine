@@ -34,7 +34,7 @@ else ifeq ($(OS),macOS)
     LIBS = -framework OpenGL $(shell pkg-config --libs glfw3 glew freetype2)
     ICON_RES_FLAG =
 else ifeq ($(OS),Windows)
-    LIBS = $(shell pkg-config --libs glfw3) -lopengl32 -lglfw3 -lglew32 -lfreetype
+    LIBS = $(shell pkg-config --libs glfw3) -lopengl32 -lglfw3 -lglew32 -lfreetype -ld3d11
     ICON_RES = icon.res
     ICON_RES_FLAG = $(OUT_DIR)/$(ICON_RES)
     INNO_SETUP_COMPILER = installer/ISCC.exe
@@ -46,8 +46,12 @@ endif
 DATAFILES_DIR = $(OUT_DIR)/datafiles
 RESOURCE_DIR = resources
 
-# Find all .cpp and .c files for the project
-CORE_SRCS := $(shell find core/src -type f \( -name "*.cpp" -o -name "*.c" \))
+# Source files
+ENGINE_SRCS := $(shell find core/src/engine -type f \( -name "*.cpp" -o -name "*.c" \))
+ENGINE_SRCS_NO_MAIN := $(filter-out core/src/engine/main.cpp, $(ENGINE_SRCS))
+EDITOR_SRCS := $(shell find core/src/editor -type f \( -name "*.cpp" -o -name "*.c" \))
+
+# ImGui sources
 IMGUI_SRCS := .deps/imgui/imgui.cpp \
               .deps/imgui/imgui_draw.cpp \
               .deps/imgui/imgui_tables.cpp \
@@ -55,39 +59,45 @@ IMGUI_SRCS := .deps/imgui/imgui.cpp \
               .deps/imgui/backends/imgui_impl_glfw.cpp \
               .deps/imgui/backends/imgui_impl_opengl3.cpp
 
-# Combine all sources
-SRCS := $(CORE_SRCS) $(IMGUI_SRCS)
+# Combine all sources for the editor
+EDITOR_SRCS := $(EDITOR_SRCS) $(IMGUI_SRCS)
 
-# Create object file paths
-OBJS := $(SRCS:%.cpp=$(OUT_DIR)/%.o)
-OBJS := $(OBJS:%.c=$(OUT_DIR)/%.o)
+# Object files
+EDITOR_OBJS := $(EDITOR_SRCS:%.cpp=$(OUT_DIR)/%.o)
+EDITOR_OBJS := $(EDITOR_OBJS:%.c=$(OUT_DIR)/%.o)
+ENGINE_OBJS := $(ENGINE_SRCS:%.cpp=$(OUT_DIR)/%.o)
+ENGINE_OBJS := $(ENGINE_OBJS:%.c=$(OUT_DIR)/%.o)
+ENGINE_OBJS_NO_MAIN := $(filter-out $(OUT_DIR)/core/src/engine/main.o, $(ENGINE_OBJS))
 
 # Create necessary directories from object file paths
-DIRS := $(sort $(dir $(OBJS)))
+DIRS := $(sort $(dir $(EDITOR_OBJS) $(ENGINE_OBJS)))
 
-# Rule to make directories
-$(shell mkdir -p $(DIRS))
+# Ensure directories exist
+$(DIRS):
+	@mkdir -p $@
 
 # Default target
-all: $(OUT_DIR)/KEngine copy-datafiles
+all: $(OUT_DIR) $(OUT_DIR)/KEngine $(OUT_DIR)/test copy-datafiles
 
-# Determine the dependencies and linker flags based on the OS
-ifeq ($(ICON_RES_FLAG),)
-    KENGINE_DEPS := $(OBJS)
-    KENGINE_LDFLAGS :=
-else
-    KENGINE_DEPS := $(OBJS) $(ICON_RES_FLAG)
-    KENGINE_LDFLAGS := $(ICON_RES_FLAG)
-endif
+# Ensure output directory exists
+$(OUT_DIR):
+	@mkdir -p $(OUT_DIR)
 
-# Build the KEngine executable
-$(OUT_DIR)/KEngine: $(KENGINE_DEPS)
-	$(CC) $(OBJS) $(LIBS) -o $@ $(KENGINE_LDFLAGS)
+# Build the KEngine executable (editor)
+$(OUT_DIR)/KEngine: $(EDITOR_OBJS) $(ENGINE_OBJS_NO_MAIN) $(ICON_RES_FLAG)
+	$(CC) $(EDITOR_OBJS) $(ENGINE_OBJS_NO_MAIN) $(LIBS) -o $@ $(ICON_RES_FLAG)
 
-# Rule for creating the icon resource file (Windows only)
+# Build the test executable (engine standalone)
+$(OUT_DIR)/test: $(ENGINE_OBJS) $(ICON_RES_FLAG)
+	$(CC) $(ENGINE_OBJS) $(LIBS) -o $@ $(ICON_RES_FLAG)
+
+# Rule to build icon.res
+$(ICON_RES_FLAG): icon.rc | $(OUT_DIR)
 ifeq ($(OS),Windows)
-$(ICON_RES_FLAG): icon.rc
+	@echo "Compiling icon resource..."
 	windres icon.rc -O coff -o $@
+else
+	@echo "Icon resource compilation skipped on $(OS)."
 endif
 
 # Installer target (Windows only)
@@ -109,26 +119,30 @@ $(DATAFILES_DIR):
 	mkdir -p $(DATAFILES_DIR)
 
 # Compilation rules for source files
-$(OUT_DIR)/%.o: %.cpp
+$(OUT_DIR)/%.o: %.cpp | $(DIRS)
 	$(CC) $(CXXFLAGS) $(INC_DIRS) -c $< -o $@
 
-$(OUT_DIR)/%.o: %.c
+$(OUT_DIR)/%.o: %.c | $(DIRS)
 	$(CC) $(CXXFLAGS) $(INC_DIRS) -c $< -o $@
 
 # Special rules for ImGui sources in subdirectories
-$(OUT_DIR)/.deps/imgui/%.o: .deps/imgui/%.cpp
+$(OUT_DIR)/.deps/imgui/%.o: .deps/imgui/%.cpp | $(DIRS)
 	$(CC) $(CXXFLAGS) $(INC_DIRS) -c $< -o $@
 
-$(OUT_DIR)/.deps/imgui/backends/%.o: .deps/imgui/backends/%.cpp
+$(OUT_DIR)/.deps/imgui/backends/%.o: .deps/imgui/backends/%.cpp | $(DIRS)
 	$(CC) $(CXXFLAGS) $(INC_DIRS) -c $< -o $@
 
 # Clean up build artifacts
 clean:
 	rm -rf $(OUT_DIR)
 
-# Run target
-run: $(OUT_DIR)/KEngine
+# Run the editor (KEngine)
+run-editor: $(OUT_DIR)/KEngine copy-datafiles
 	$(RUN_ENV) ./$(OUT_DIR)/KEngine
+
+# Run the engine (test)
+run-engine: $(OUT_DIR)/test
+	$(RUN_ENV) ./$(OUT_DIR)/test
 
 # Debug target
 debug: $(OUT_DIR)/KEngine
@@ -138,4 +152,4 @@ debug: $(OUT_DIR)/KEngine
 	fi
 	gdb ./$(OUT_DIR)/KEngine
 
-.PHONY: all clean tests run debug copy-datafiles
+.PHONY: all clean run-editor run-engine debug copy-datafiles
