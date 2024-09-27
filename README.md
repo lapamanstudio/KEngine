@@ -62,6 +62,6 @@ To create an installer for KEngine, use the following steps:
 - [GLM](https://github.com/g-truc/glm)
 - [FREETYPE](https://github.com/freetype/freetype)
 - [IMGUI](https://github.com/ocornut/imgui)
-- [JSON] (https://github.com/nlohmann/json)
+- [JSON](https://github.com/nlohmann/json)
 
 Feel free to reach out for any assistance or clarification. Happy game development with KEngine!
