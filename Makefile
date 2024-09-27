@@ -14,7 +14,7 @@ else
     OS := Unknown
 endif
 
-# For debugging purposes, print the detected OS
+# Debug output
 $(info Detected OS: $(OS))
 
 # Compiler and flags

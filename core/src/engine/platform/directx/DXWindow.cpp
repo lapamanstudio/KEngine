@@ -14,7 +14,6 @@ DXWindow::~DXWindow() {
 }
 
 void DXWindow::Init(int width, int height, const char* title) {
-    // Registrar la clase de ventana
     WNDCLASS wc = {};
     wc.lpfnWndProc = DefWindowProc;
     wc.hInstance = GetModuleHandle(NULL);
@@ -25,7 +24,7 @@ void DXWindow::Init(int width, int height, const char* title) {
         return;
     }
 
-    // Crear la ventana
+    // Create window
     hwnd = CreateWindowEx(
         0,
         wc.lpszClassName,
@@ -40,10 +39,9 @@ void DXWindow::Init(int width, int height, const char* title) {
         return;
     }
 
-    // Mostrar la ventana
     ShowWindow(hwnd, SW_SHOW);
 
-    // Inicializar DirectX 11
+    // Initialize directx
     DXGI_SWAP_CHAIN_DESC swapDesc = {};
     swapDesc.BufferCount = 1;
     swapDesc.BufferDesc.Width = width;
