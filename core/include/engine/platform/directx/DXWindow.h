@@ -16,8 +16,10 @@ public:
     void Clear() override;
     void SwapBuffers() override;
     bool ShouldClose() override;
+    float GetTime() override;
 
 private:
+    // Window
     HWND hwnd;
     ID3D11Device* device;
     ID3D11DeviceContext* context;
@@ -25,6 +27,10 @@ private:
     ID3D11RenderTargetView* renderTargetView;
 
     bool isClosing;
+
+    // Time
+    LARGE_INTEGER frequency;
+    LARGE_INTEGER startTime;
 };
 
 #endif //ENGINE_DXWINDOW_H

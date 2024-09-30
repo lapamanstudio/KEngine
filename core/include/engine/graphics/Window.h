@@ -14,6 +14,8 @@ public:
     virtual void SwapBuffers() = 0;
 
     virtual bool ShouldClose() = 0;
+
+    virtual float GetTime() = 0;
 };
 
 #endif // ENGINE_WINDOW_H

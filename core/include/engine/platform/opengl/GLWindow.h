@@ -17,6 +17,7 @@ public:
     void Clear() override;
     void SwapBuffers() override;
     bool ShouldClose() override;
+    float GetTime() override;
 
 private:
     GLFWwindow* window;

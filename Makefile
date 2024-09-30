@@ -22,7 +22,7 @@ CC = g++
 CXXFLAGS = -Wall -g $(shell pkg-config --cflags glfw3)
 
 # Include directories
-INC_DIRS = -Icore/include -I.deps/imgui -I.deps/glm -I.deps/glfw/include -I.deps/glut/include -I.deps/freetype/include -I.deps/json/include
+INC_DIRS = -Icore/include -I.deps/imgui -I.deps/glm -I.deps/glfw/include -I.deps/glut/include -I.deps/freetype/include -I.deps/json/include -I/usr/include/mono -L/usr/lib/mono
 
 OUT_DIR = out
 
@@ -34,7 +34,7 @@ else ifeq ($(OS),macOS)
     LIBS = -framework OpenGL $(shell pkg-config --libs glfw3 glew freetype2)
     ICON_RES_FLAG =
 else ifeq ($(OS),Windows)
-    LIBS = $(shell pkg-config --libs glfw3) -lopengl32 -lglfw3 -lglew32 -lfreetype -ld3d11
+    LIBS = $(shell pkg-config --libs glfw3) -lopengl32 -lglfw3 -lglew32 -lfreetype -ld3d11 -lmonosgen-2.0
     ICON_RES = icon.res
     ICON_RES_FLAG = $(OUT_DIR)/$(ICON_RES)
     INNO_SETUP_COMPILER = installer/ISCC.exe

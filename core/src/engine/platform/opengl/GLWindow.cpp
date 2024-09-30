@@ -47,3 +47,7 @@ void GLWindow::SwapBuffers() {
 bool GLWindow::ShouldClose() {
     return glfwWindowShouldClose(window);
 }
+
+float GLWindow::GetTime() {
+    return static_cast<float>(glfwGetTime());
+}

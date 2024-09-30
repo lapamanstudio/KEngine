@@ -3,7 +3,25 @@
 #include <iostream>
 #include <ostream>
 
-DXWindow::DXWindow() : hwnd(nullptr), device(nullptr), context(nullptr), swapChain(nullptr), renderTargetView(nullptr) {}
+LRESULT CALLBACK WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam) {
+    switch (uMsg) {
+        case WM_CLOSE:
+            DestroyWindow(hwnd);
+            return 0;
+
+        case WM_DESTROY:
+            PostQuitMessage(0);
+            return 0;
+
+        default:
+            return DefWindowProc(hwnd, uMsg, wParam, lParam);
+    }
+}
+
+DXWindow::DXWindow() : hwnd(nullptr), device(nullptr), context(nullptr), swapChain(nullptr), renderTargetView(nullptr) {
+    QueryPerformanceFrequency(&frequency);
+    QueryPerformanceCounter(&startTime);
+}
 
 DXWindow::~DXWindow() {
     if (renderTargetView) renderTargetView->Release();
@@ -15,7 +33,7 @@ DXWindow::~DXWindow() {
 
 void DXWindow::Init(int width, int height, const char* title) {
     WNDCLASS wc = {};
-    wc.lpfnWndProc = DefWindowProc;
+    wc.lpfnWndProc = WindowProc;
     wc.hInstance = GetModuleHandle(NULL);
     wc.lpszClassName = "DirectXWindowClass";
 
@@ -86,10 +104,10 @@ void DXWindow::PollEvents() {
     while (PeekMessage(&msg, NULL, 0, 0, PM_REMOVE)) {
         TranslateMessage(&msg);
         DispatchMessage(&msg);
-    }
 
-    if (msg.message == WM_QUIT) {
-        isClosing = true;
+        if (msg.message == WM_QUIT) {
+            isClosing = true;
+        }
     }
 }
 
@@ -104,4 +122,11 @@ void DXWindow::SwapBuffers() {
 
 bool DXWindow::ShouldClose() {
     return isClosing;
+}
+
+float DXWindow::GetTime() {
+    // This is windows specific.
+    LARGE_INTEGER currentTime;
+    QueryPerformanceCounter(&currentTime);
+    return static_cast<float>(currentTime.QuadPart - startTime.QuadPart) / static_cast<float>(frequency.QuadPart);
 }
