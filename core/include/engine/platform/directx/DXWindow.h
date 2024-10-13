@@ -18,6 +18,11 @@ public:
     bool ShouldClose() override;
     float GetTime() override;
 
+    int GetWidth() const override;
+    int GetHeight() const override;
+
+    void SetResizeCallback(WindowResizeCallback callback) override;
+
 private:
     // Window
     HWND hwnd;
@@ -31,6 +36,15 @@ private:
     // Time
     LARGE_INTEGER frequency;
     LARGE_INTEGER startTime;
+
+    int width;
+    int height;
+
+    WindowResizeCallback resizeCallback;
+
+    void Resize(int newWidth, int newHeight);
+
+    static LRESULT CALLBACK WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
 };
 
 #endif //ENGINE_DXWINDOW_H

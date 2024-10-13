@@ -3,8 +3,28 @@
 #include <iostream>
 #include <ostream>
 
-LRESULT CALLBACK WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam) {
+LRESULT CALLBACK DXWindow::WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam) {
+    DXWindow* window = reinterpret_cast<DXWindow*>(GetWindowLongPtr(hwnd, GWLP_USERDATA));
+
     switch (uMsg) {
+        case WM_CREATE:
+            {
+                CREATESTRUCT* pCreate = reinterpret_cast<CREATESTRUCT*>(lParam);
+                SetWindowLongPtr(hwnd, GWLP_USERDATA, reinterpret_cast<LONG_PTR>(pCreate->lpCreateParams));
+            }
+            return 0;
+
+        case WM_SIZE:
+            if (window) {
+                int newWidth = LOWORD(lParam);
+                int newHeight = HIWORD(lParam);
+                window->Resize(newWidth, newHeight);
+                if (window->resizeCallback) {
+                    window->resizeCallback(newWidth, newHeight);
+                }
+            }
+            return 0;
+
         case WM_CLOSE:
             DestroyWindow(hwnd);
             return 0;
@@ -18,7 +38,7 @@ LRESULT CALLBACK WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam) 
     }
 }
 
-DXWindow::DXWindow() : hwnd(nullptr), device(nullptr), context(nullptr), swapChain(nullptr), renderTargetView(nullptr) {
+DXWindow::DXWindow() : hwnd(nullptr), device(nullptr), context(nullptr), swapChain(nullptr), renderTargetView(nullptr), isClosing(false), width(0), height(0) {
     QueryPerformanceFrequency(&frequency);
     QueryPerformanceCounter(&startTime);
 }
@@ -32,8 +52,11 @@ DXWindow::~DXWindow() {
 }
 
 void DXWindow::Init(int width, int height, const char* title) {
+    this->width = width;
+    this->height = height;
+
     WNDCLASS wc = {};
-    wc.lpfnWndProc = WindowProc;
+    wc.lpfnWndProc = DXWindow::WindowProc; // Use the static member function
     wc.hInstance = GetModuleHandle(NULL);
     wc.lpszClassName = "DirectXWindowClass";
 
@@ -42,14 +65,13 @@ void DXWindow::Init(int width, int height, const char* title) {
         return;
     }
 
-    // Create window
     hwnd = CreateWindowEx(
         0,
         wc.lpszClassName,
         title,
         WS_OVERLAPPEDWINDOW,
         CW_USEDEFAULT, CW_USEDEFAULT, width, height,
-        NULL, NULL, wc.hInstance, NULL
+        NULL, NULL, wc.hInstance, this
     );
 
     if (!hwnd) {
@@ -97,6 +119,16 @@ void DXWindow::Init(int width, int height, const char* title) {
     }
 
     context->OMSetRenderTargets(1, &renderTargetView, nullptr);
+
+    // Set viewport
+    D3D11_VIEWPORT viewport = {};
+    viewport.TopLeftX = 0.0f;
+    viewport.TopLeftY = 0.0f;
+    viewport.Width = static_cast<float>(width);
+    viewport.Height = static_cast<float>(height);
+    viewport.MinDepth = 0.0f;
+    viewport.MaxDepth = 1.0f;
+    context->RSSetViewports(1, &viewport);
 }
 
 void DXWindow::PollEvents() {
@@ -129,4 +161,69 @@ float DXWindow::GetTime() {
     LARGE_INTEGER currentTime;
     QueryPerformanceCounter(&currentTime);
     return static_cast<float>(currentTime.QuadPart - startTime.QuadPart) / static_cast<float>(frequency.QuadPart);
+}
+
+int DXWindow::GetWidth() const {
+    return width;
+}
+
+int DXWindow::GetHeight() const {
+    return height;
+}
+
+void DXWindow::SetResizeCallback(WindowResizeCallback callback) {
+    resizeCallback = callback;
+}
+
+void DXWindow::Resize(int newWidth, int newHeight) {
+    if (newWidth == 0 || newHeight == 0) {
+        // Window is minimized
+        return;
+    }
+
+    width = newWidth;
+    height = newHeight;
+
+    if (device) {
+        context->OMSetRenderTargets(0, nullptr, nullptr);
+
+        if (renderTargetView) {
+            renderTargetView->Release();
+            renderTargetView = nullptr;
+        }
+
+        HRESULT hr = swapChain->ResizeBuffers(0, width, height, DXGI_FORMAT_UNKNOWN, 0);
+        if (FAILED(hr)) {
+            std::cerr << "Failed to resize swap chain buffers!" << std::endl;
+            return;
+        }
+
+        // Recreate the render target view
+        ID3D11Texture2D* backBuffer = nullptr;
+        hr = swapChain->GetBuffer(0, __uuidof(ID3D11Texture2D), (LPVOID*)&backBuffer);
+        if (FAILED(hr)) {
+            std::cerr << "Failed to get back buffer during resize!" << std::endl;
+            return;
+        }
+
+        hr = device->CreateRenderTargetView(backBuffer, nullptr, &renderTargetView);
+        backBuffer->Release();
+
+        if (FAILED(hr)) {
+            std::cerr << "Failed to create render target view during resize!" << std::endl;
+            return;
+        }
+
+        context->OMSetRenderTargets(1, &renderTargetView, nullptr);
+
+        // Update the viewport
+        D3D11_VIEWPORT viewport = {};
+        viewport.TopLeftX = 0.0f;
+        viewport.TopLeftY = 0.0f;
+        viewport.Width = static_cast<float>(width);
+        viewport.Height = static_cast<float>(height);
+        viewport.MinDepth = 0.0f;
+        viewport.MaxDepth = 1.0f;
+        context->RSSetViewports(1, &viewport);
+    }
 }

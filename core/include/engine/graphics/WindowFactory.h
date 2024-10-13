@@ -3,16 +3,17 @@
 
 #include "engine/graphics/Window.h"
 
+#include "engine/platform/RenderAPI.h"
 #include "engine/platform/directx/DXWindow.h"
 #include "engine/platform/opengl/GLWindow.h"
 
-enum class RenderAPI {
-    DirectX,
-    OpenGL
-};
-
 class WindowFactory {
 public:
+
+    static Window* GetInstance() {
+        return window ? window : nullptr;
+    }
+
     static Window* CreateRenderWindow(RenderAPI api) {
         switch (api) {
             case RenderAPI::DirectX:
@@ -23,6 +24,9 @@ public:
                 return nullptr;
         }
     }
+
+private:
+    static Window* window;
 };
 
 #endif //ENGINE_WINDOWFACTORY_H

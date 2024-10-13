@@ -19,8 +19,16 @@ public:
     bool ShouldClose() override;
     float GetTime() override;
 
+    int GetWidth() const override;
+    int GetHeight() const override;
+
+    void SetResizeCallback(WindowResizeCallback callback) override;
+
 private:
     GLFWwindow* window;
+    int width, height;
+
+    WindowResizeCallback resizeCallback;
 };
 
 #endif //ENGINE_GLWINDOW_H
