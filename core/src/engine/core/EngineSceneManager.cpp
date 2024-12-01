@@ -40,9 +40,13 @@ void EngineSceneManager::Render() {
     GraphicHelper::GetInstance()->UseDefaultShader();
 
     GraphicHelper::GetInstance()->SetColor4f(1.0f, 0.5f, 0.2f, 1.0f);
-    GraphicHelper::GetInstance()->FillRect(300.0f, 200.0f, 200.0f, 150.0f);
     
-    // for (auto obj : gameObjects) {
-    //     obj->Render();
-    // }
+    for (auto obj : gameObjects) {
+        if (obj->GetCamera()) {
+            continue;
+        }
+        printf("[Render] Transform pointer: %p\n", obj->GetTransform());
+        GraphicHelper::GetInstance()->FillRect(obj->GetTransform()->GetPosition().x, obj->GetTransform()->GetPosition().y, 50, 50);
+        obj->Render();
+    }
 }

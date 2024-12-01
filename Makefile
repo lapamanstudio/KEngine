@@ -77,11 +77,15 @@ $(DIRS):
 	@mkdir -p $@
 
 # Default target
-all: $(OUT_DIR) $(OUT_DIR)/KEngine $(OUT_DIR)/test copy-datafiles
+all: $(OUT_DIR) $(OUT_DIR)/KEngine $(OUT_DIR)/test copy-datafiles $(OUT_DIR)/engine-api.dll
 
 # Ensure output directory exists
 $(OUT_DIR):
 	@mkdir -p $(OUT_DIR)
+
+# Build the engine API shared library
+$(OUT_DIR)/engine-api.dll: $(ENGINE_OBJS_NO_MAIN)
+	$(CC) -shared $(ENGINE_OBJS_NO_MAIN) -o $(OUT_DIR)/engine-api.dll $(LIBS)
 
 # Build the KEngine executable (editor)
 $(OUT_DIR)/KEngine: $(EDITOR_OBJS) $(ENGINE_OBJS_NO_MAIN) $(ICON_RES_FLAG)
@@ -141,7 +145,7 @@ run-editor: $(OUT_DIR)/KEngine copy-datafiles
 	$(RUN_ENV) ./$(OUT_DIR)/KEngine
 
 # Run the engine (test)
-run-engine: $(OUT_DIR)/test
+run-engine: $(OUT_DIR)/test $(OUT_DIR)/engine-api.dll
 	$(RUN_ENV) ./$(OUT_DIR)/test
 
 # Debug target

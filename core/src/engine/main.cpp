@@ -6,7 +6,7 @@
 
 #include <iostream>
 #include <ostream>
-#include <cstdio> // Include for printf
+#include <cstdio>
 
 int main() {
     // Setup window
@@ -16,19 +16,19 @@ int main() {
     // Initialize Graphics
     GraphicHelper::Init(RenderAPI::OpenGL);
 
-    // Load Mono C# assembly
-    MonoDomain* domain = mono_jit_init("GameEngine");
-    if (!domain) {
-        std::cerr << "Failed to initialize Mono" << std::endl;
-        return -1;
-    }
-
-    mono_config_parse(NULL);
-
     // Load default scene   
     EngineSceneManager sceneManager = EngineSceneManager();
 
+    // Create first GameObject for the player
+    GameObject* playerObject = new GameObject();
+    Script* playerScript = new Script("GameScripts", "PlayerController");
+    playerObject->AddScript(playerScript);
+    sceneManager.AddGameObject(playerObject);
+
+    GameObject* gameObject = new GameObject();
     CameraViewComponent* camera = new CameraViewComponent(800, 600);
+    gameObject->AddCamera(camera);
+    sceneManager.AddGameObject(gameObject);
     sceneManager.SetMainCamera(camera);
 
     window->SetResizeCallback([camera](int newWidth, int newHeight) {

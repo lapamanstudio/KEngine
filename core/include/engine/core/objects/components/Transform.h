@@ -1,14 +1,14 @@
-#ifndef TRANSFORM_H
-#define TRANSFORM_H
+#pragma once
+#include "engine/core/objects/components/Vector2.h"
 
 class Transform {
 public:
     Transform();
     ~Transform();
 
-    float x, y;
-    float scaleX, scaleY;
-    float rotation;
-};
+    void SetPosition(float x, float y);
+    Vector2 GetPosition() const;
 
-#endif // TRANSFORM_H
+private:
+    Vector2 position;
+};

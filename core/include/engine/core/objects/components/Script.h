@@ -1,28 +1,27 @@
 #ifndef SCRIPT_H
 #define SCRIPT_H
 
-#include <string>
 #include <mono/jit/jit.h>
 #include <mono/metadata/assembly.h>
-#include <mono/metadata/mono-config.h>
-#include <mono/metadata/debug-helpers.h>
+#include <string>
+
+#include "engine/core/ScriptManager.h"
 
 class Script {
 public:
-    Script(const std::string& scriptName);
+    Script(const std::string& scriptName, const std::string& className);
     ~Script();
-    
+
     void Start();
     void Update(float deltaTime);
+    void CreateMonoBehaviour(void* transformPtr);
 
 private:
     MonoDomain* domain;
     MonoAssembly* assembly;
+    MonoImage* image;
     MonoObject* scriptObject;
-
-    // Methods
-    MonoMethod* startMethod;
-    MonoMethod* updateMethod;
+    MonoClass* scriptClass;
 };
 
 #endif // SCRIPT_H

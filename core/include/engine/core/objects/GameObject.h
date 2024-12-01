@@ -20,12 +20,12 @@ public:
     void AddScript(Script* script);
     void AddCamera(CameraViewComponent* camera);
 
-    Transform* GetTransform() { return transform.get(); }
+    Transform* GetTransform() const;
     Renderer* GetRenderer() { return renderer.get(); }
     CameraViewComponent* GetCamera() { return camera.get(); }
 
 private:
-    std::unique_ptr<Transform> transform;
+    Transform* transform;
     std::unique_ptr<Renderer> renderer;
     std::unique_ptr<CameraViewComponent> camera;
 
