@@ -13,6 +13,7 @@ Script::Script(const std::string& scriptName, const std::string& className) {
     }
     image = mono_assembly_get_image(assembly);
 
+    // TODO GameScripts is a temporary namespace, will be changed to something else
     scriptClass = mono_class_from_name(image, "GameScripts", className.c_str());
     if (!scriptClass) {
         std::cerr << "Failed to find class '" << className << "' in namespace 'GameScripts'" << std::endl;
@@ -64,8 +65,6 @@ void Script::CreateMonoBehaviour(void* transformPtr) {
         std::cerr << "Failed to get 'System.IntPtr' class from mscorlib." << std::endl;
         return;
     }
-
-    printf("[CreateMonoBehaviour] Transform pointer: %p\n", transformPtr);
 
     void* args[1];
     args[0] = &transformPtr;

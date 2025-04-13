@@ -18,9 +18,6 @@ public:
     static MonoClass* GetScriptSDK();
     static MonoMethod* GetMethodByName(MonoClass* scriptClass, const std::string& methodName, int paramCount = -1);
 
-    static void Internal_GetPosition(void* nativeTransformPtr, Vector2* outPosition);
-    static void Internal_SetPosition(void* nativeTransformPtr, Vector2* position);
-
     static void ShutdownMono() {
         MonoDomain* domain = InitializeMono();
         if (domain) {

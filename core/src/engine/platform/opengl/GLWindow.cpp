@@ -1,4 +1,5 @@
 #include "engine/platform/opengl/GLWindow.h"
+#include "engine/platform/opengl/input/GLInput.h"
 
 GLWindow::GLWindow() : window(nullptr) {}
 
@@ -28,8 +29,9 @@ void GLWindow::Init(int width, int height, const char* title) {
     }
 
     glfwMakeContextCurrent(window);
-
     glfwSetWindowUserPointer(window, this);
+
+    glfwSetKeyCallback(window, GLKeyCallback);
 
     glfwSetFramebufferSizeCallback(window, [](GLFWwindow* win, int w, int h) {
         GLWindow* glWin = static_cast<GLWindow*>(glfwGetWindowUserPointer(win));

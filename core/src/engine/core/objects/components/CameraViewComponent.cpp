@@ -9,7 +9,7 @@ CameraViewComponent::CameraViewComponent(float viewportWidth, float viewportHeig
 
 CameraViewComponent::~CameraViewComponent() {}
 
-const glm::vec2& CameraViewComponent::GetPosition() const {
+glm::vec2 CameraViewComponent::GetPosition() const {
     return glm::vec2(x, y);
 }
 

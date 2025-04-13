@@ -1,8 +1,8 @@
-﻿using Kengine.NET.SDK.Components;
+﻿using Kengine.Components;
 using System;
 using System.Runtime.CompilerServices;
 
-namespace KEngine
+namespace KEngine.Components
 {
     public class Transform
     {

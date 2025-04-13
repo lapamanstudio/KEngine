@@ -1,6 +1,6 @@
 #include "engine/core/EngineSceneManager.h"
-
 #include "engine/core/renderer/GraphicHelper.h"
+#include "engine/core/input/Input.h"
 
 EngineSceneManager::EngineSceneManager() {}
 
@@ -26,6 +26,10 @@ CameraViewComponent* EngineSceneManager::GetMainCamera() const {
 }
 
 void EngineSceneManager::Update(float deltaTime) {
+    // Update key states
+    Input::Update();
+
+    // Update game objects
     for (auto obj : gameObjects) {
         obj->Update(deltaTime);
     }
@@ -42,10 +46,10 @@ void EngineSceneManager::Render() {
     GraphicHelper::GetInstance()->SetColor4f(1.0f, 0.5f, 0.2f, 1.0f);
     
     for (auto obj : gameObjects) {
-        if (obj->GetCamera()) {
+        if (obj->GetCamera())
             continue;
-        }
-        printf("[Render] Transform pointer: %p\n", obj->GetTransform());
+
+        // This is a placeholder for the actual rendering logic
         GraphicHelper::GetInstance()->FillRect(obj->GetTransform()->GetPosition().x, obj->GetTransform()->GetPosition().y, 50, 50);
         obj->Render();
     }

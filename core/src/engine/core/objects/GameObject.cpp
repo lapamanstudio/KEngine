@@ -30,7 +30,6 @@ void GameObject::AddCamera(CameraViewComponent* camera) {
 }
 
 void GameObject::AddScript(Script* script) {
-    printf("[AddScript] Transform pointer %p\n", transform);
     script->CreateMonoBehaviour((void*)transform);
     scripts.push_back(script);
 }

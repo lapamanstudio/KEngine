@@ -12,7 +12,7 @@ public:
     void SetPosition(const glm::vec2& position);
     void SetZoom(float zoom);
 
-    const glm::vec2& GetPosition() const;
+    glm::vec2 GetPosition() const; // Analyze if its better to store x and y as vec2 directly
     float& GetZoom();
 
     void Move(const glm::vec2& offset);
