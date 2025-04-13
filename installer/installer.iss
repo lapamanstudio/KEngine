@@ -2,7 +2,7 @@
 AppName=KEngine
 AppVersion=0.0.2
 DefaultDirName={pf}\KEngine
-OutputDir=.\out
+OutputDir=.\build
 OutputBaseFilename=KEngineInstaller
 SetupIconFile=..\icon.ico
 

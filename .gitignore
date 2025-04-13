@@ -1,6 +1,6 @@
 # Visual Studio Code files
 .vscode/
-out/
+build/
 
 # Visual Studio files
 KEngine.NET.SDK/.vs
@@ -9,4 +9,4 @@ KEngine.NET.SDK/obj
 
 # Files in the root directory to run the engine
 GameScripts.dll
-KEngine.NET.SDK.dll
+KEngine.dll

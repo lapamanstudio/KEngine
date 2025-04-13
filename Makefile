@@ -24,7 +24,7 @@ CXXFLAGS = -Wall -g $(shell pkg-config --cflags glfw3)
 # Include directories
 INC_DIRS = -Icore/include -I.deps/imgui -I.deps/glm -I.deps/glfw/include -I.deps/glut/include -I.deps/freetype/include -I.deps/json/include -I/usr/include/mono -L/usr/lib/mono
 
-OUT_DIR = out
+OUT_DIR = build
 
 # Libraries and ICON_RES_FLAG
 ifeq ($(OS),Linux)
