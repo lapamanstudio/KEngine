@@ -1,5 +1,6 @@
 #include "engine/platform/opengl/GLGraphicHelper.h"
 #include "engine/platform/opengl/GLShaderHelper.h"
+#include "engine/core/math/Vector2.h"
 
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
@@ -101,9 +102,9 @@ void GLGraphicHelper::UseDefaultShader() {
     currentShaderProgram = defaultShader->GetProgramID();
 }
 
-void GLGraphicHelper::FillRect(float x, float y, float width, float height) {
+void GLGraphicHelper::FillRect(Vector2 position, float width, float height) {
     glm::mat4 model = glm::mat4(1.0f);
-    model = glm::translate(model, glm::vec3(x, y, 0.0f));
+    model = glm::translate(model, glm::vec3(position.x, position.y, 0.0f));
     model = glm::scale(model, glm::vec3(width, height, 1.0f));
 
     SetMat4(modelLoc, model);

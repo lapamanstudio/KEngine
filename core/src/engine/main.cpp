@@ -1,4 +1,4 @@
-#include "engine/graphics/WindowFactory.h"
+#include "engine/window/WindowFactory.h"
 
 #include "engine/core/EngineSceneManager.h"
 #include "engine/core/objects/GameObject.h"

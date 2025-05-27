@@ -1,6 +1,6 @@
 #include "engine/core/objects/components/CameraViewComponent.h"
 
-#include "engine/graphics/WindowFactory.h"
+#include "engine/window/WindowFactory.h"
 
 CameraViewComponent::CameraViewComponent(float viewportWidth, float viewportHeight)
     : x(0), y(0), zoom(1.0f), viewportWidth(viewportWidth), viewportHeight(viewportHeight) {
@@ -50,6 +50,8 @@ glm::mat4 CameraViewComponent::GetViewMatrix() const {
     return view;
 }
 
+// Function called when the window is resized, this adjusts the viewport with the new window size
+// and maintains the aspect ratio of the camera view.
 void CameraViewComponent::OnResize(int windowWidth, int windowHeight) {
     float targetAspect = viewportWidth / viewportHeight;
     float windowAspect = static_cast<float>(windowWidth) / windowHeight;

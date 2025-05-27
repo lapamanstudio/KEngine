@@ -1,7 +1,7 @@
 #ifndef ENGINE_GLWINDOW_H
 #define ENGINE_GLWINDOW_H
 
-#include "engine/graphics/Window.h"
+#include "engine/window/Window.h"
 
 #include <GL/glew.h>
 #include <GLFW/glfw3.h>

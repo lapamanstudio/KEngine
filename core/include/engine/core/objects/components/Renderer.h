@@ -1,13 +1,17 @@
-#ifndef RENDERER_H
-#define RENDERER_H
+#pragma once
 
-#include "Transform.h"
+#include "engine/core/objects/components/Transform.h"
+
+#include <GL/glew.h> // TODO Change when implementing DirectX
 
 class Renderer {
 public:
     Renderer();
     ~Renderer();
     void Render(Transform* transform);
-};
 
-#endif // RENDERER_H
+private:
+    void SetTexture(GLuint textureID) { this->textureID = textureID; }
+    
+    GLuint textureID;
+};

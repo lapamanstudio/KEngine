@@ -8,7 +8,7 @@
 #include <string>
 
 
-#include "engine/core/objects/components/Vector2.h"
+#include "engine/core/math/Vector2.h"
 
 class ScriptManager {
 public:

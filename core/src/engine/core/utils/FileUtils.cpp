@@ -40,28 +40,6 @@ fs::path FileUtils::GetFilePath(const std::string& relativePath) {
     return fs::path(FileUtils::GetExecutablePath()) / relativePath;
 }
 
-fs::path FileUtils::GetDataFilePath(const std::string& relativePath) {
-    return fs::path(FileUtils::GetExecutablePath()) / "datafiles" / relativePath;
-}
-
-fs::path FileUtils::GetProjectsBaseFolder() {
-    const char* homeDir = nullptr;
-
-#ifdef _WIN32
-    homeDir = std::getenv("USERPROFILE");
-#elif defined(__linux__) || defined(__APPLE__)
-    homeDir = std::getenv("HOME");
-#endif
-
-    if (homeDir) {
-        fs::path projectsPath = fs::path(homeDir) / "KEngine projects";
-        return projectsPath;
-    } else {
-        std::cerr << "Failed to get home directory environment variable." << std::endl;
-        return ".";
-    }
-}
-
 bool FileUtils::DirectoryExists(const fs::path& path) {
     return fs::exists(path) && fs::is_directory(path);
 }

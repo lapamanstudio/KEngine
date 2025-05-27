@@ -1,7 +1,7 @@
 #ifndef ENGINE_WINDOWFACTORY_H
 #define ENGINE_WINDOWFACTORY_H
 
-#include "engine/graphics/Window.h"
+#include "engine/window/Window.h"
 
 #include "engine/platform/RenderAPI.h"
 #include "engine/platform/directx/DXWindow.h"

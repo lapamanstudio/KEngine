@@ -42,7 +42,6 @@ void EngineSceneManager::Render() {
     }
 
     GraphicHelper::GetInstance()->UseDefaultShader();
-
     GraphicHelper::GetInstance()->SetColor4f(1.0f, 0.5f, 0.2f, 1.0f);
     
     for (auto obj : gameObjects) {
@@ -50,7 +49,7 @@ void EngineSceneManager::Render() {
             continue;
 
         // This is a placeholder for the actual rendering logic
-        GraphicHelper::GetInstance()->FillRect(obj->GetTransform()->GetPosition().x, obj->GetTransform()->GetPosition().y, 50, 50);
+        GraphicHelper::GetInstance()->FillRect(obj->GetTransform()->GetPosition(), 50, 50);
         obj->Render();
     }
 }

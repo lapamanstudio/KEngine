@@ -5,7 +5,7 @@
 
 #include "engine/platform/opengl/GLGraphicHelper.h"
 #include "engine/platform/directx/DXGraphicHelper.h"
-#include "engine/graphics/WindowFactory.h"
+#include "engine/window/WindowFactory.h"
 
 class GraphicHelperFactory {
 public:

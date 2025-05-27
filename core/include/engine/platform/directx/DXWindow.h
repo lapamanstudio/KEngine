@@ -1,7 +1,7 @@
 #ifndef ENGINE_DXWINDOW_H
 #define ENGINE_DXWINDOW_H
 
-#include "engine/graphics/Window.h"
+#include "engine/window/Window.h"
 
 #include <d3d11.h>
 #include <windows.h>

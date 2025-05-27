@@ -3,6 +3,7 @@
 
 #include "engine/core/renderer/GraphicHelper.h"
 #include "engine/platform/opengl/GLShader.h"
+#include "engine/core/math/Vector2.h"
 
 #include <string>
 #include <GL/glew.h>
@@ -21,7 +22,7 @@ public:
 
     void UseDefaultShader() override;
 
-    void FillRect(float x, float y, float width, float height) override;
+    void FillRect(Vector2 pos, float width, float height) override;
 
 private:
     GLuint VAO, VBO;

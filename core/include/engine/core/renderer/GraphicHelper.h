@@ -2,6 +2,7 @@
 #define GRAPHIC_HELPER_H
 
 #include "engine/platform/RenderAPI.h"
+#include "engine/core/math/Vector2.h"
 
 #include <glm/glm.hpp>
 #include <GL/glew.h>
@@ -29,7 +30,7 @@ public:
 
     virtual void UseDefaultShader() = 0;
 
-    virtual void FillRect(float x, float y, float width, float height) = 0;
+    virtual void FillRect(Vector2 pos, float width, float height) = 0;
 private:
     static GraphicHelper* instance;
 
