@@ -1,6 +1,6 @@
 #include "editor/graphics/drivers/GLHelper.h"
 #include "editor/graphics/fonts/Fonts.h"
-#include "editor/core/utils/FileUtils.h"
+#include "editor/core/utils/ProjectFileUtils.h"
 
 #include <iostream>
 #include <fstream>
@@ -165,7 +165,7 @@ bool GLHelper::initFreeType() {
     }
 
     FT_Face face;
-    if (FT_New_Face(ft, FileUtils::GetDataFilePath("fonts\\Roboto-Regular.ttf").string().c_str(), 0, &face)) {
+    if (FT_New_Face(ft, ProjectFileUtils::GetDataFilePath("fonts\\Roboto-Regular.ttf").string().c_str(), 0, &face)) {
         std::cerr << "ERROR::FREETYPE: Failed to load font from memory" << std::endl;
         return false;
     }

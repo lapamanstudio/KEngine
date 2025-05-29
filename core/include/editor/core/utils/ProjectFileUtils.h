@@ -1,12 +1,14 @@
-#ifndef FILE_UTILS_H
-#define FILE_UTILS_H
+#pragma once
+
+#include "editor/core/utils/ProjectFileUtils.h"
+#include "engine/core/utils/FileUtils.h"
 
 #include <string>
 #include <filesystem>
 
 namespace fs = std::filesystem;
 
-class FileUtils {
+class ProjectFileUtils {
 public:
     static fs::path GetExecutablePath();
     static fs::path GetFilePath(const std::string& relativePath);
@@ -16,5 +18,3 @@ public:
     static bool FileExists(const fs::path& path);
     static char GetPathSeparator();
 };
-
-#endif  // FILE_UTILS_H

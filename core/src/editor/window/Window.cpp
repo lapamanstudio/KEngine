@@ -7,7 +7,7 @@
 #include <GLFW/glfw3.h>
 
 #include "editor/core/ProjectConfig.h"
-#include "editor/core/utils/FileUtils.h"
+#include "editor/core/utils/ProjectFileUtils.h"
 #include "editor/graphics/fonts/Fonts.h"
 #include "editor/graphics/utils/TextureManager.h"
 #include "editor/window/Window.h"
@@ -48,7 +48,7 @@ void initialize_window(GLFWwindow* window) {
     icons_config.PixelSnapH = true; 
     icons_config.GlyphMinAdvanceX = 16;
     float iconFontSize = 18 * 2.0f / 3.0f; // 13px is the font size
-    io.Fonts->AddFontFromFileTTF(FileUtils::GetDataFilePath("fonts\\Roboto-Regular.ttf").string().c_str(), 16, &font_config, io.Fonts->GetGlyphRangesDefault());
+    io.Fonts->AddFontFromFileTTF(ProjectFileUtils::GetDataFilePath("fonts\\Roboto-Regular.ttf").string().c_str(), 16, &font_config, io.Fonts->GetGlyphRangesDefault());
     io.Fonts->AddFontFromMemoryTTF(font_awesome_ttf, font_awesome_ttf_len, iconFontSize, &icons_config, icons_ranges);
     io.IniFilename = NULL; // Disable INI file saving
 
@@ -240,7 +240,7 @@ void render_window() {
         if (ImGui::BeginPopupModal("Project setup", NULL, ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoMove))
         {
             // TODO: Add image when kengine is in the 1.0
-            ImGuiEngined::ImageWithoutBorder((void*)(intptr_t) splash_texture, ImVec2(400, 200));
+            ImGuiEngined::ImageWithoutBorder(static_cast<intptr_t>(splash_texture), ImVec2(400, 200));
             ImGui::NewLine();
 
             ImGui::Columns(2, NULL, false);
@@ -291,7 +291,7 @@ void render_window() {
             columnWidth = ImGui::GetContentRegionAvail().x;
             offsetX = (columnWidth - buttonWidth) * 0.5f;
 
-            std::vector<ProjectConfig> recentProjects = ProjectConfig::getInstance().getRecentProjects(FileUtils::GetProjectsBaseFolder());
+            std::vector<ProjectConfig> recentProjects = ProjectConfig::getInstance().getRecentProjects(ProjectFileUtils::GetProjectsBaseFolder());
 
             // One Button for each recent project
             for (const ProjectConfig& project : recentProjects) {
@@ -302,7 +302,7 @@ void render_window() {
                     configInstance.projectDirectory = project.projectDirectory;
                     configInstance.currentDirectory = project.currentDirectory;
                     configInstance.isInitialized = true;
-                    ProjectConfig::getInstance().addRecentProject(FileUtils::GetProjectsBaseFolder());
+                    ProjectConfig::getInstance().addRecentProject(ProjectFileUtils::GetProjectsBaseFolder());
                     dockManager.getWorkSceneController()->getSceneManager()->LoadScene();
                 }
             }
@@ -352,7 +352,7 @@ void render_window() {
             int count = 0;
             std::string uniqueName = baseName;
 
-            while (FileUtils::DirectoryExists(FileUtils::GetProjectsBaseFolder() / uniqueName)) {
+            while (FileUtils::DirectoryExists(ProjectFileUtils::GetProjectsBaseFolder() / uniqueName)) {
                 count++;
                 uniqueName = baseName + " (" + std::to_string(count) + ")";
             }
@@ -369,7 +369,7 @@ void render_window() {
             strncpy(projectName, uniqueProjectName.c_str(), sizeof(projectName));
             projectName[sizeof(projectName) - 1] = '\0';
 
-            std::string defaultDirectory = (FileUtils::GetProjectsBaseFolder() / projectName).string();
+            std::string defaultDirectory = (ProjectFileUtils::GetProjectsBaseFolder() / projectName).string();
             strncpy(projectDirectory, defaultDirectory.c_str(), sizeof(projectDirectory));
             projectDirectory[sizeof(projectDirectory) - 1] = '\0';
 
@@ -383,7 +383,7 @@ void render_window() {
         if (ImGui::InputText("##projectName", projectName, IM_ARRAYSIZE(projectName)))
         {
             if (!directoryModifiedByUser) {
-                std::string newProjectDirectory = (FileUtils::GetProjectsBaseFolder() / std::string(projectName)).string();
+                std::string newProjectDirectory = (ProjectFileUtils::GetProjectsBaseFolder() / std::string(projectName)).string();
                 strncpy(projectDirectory, newProjectDirectory.c_str(), sizeof(projectDirectory));
                 projectDirectory[sizeof(projectDirectory) - 1] = '\0';
             }
@@ -439,7 +439,7 @@ void render_window() {
                 ProjectConfig::getInstance().currentDirectory = "Assets/";
                 ProjectConfig::getInstance().isInitialized = true;
                 ProjectConfig::getInstance().saveToFile(fs::path(projectDirectory) / "project.json");
-                ProjectConfig::getInstance().addRecentProject(FileUtils::GetProjectsBaseFolder());
+                ProjectConfig::getInstance().addRecentProject(ProjectFileUtils::GetProjectsBaseFolder());
                 ImGui::CloseCurrentPopup();
             }
         }

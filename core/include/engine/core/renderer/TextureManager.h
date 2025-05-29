@@ -1,6 +1,6 @@
 #pragma once
 
-#include "engine/core/utils/FileUtils.h"
+#include "editor/core/utils/ProjectFileUtils.h"
 
 #include <gl/glew.h>
 #include <unordered_map>

@@ -47,7 +47,7 @@ void WorkScenePanel::render(int posX, int posY, int width, int height) {
 
     GLuint texID = workSceneController->getTexture();
     ImVec2 imageSize(w, h);
-    ImGuiEngined::ImageWithoutBorder((void*)(intptr_t)texID, imageSize);
+    ImGuiEngined::ImageWithoutBorder(static_cast<intptr_t>(texID), imageSize);
 }
 
 WorkScenePanel::~WorkScenePanel() {

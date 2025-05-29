@@ -1,7 +1,6 @@
 #include "editor/graphics/utils/TextureManager.h"
-#define STB_IMAGE_IMPLEMENTATION
-#include "editor/graphics/utils/stb_image.h"
-#include "editor/core/utils/FileUtils.h"
+#include "engine/thirdparty/stb_image.h"
+#include "editor/core/utils/ProjectFileUtils.h"
 #include "editor/core/ProjectConfig.h"
 
 #include <unordered_map>
@@ -38,7 +37,7 @@ void TextureManager::Init() {
 }
 
 GLuint TextureManager::LoadTextureFromDataFile(const char* image_path) {
-    return LoadTexture(FileUtils::GetDataFilePath(image_path).string().c_str(), true);
+    return LoadTexture(ProjectFileUtils::GetDataFilePath(image_path).string().c_str(), true);
 }
 
 GLuint TextureManager::LoadTextureAsset(const char* image_path) {

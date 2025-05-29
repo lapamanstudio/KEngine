@@ -2,7 +2,6 @@
 #define SCENE_MANAGER_H
 
 #include "editor/core/ProjectConfig.h"
-#include "editor/core/utils/FileUtils.h"
 #include "editor/graphics/scene/objects/EmptyObject.h"
 #include "editor/graphics/scene/SceneCamera.h"
 #include "editor/graphics/math/MathUtil.h"

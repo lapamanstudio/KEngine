@@ -1,7 +1,7 @@
 #include "editor/window/gui/panels/ProjectFilesPanel.h"
 #include "editor/graphics/utils/TextureManager.h"
 #include "editor/core/ProjectConfig.h"
-#include "editor/core/utils/FileUtils.h"
+#include "editor/core/utils/ProjectFileUtils.h"
 #include "editor/core/utils/StringUtils.h"
 
 #include <string>
@@ -379,7 +379,7 @@ bool ProjectFilesPanel::renderItem(const FileItem& item) {
 
     GLuint texture = loadTextureForItem(item);
 
-    ImGui::Image(reinterpret_cast<void*>(static_cast<intptr_t>(texture)), ImVec2(iconSize, iconSize));
+    ImGui::Image(static_cast<intptr_t>(texture), ImVec2(iconSize, iconSize), ImVec2(0, 0), ImVec2(1, 1));
 
     // Draw text
     if (editingName == item.name) {
@@ -421,7 +421,7 @@ GLuint ProjectFilesPanel::loadTextureForItem(const FileItem& item) {
             return it->second;
         } else {
             std::string iconFilename = "icons/file_icon_" + extension + ".png";
-            if (!FileUtils::FileExists(FileUtils::GetDataFilePath("") / iconFilename)) {
+            if (!FileUtils::FileExists(ProjectFileUtils::GetDataFilePath("") / iconFilename)) {
                 iconFilename = "icons/file_icon.png";
             }
             GLuint texture = TextureManager::LoadTextureFromDataFile(iconFilename.c_str());

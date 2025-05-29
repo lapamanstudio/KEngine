@@ -1,7 +1,7 @@
 #ifndef PAK_UTILS_H
 #define PAK_UTILS_H
 
-#include "editor/core/utils/FileUtils.h"
+#include "editor/core/utils/ProjectFileUtils.h"
 
 #include <string>
 #include <vector>

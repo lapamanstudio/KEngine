@@ -4,6 +4,8 @@
 #include "editor/graphics/scene/objects/components/SpriteRendererComponent.h"
 #include "editor/core/utils/PakUtils.h"
 
+#include "editor/core/utils/ProjectFileUtils.h"
+
 int Property::idCounter = 0;
 
 SceneManager::SceneManager() : camera(std::make_shared<SceneCamera>()) {

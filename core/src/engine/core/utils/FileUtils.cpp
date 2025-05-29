@@ -1,8 +1,6 @@
-#include "editor/core/utils/FileUtils.h"
-#include "editor/graphics/utils/stb_image.h"
+#include "engine/core/utils/FileUtils.h"
 
 #include <iostream>
-#include <GL/gl.h>
 
 #ifdef _WIN32
     #include <windows.h>
